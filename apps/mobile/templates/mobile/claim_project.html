@@ -1,0 +1,146 @@
+{% extends "mobile/_home_base.html" %}
+<!-- !PAGE CONTENT! -->
+{% block page_content %}
+<div class="w3-container w3-padding-8 w3-center" style="background: rgba(0, 0, 0, 0.35);margin-top:32px;">
+    <div class="w3-clear"></div>
+    <h1 class="w3-text-shadow w3-text-white">漁業工程管理系統</h1>
+    <h4 class="w3-text-shadow w3-text-white">Fishery Engineering System</h4>
+</div>
+</br>
+<!-- Photo Grid -->
+<div class="w3-row-padding ">
+    <div class="w3-col m3">
+        <div class="w3-card-2 w3-round w3-white" align="center">
+            <h5>請向您工程的『主辦工程師』或 『其他已認領帳號』索取工程認領碼</h5>
+            <h5 style="color: blue;">(監造碼為英文、施工碼為數字)</h5>
+            <form class="w3-container">
+                <label class="w3-label w3-text-teal"><b>公司統一編號</b></label>
+                <input class="w3-input" id="unit_no" type="text" name="unit_no" maxlength="8" vaiue=""/>
+                <label class="w3-label w3-text-teal"><b>工程認領碼(不分大小寫)</b></label>
+                <input class="w3-input" id="code" type="text" name="code" maxlength="6" vaiue=""/>
+            </form>
+            <input id="user_id" value="{{ user.id }}" type="hidden">
+            <input id="i_group_id" value="{{ i_group.id }}" type="hidden">   
+            <input id="c_group_id" value="{{ c_group.id }}" type="hidden">
+            <input id="today" value="{{ today|date:'Y-m-d' }}" type="hidden">  
+            <br>
+            <button class="w3-btn w3-blue-grey" type="button" id="claim_project">開始認領</button>
+        </div>
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+    //公司統一編號格試驗證
+    jQuery.checkCompanyNoFormat = function(id) {
+        var value = $('#'+id).val();
+        function valid(n) {
+           return (n%10 == 0)?true:false;
+        }
+        function cal(n) {
+           var sum=0;
+           while (n!=0) {
+              sum += (n % 10);
+              n = (n - n%10) / 10;  // 取整數
+             }
+           return sum;
+        }
+        function nochk(novalue) {
+           var tmp = new String("12121241");
+           var sum = 0;
+           for (i=0; i< 8; i++) {
+             s1 = parseInt(novalue.substr(i,1));
+             s2 = parseInt(tmp.substr(i,1));
+             sum += cal(s1*s2);
+           }
+           if (!valid(sum)) {
+              if (novalue.substr(6,1)=="7") return(valid(sum+1));
+           }
+           return(valid(sum));
+        }
+        var no = /^[0-9]{8}$/.exec(value);
+        if (no == null){
+            alert('統一編號須為 8 碼數字，您所填寫的則是「'+value+'」');
+            return false;
+        } else if (nochk(value) == false) {
+            alert(no + ' 此為不合法的統一編號，請確認!');
+            return false;
+        }
+        return value
+    }
+
+    function claim_project(){
+        var $obj = $(this);
+        var unit_no = $.checkCompanyNoFormat('unit_no');
+        if (!unit_no){
+            return false;
+        }
+        var code = $('#code').val();
+        var i_group_id = $('#i_group_id').val();
+        var c_group_id = $('#c_group_id').val();
+        var user_id = $('#user_id').val();
+        var english_check = /^[a-zA-Z]+$/;
+        var today = $('#today').val();
+        var string = 'code=' + code;
+        string += '&user_id=' + user_id;
+        if (english_check.test(code)){
+            var group = i_group_id;
+        } else {
+            var group = c_group_id;
+        }
+        if (!code){
+            alert('請輸入認領碼');
+            return false;
+        }
+        $.ajax({
+            url: '/fishuser/api/v2/project/code_search/?' + string,
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                if (data.objects.length == 1){
+                    var project_name = data.objects[0]['name'];
+                    var project_id = data.objects[0]['id'];
+                    if (confirm('您確定要認領"' + project_name + '"此工程嗎?')){
+                        var data = {
+                            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                            user: '/fishuser/api/v2/user/' + user_id + '/',
+                            project: '/fishuser/api/v2/project/' + project_id + '/',
+                            group: '/fishuser/api/v2/group/' + group + '/',
+                            is_active: true,
+                            date: today,
+                        }
+                        $.ajax({
+                            url: '/fishuser/api/v2/frcmusergroup/',
+                            type: 'POST',
+                            data: JSON.stringify(data),
+                            contentType: 'application/json',
+                            dataType: 'json',
+                            success: function (json, text, xhr) {
+                                $obj.hide();
+                                alert('認領成功，已可在"我的工程"頁面中進行檢視');
+                                window.location = '/mobile/project_info/' + project_id + '/';
+                            },
+                            error: function () {}
+                        })
+                    }
+                } else {
+                    alert('"查無此工程認領碼"或"重複認領"，請檢查輸入編碼是否正確!!');
+                    return false;
+                }
+            },
+            error: function(json){
+                alert(json.responseText);
+            }
+        })
+    }
+
+
+    $(document).ready(function(){
+        CSRFMIDDLEWARETOKEN = $('input[name=csrfmiddlewaretoken]').val();
+        $('#claim_project').click(claim_project);
+    });
+
+</script>
+{% endblock %}

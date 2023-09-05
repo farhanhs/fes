@@ -1,0 +1,134 @@
+{% load humanize %}
+<br><br>
+<h3>
+    <span class="label label-success">
+        <span class="glyphicon glyphicon-paperclip"></span>
+        船筏數量
+    </span>
+    {% if edit %}　<button class="btn btn-info btn-sm" data-toggle="modal" data-target="#create_fishingportboat_dialog">新增</button><small>此頁新增需重新整理頁面</small><br>{% endif %}
+</h3>
+<table class="table table-bordered">
+    <tr class="warning" align="center">
+        <td width="8%">
+            年度
+        </td>
+        {% for t in port.boat_type %}
+            <td>
+                {{ t.value }}
+            </td>
+        {% endfor %}
+    </tr>
+    {% for i in port.boats %}
+        <tr align="center">
+            {% for j in i %}
+                <td>
+                    <span id="span_boat_{{ j.id }}" class="show_tooltip" data-toggle="tooltip" data-placement="bottom" title="{{ j.boat_type.value }}">
+                        {{ j.num|intcomma }}
+                        {% if j.num %}
+                            {% if edit %}
+                                {% if not forloop.first %}
+                                    <br>
+                                    <button class="deleteRow btn btn-danger btn-xs" title="點我刪除"
+                                        row_id="{{ j.id }}"
+                                        module_name = "harbor"
+                                        table_name = "fishingportboat"
+                                        remove_target = "span_boat_{{ j.id }}"
+                                        title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    </span>
+                </td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+</table>
+
+{% if edit %}
+    <div class="modal fade" id="create_fishingportboat_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">新增漁船</h4>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-border">
+                        <tr>
+                            <td width="25%">年度</td>
+                            <td width="75%">
+                                <input id="fishingportboat_year" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>漁船種類</td>
+                            <td>
+                                <select class="form-control" id="fishingportboat_boat_type">
+                                    {% for type in option.boat_type %}
+                                        <option value="/harbor/api/v2/option/{{ type.id }}/">{{ type.value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>數量</td>
+                            <td>
+                                <input id="fishingportboat_num" class="form-control" value="">
+                            </td>
+                        </tr>
+                    </table>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" id="create_fishingportboat" class="btn btn-primary">新增</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<script type="text/javascript">
+    function create_fishingportboat() {
+        var fishingport = $('#fishingport').val();;
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            fishingport: fishingport,
+        }
+        if ($('#fishingportboat_year').val()){
+            data['year'] = $('#fishingportboat_year').val();
+        }
+        if ($('#fishingportboat_boat_type').val()){
+            data['boat_type'] =  $('#fishingportboat_boat_type').val();
+        }
+        if ($('#fishingportboat_num').val()){
+            data['num'] =  $('#fishingportboat_num').val();
+        }
+        $.ajax({
+            url: '/harbor/api/v2/fishingportboat/',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                $('#fishingportboat_year').val('');
+                $('#fishingportboat_num').val('');
+                $('#create_fishingportboat_dialog').modal('hide');
+            },
+            error: function (data) {
+                if (data.responseText){
+                    alert(data.responseText);
+                } else {
+                    alert('操作失敗，可能系統忙碌中，請稍候重試一次。');
+                }
+            }
+        })
+    }
+
+
+    $(document).ready(function(){
+        $('.show_tooltip').tooltip();
+        $('#create_fishingportboat').click(create_fishingportboat);
+    });
+
+</script>

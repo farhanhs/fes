@@ -1,0 +1,181 @@
+{% load i18n %}
+{% load staticfiles %}
+<!DOCTYPE html PUBLIC>
+<html lang="zh-tw">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link type="image/x-icon" rel="shortcut icon" href="/media/cim/images/fa.ico" />
+    
+    <link href="/media/fishuser/v2/jquery/smoothness/jquery-ui-1.10.3.custom.css{{ settings.SV_ }}" rel="stylesheet" type="text/css" charset="utf-8"/>
+    <link href="{% static 'mobile/lobibox/Lobibox.min.css' %}" rel="stylesheet" type="text/css">
+
+    <script type="text/javascript" src="/media/fishuser/v2/jquery/jquery-1.10.2.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/fishuser/v2/jquery/jquery-ui-1.10.3.custom.js{{ settings.SV_ }}" ></script>
+    <script type="text/javascript" src="/media/fishuser/v2/jquery-bbq-1.3/jquery.ba-bbq.min.js{{ settings.SV_ }}" ></script>
+    <script type="text/javascript" src="/media/fishuser/v2/jquery-pagination-v1.2.5/jquery.twbsPagination.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="{% static 'mobile/js/jquery.cookie.js' %}" ></script>
+    <script type="text/javascript" src="{% static 'mobile/lobibox/lobibox.js' %}" ></script>
+    
+    <style type="text/css">
+        {% block style %}{% endblock %}
+        .pointer, .li_page{ cursor: pointer;}
+        td a {background: none !important;}
+        
+        .dropdown-toggle {
+            height:35px;
+        }
+        .bootstrap-select.show-tick .dropdown-menu .selected span.check-mark{
+            left: 70px !important;
+        }
+    </style>
+    
+    <script type="text/javascript">
+        var DEBUG = {% if settings.DEBUG %}true{% else %}false{% endif %};
+        var CSRFMIDDLEWARETOKEN;
+        var SUB_PAGE_LIST = '';
+    </script>
+    
+    <script type="text/javascript">
+        var is_mobile = false;
+        if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(navigator.userAgent.substr(0,4))) is_mobile = true;
+
+        $(document).ready(function(){
+            if ($.cookie('use_mobile') && $.cookie('no_more')) {
+                window.location = "{% url 'm_index' %}";
+            }
+
+            if (is_mobile && !$.cookie('no_more')) {
+                var lobibox = Lobibox.confirm({
+                    width: '90%',
+                    closeOnEsc: false,
+                    title: '<span style="font-size: 2em;">是否要轉往手機版頁面？</span>',
+                    msg: '<h1 style="font-size: 5em;">系統偵測到您使用手機瀏覽系統<br>是否要轉往手機版頁面？<br><br><input id="no_more" type="checkbox" style="zoom: 7;">不再詢問</input></h1>',
+                    buttons: {
+                        accept: {
+                            'class': 'lobibox-btn lobibox-btn-yes',
+                            text: '<h1 style="font-size: 5em;">前往手機版</h1>',
+                            closeOnClick: false
+                        },
+                        cancel: {
+                            'class': 'lobibox-btn lobibox-btn-no',
+                            text: '<h1 style="font-size: 5em;">留在電腦版</h1>',
+                            closeOnClick: false
+                        },
+                    },
+                    callback: function ($this, type, ev) {
+                        if ($('#no_more').is(':checked')) {
+                            $.cookie('no_more', true, { expires: 1, path: '/'});
+                        }
+
+                        if(type=='accept'){
+                            $.cookie('use_mobile', true);
+                            window.location = "{% url 'm_index' %}";
+                        }
+
+                        lobibox.hide();
+                    }
+                });
+            }
+            //判斷瀏覽器
+            var Sys = {};
+            var ua = navigator.userAgent.toLowerCase();
+            var s;
+            (s = ua.match(/rv:([\d.]+)\) like gecko/)) ? Sys.ie = s[1] :
+            (s = ua.match(/msie ([\d.]+)/)) ? Sys.ie = s[1] :
+            (s = ua.match(/firefox\/([\d.]+)/)) ? Sys.firefox = s[1] :
+            (s = ua.match(/chrome\/([\d.]+)/)) ? Sys.chrome = s[1] :
+            (s = ua.match(/opera.([\d.]+)/)) ? Sys.opera = s[1] :
+            (s = ua.match(/version\/([\d.]+).*safari/)) ? Sys.safari = s[1] : 0;
+            if (Sys.ie && parseFloat(Sys.ie) < 11){
+                Lobibox.confirm({
+                    msg: "系統偵測到您使用過舊的IE瀏覽器版本，建議轉換Chrome瀏覽器使用本系統。",
+                    buttons: {
+                        accept: {
+                            'class': 'lobibox-btn lobibox-btn-yes',
+                            text: '下載Chrome',
+                            closeOnClick: true
+                        },
+                        cancel: {
+                            'class': 'lobibox-btn lobibox-btn-no',
+                            text: '取消',
+                            closeOnClick: true
+                        },
+                    },
+                    callback: function ($this, type, ev) {
+                        if(type=="accept"){
+                            window.location = "http://www.google.com/chrome/browser/"
+                        }else{
+                            return false;
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+    
+    <script type="text/javascript" src="/media/fishuser/v2/js/system_notice.js{{ settings.SV_ }}" ></script>
+    
+    <link rel="stylesheet" type="text/css" href="/media/fishuser/v2/css/style.css{{ settings.SV_ }}" charset="utf-8"/>
+    <link rel="stylesheet" type="text/css" href="/media/fishuser/v2/bootstrap/css/bootstrap.css{{ settings.SV_ }}"/>
+    <link rel="stylesheet" type="text/css" href="/media/fishuser/v2/bootstrap/css/bootstrap-theme.css{{ settings.SV_ }}"/>
+    {% block css_in_compress %}{% endblock %}
+    <link rel="stylesheet" href="/media/project/v2/plugin/bootstrap-select-1.13.2/css/bootstrap-select.min.css">
+    <script type="text/javascript" src="/media/project/v2/plugin/bootstrap-select-1.13.2/js/bootstrap-select.min.js{{ settings.SV_ }}" ></script>
+    <script type="text/javascript" src="/media/project/v2/plugin/bootstrap-select-1.13.2/js/i18n/defaults-zh_TW.min.js{{ settings.SV_ }}" ></script>
+    <script type="text/javascript" src="/media/fishuser/v2/js/fishuser.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/fishuser/v2/js/purl.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/fishuser/v2/js/jquery.contextmenu.r2.js{{ settings.SV_ }}" ></script>
+    <script type="text/javascript" src="/media/fishuser/v2/jstree/jquery.hotkeys.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/fishuser/v2/jstree/jquery.cookie.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/fishuser/v2/sorttable/sorttable.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/fishuser/v2/bootstrap/js/bootstrap.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/fishuser/v2/js/md5.js"></script>
+    <script type="text/javascript" src="/media/fishuser/v2/js/jquery.tmpl.min.js"></script>
+    <script type="text/javascript" src="/media/fishuser/v2/jquery-elastic-1.6.10/jquery.elastic.source.js"></script>
+    
+    {% block js_in_compress %}{% endblock %}
+
+
+    {% block script %}{% endblock %}
+
+    <title>{% block title %}漁業工程管理系統{% endblock %}</title>
+</head>
+<body style="padding-top: 70px; text-align: center;font-family: 'Helvetica Neue', Helvetica, '微軟正黑體', 'Microsoft Jhenghei', Arial, sans-serif;">
+    <img id="loading" src="/media/dailyreport/images/loading.gif" width="50" style="display:none;" />
+    <input id="toppage_name" value="{{ toppage_name }}" type="hidden"/>
+    {% csrf_token %}
+
+    {% include 'fishuser/zh-tw/menu.html' %}
+    <div class="container bs-docs-container">
+        <div class="row">
+            <div id="menu_sub" class="col-xs-2">
+            {% block menu_sub %}
+                {% include 'fishuser/zh-tw/menu_sub.html' %}
+            {% endblock %}
+            </div>
+            <div class="col-xs-10">
+                {% block body %}
+                    your web info
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+
+
+    <br><br>
+    <div id="footer">
+        <hr width="800">
+        <h5>漁業工程管理系統(Fishery Engineering System)</h5>
+        <h6>
+            Copyright &copy; 2013 <a href="http://www.fa.gov.tw/chnn/" target="_blank">(行政院農業部漁業署)</a>
+            <br>
+            Designed by 
+            <a href="http://www.tfm.org.tw/" target="_blank">財團法人臺灣漁業及海洋技術顧問社</a>
+            <br><br>
+            客服專線：漁業署(02-2383-5796)
+            <br>
+            客服服務時間：周一到周五 08:00~17:00
+        </h6>
+    </div>
+    <br><br><br><br>
+</body>

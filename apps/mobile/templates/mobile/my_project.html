@@ -1,0 +1,66 @@
+{% extends "mobile/_home_base.html" %}
+<!-- !PAGE CONTENT! -->
+{% block page_content %}
+<div class="w3-row-padding ">
+    <div class="w3-container w3-padding-32 w3-center"></div>
+    {% if projects %}
+        {% for project in projects %}
+        <div class="w3-card-4" >
+            <header class="w3-container w3-cyan">
+                <h5> <b>{{ project.year }}-{{ project.name }}</b>
+                </h5>
+            </header>
+            <div class="w3-container w3-teal">
+                <p>計畫名稱:{{ project.plan }}</p>
+            </div>
+            <ul class="w3-ul">
+                <li class="w3-white">
+                    <p>營造進度：</p>
+                    <div class="w3-progress-container">
+                        <div id="myBar" class="w3-progressbar w3-deep-orange" style="width:{{ project.get_act_contractor_percent }}%">
+                            <div class="w3-center w3-text-black">{{ project.get_act_contractor_percent }}%</div>
+                        </div>
+                    </div>
+                </li>
+                <li class="w3-white">
+                    <p>監造進度：</p>
+                    <div class="w3-progress-container">
+
+                        <div id="myBar" class="w3-progressbar w3-blue-grey" style="width:{{ project.get_act_inspector_percent }}%">
+                            <div class="w3-center w3-text-black">{{ project.get_act_inspector_percent }}%</div>
+                        </div>
+                    </div>
+                </li>
+                <li class="w3-white">
+                    <p>相片張數：{{ project.get_images_count }}</p>
+                </li>
+            </ul>
+            <a class="w3-btn-block w3-teal" {% if not project.open %}style="background-color: pink !important"{% endif %}>
+                {% if project.open %}
+                    <h5 onclick="window.location='{% url "m_project_info" project_id=project.id %}'">
+                        <b>進入工程案&ensp; <i class="fa fa-arrow-circle-right"></i></b> 
+                    </h5>
+                {% else %}
+                    <h5>
+                        <b>{{ project.message }}</b> 
+                    </h5>
+                {% endif %}
+            </a>
+        </div>
+        <br>
+        {% endfor %}
+    {% else %}
+        <div class="w3-card-4" >
+            <header class="w3-container w3-white">
+                <h5>
+                    <b>目前尚無工程案</b>
+                </h5>
+                <p>請先使用右上角功能 匯入/認領 工程</p>
+            </header>
+        </div>
+    {% endif %}
+</div>
+<div class="w3-clear"></div>
+<br>
+<br>
+{% endblock %}

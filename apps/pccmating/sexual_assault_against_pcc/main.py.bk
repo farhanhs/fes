@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+
+import pcchandler
+
+def main():
+    h = pcchandler.SexualAssaultAgainstPCC("cmdweb.pcc.gov.tw", debug = False)
+
+    h.login("3456134", "a61346134")
+        
+    doc = h.getProjectBasicInformation("CW-198021")
+    for index in range(len(doc["progress"])):
+        doc["progress"][index] = h.getProjectBudgetInformation(doc["progress"][index]["url"])
+
+    doc['basic_information'] = h.getProjectFullInformation(doc[u'url_basic_information'])
+    print_dict(doc)
+    #doc = h.getProjectFullInformation(doc[u'url_basic_information'])
+
+def print_list(l, i=0):
+    for item in l:
+        if(isinstance(item, dict)):
+            print("%*s {"%(i, ""))
+            print_dict(item, i+5)
+            print("%*s },"%(i, ""))
+        elif(isinstance(item, list)):
+            print("%*s = ["%(i, ""))
+            print_list(item, i+5)
+            print("%*s   ],"%(i, ""))
+        else:
+            print("%*s, "%(i, item))
+        
+    
+def print_dict(d, i=0):
+    for key in d:
+        if(isinstance(d[key], dict)):
+            print("%*s%s = {"%(i, " ", key))
+            print_dict(d[key], i+5)
+            print("%*s   },"%(i + len(key), ""))
+        elif(isinstance(d[key], list)):
+            print("%*s%s = ["%(i, " ", key))
+            print_list(d[key], i+5)
+            print("%*s   ],"%(i + len(key), ""))
+        else:
+            print("%*s%s = %s"%(i, " ", key, d[key]))
+
+if __name__ == '__main__':
+    main()
+

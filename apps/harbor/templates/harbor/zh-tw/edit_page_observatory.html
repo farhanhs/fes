@@ -1,0 +1,246 @@
+{% load humanize %}
+<br><br>
+<h2 align="center">
+    編輯觀測站
+    <button class="btn btn-success" id="new_file" type="button" data-toggle="modal" data-target="#create_observatory_dialog">
+        新增『觀測站』
+    </button>
+</h2>
+
+<table class="table table-bordered sortable" id="ObservatorySearchResultTable">
+    <thead>
+        <tr class="warning" align="center">
+            <td></td>
+            <td width="15%">
+                觀測站名稱
+            </td>
+            <td>
+                月平均降雨<br>日數說明
+            </td>
+            <td>
+                風花圖說明
+            </td>
+            <td>
+                風花圖
+            </td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr id="insertObservatoryTr" style="display: none;"></tr>
+        {% for observatory in observatorys %}
+            <tr id="tr_observatory_{{ observatory.id }}" style="text-align: center;" row_id="{{ observatory.id }}">
+                <td>{{ forloop.counter }}</td>
+                <td>
+                    <input
+                        type="text" class="BlurUpdateInfo form-control"
+                        field_type="str"
+                        row_id="{{ observatory.id }}"
+                        field_name="name"
+                        table_name="observatory"
+                        module_name='harbor'
+                        placeholder="待輸入"
+                        old_value="{{ observatory.name }}"
+                        value="{{ observatory.name }}"/>
+                </td>
+                <td>
+                    <textarea
+                        type="text" class="BlurUpdateInfo form-control"
+                        field_type="str"
+                        row_id="{{ observatory.id }}"
+                        field_name="rainday_memo"
+                        table_name="observatory"
+                        module_name='harbor'
+                        placeholder="待輸入"
+                        rows="5"
+                        old_value="{{ observatory.rainday_memo }}">{{ observatory.rainday_memo }}</textarea>
+                </td>
+                <td>
+                    <textarea
+                        type="text" class="BlurUpdateInfo form-control"
+                        field_type="str"
+                        row_id="{{ observatory.id }}"
+                        field_name="wind_memo"
+                        table_name="observatory"
+                        module_name='harbor'
+                        placeholder="待輸入"
+                        rows="5"
+                        old_value="{{ observatory.wind_memo }}">{{ observatory.wind_memo }}</textarea>
+                </td>
+                <td>
+                    <button class="btn btn-xs btn-success uploader" row_id="{{ observatory.id }}" id="new_file_{{ observatory.id }}">上傳新圖</button><br>
+                    <img id="wind_photo_{{ observatory.id }}" src="{{ observatory.rUrl }}" width="100">
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+
+<div class="modal fade" id="create_observatory_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">
+                    新增觀測站
+                </h4>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered">
+                    <tr>
+                        <td width="20%">觀測站名稱</td>
+                        <td width="80%">
+                            <input class="form-control" id="observatory_name" value="">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" id="create_observatory" class="btn btn-primary">新增</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script type="text/x-jquery-tmpl" id="HideObservatorySearchTr">
+    <tr id="tr_observatory_${id}" style="text-align: center;" row_id="${id}" class="${class_name}">
+        <td class="danger">NEW</td>
+        <td>
+            <input
+                type="text" class="BlurUpdateInfo form-control"
+                field_type="str"
+                row_id="${id}"
+                field_name="name"
+                table_name="observatory"
+                module_name='harbor'
+                placeholder="待輸入"
+                old_value="${name}"
+                value="${name}"/>
+        </td>
+        <td>
+            <textarea
+                type="text" class="BlurUpdateInfo form-control"
+                field_type="str"
+                row_id="${id}"
+                field_name="rainday_memo"
+                table_name="observatory"
+                module_name='harbor'
+                placeholder="待輸入"
+                rows="5"
+                old_value="${rainday_memo}">${rainday_memo}</textarea>
+        </td>
+        <td>
+            <textarea
+                type="text" class="BlurUpdateInfo form-control"
+                field_type="str"
+                row_id="${id}"
+                field_name="wind_memo"
+                table_name="observatory"
+                module_name='harbor'
+                placeholder="待輸入"
+                rows="5"
+                old_value="${wind_memo}">${wind_memo}</textarea>
+        </td>
+        <td>
+            <button class="btn btn-xs btn-success uploader_${id}" row_id="${id}" id="new_file_${id}">上傳新圖</button><br>
+            <img id="wind_photo_${id}" src="${id}" width="100">
+        </td>
+    </tr>
+</script>
+
+
+
+<script type="text/javascript">
+    function changeFileUploader($buttom, row_id){
+        var buttom_id = $buttom.attr('id');
+        var uploader = new plupload.Uploader({
+            runtimes: 'html5',
+            browse_button: buttom_id,
+            url: '/harbor/observatory_file_upload/',
+            multi_selection: false,
+            max_file_size : '100mb',
+            multipart: true,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            multipart_params : {
+                csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                row_id: row_id
+            },
+            init:{
+                FilesAdded:function(up, files){
+                    if (confirm('確定替換這個觀測站風花圖?，按下確定後，前請勿關閉視窗!!!')){
+                        $('#wind_photo_' + row_id).attr('src', '');
+                        up.start();
+                    }else{
+                        return false
+                    }
+                },
+                FileUploaded:function(up, file, res){
+                    var json = $.parseJSON(res.response);
+                    $('#wind_photo_' + json["id"]).attr('src', json["url"]);
+                },
+                UploadProgress:function(up, file) {
+                }
+            }
+        });
+        uploader.init();
+    }
+
+    function create_observatory() {
+        var observatory = $('#observatory').val();
+        
+        if (!$('#observatory_name').val()){
+            alert('請輸入觀測站名稱');
+            return false;
+        }
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            name: $('#observatory_name').val(),
+        }
+        $.ajax({
+            url: '/harbor/api/v2/observatory/',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                $('#observatory_name').val('');
+                $('#create_observatory_dialog').modal('hide');
+                var $div = $('#HideObservatorySearchTr').tmpl(data).insertAfter($('#insertObservatoryTr'));
+                $(".uploader_" + data['id']).each(function(){
+                    var $obj = $(this);
+                    var row_id = data['id'];
+                    changeFileUploader($obj, row_id);
+                });
+                $('.ClickShowInfo').unbind('click');
+                $('.BlurUpdateInfo').unbind('blur');
+                $('.BlurUpdateInfo').unbind('keypress');
+                $('.ClickShowInfo').click(ClickShowInfo);
+                $('.BlurUpdateInfo').blur(BlurUpdateInfo);
+                $('.BlurUpdateInfo').keypress(function(event) {
+                    var $obj = $(this);
+                    if (!$obj.is("textarea") && event.which == 13){
+                        $obj.blur();
+                    }
+                });
+                alert('新增觀測站成功!!');
+            },
+            error: function (data) {}
+        })
+    }
+
+    $(document).ready(function(){
+        $(".uploader").each(function(){
+            var $obj = $(this);
+            var row_id = $obj.attr("row_id");
+            changeFileUploader($obj, row_id);
+        });
+        $('#create_observatory').click(create_observatory);
+    });
+
+</script>

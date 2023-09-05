@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>找不到網頁 at {{ request.path_info|escape }}</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style type="text/css">
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font:small sans-serif; background:#eee; }
+    body>div { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:.4em; }
+    h1 span { font-size:60%; color:#666; font-weight:normal; }
+    table { border:none; border-collapse: collapse; width:100%; }
+    td, th { vertical-align:top; padding:2px 3px; }
+    th { width:12em; text-align:right; color:#666; padding-right:.5em; }
+    #info { background:#f6f6f6; }
+    #info ol { margin: 0.5em 4em; }
+    #info ol li { font-family: monospace; }
+    #summary { background: #ffc; }
+    #explanation { background:#eee; border-bottom: 0px none; }
+  </style>
+</head>
+<body>
+  <div id="summary">
+    <h1>漁業工程管理系統</h1>
+    <h2>找不到網頁 <span>(404)</span></h2>
+    <table class="meta">
+      <tr>
+        <th>Http 請求方法:</th>
+        <td>{{ request.META.REQUEST_METHOD }}</td>
+      </tr>
+      <tr>
+        <th>欲瀏覽網址:</th>
+        <td>{{ request.build_absolute_uri|escape }}</td>
+      </tr>
+      {% if request.META.HTTP_REFERER %}
+      <tr>
+        <th>上一頁網址:</th>
+        <td>{{ request.META.HTTP_REFERER|escape }}</td>
+      </tr>
+      {% endif %}
+    </table>
+  </div>
+  <div id="explanation">
+    <p>
+        您看到這個網頁， 乃是因為網址不存在，
+        {% if request.META.HTTP_REFERER %}
+            應是網頁設計的問題[錯誤碼: {{ log_id }}]，敬請通告客服人員處理。
+        {% else %}
+            請確認您要瀏覽的網址。
+        {% endif %}
+        回
+        {% if request.META.HTTP_REFERER %}
+            <a href="{{ request.META.HTTP_REFERER|escape }}">「上一頁」</a> 或是
+        {% endif %}
+        <a href="/">「系統首頁」</a>。
+    </p>
+  </div>
+</body>
+</html>

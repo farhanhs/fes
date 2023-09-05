@@ -1,0 +1,612 @@
+{% extends 'project/index.html' %}
+{% load humanize %}
+{% load utiltags %}
+{% block menu %}
+    <ul id="menu" value ="/project/replan/1/"></ul>
+{% endblock %}
+{% block style %}
+
+.cetitle {
+        background-color: #CDE5FF;
+}
+.cetitle_spe1 {
+        background-color: #FFE7CD;
+}
+.cetitle_spe2 {
+        background-color: #FFCDE5;
+}
+.cetitle_pub {
+        background-color: #FEFFCD;
+}
+
+.red_bg {
+	background-color: red;
+}
+
+.yellow_bg {
+	background-color: #FEFFCD;
+}
+
+.blue_bg {
+	background-color: #CDFEFF;
+}
+
+.pink_bg {
+	background-color: #FFCDE5;
+}
+
+.red_content_bg {
+	background-color: #FFCECD;
+}
+
+.yellow_content_bg {
+	background-color: #FFFFEB;
+}
+
+.blue_content_bg {
+	background-color: #EBFFFF;
+}
+
+.pink_content_bg {
+	background-color: #FFEBFF;
+}
+
+.style_title {
+	color: blue;
+	font-size: 28px;
+}
+.style_path {
+	font-size: 12px;
+}
+
+.gray_color {
+	color: #a1a1a1;
+        font-size: 12px;
+        display: none;
+}
+
+
+{% endblock %}
+
+{% block content %}
+
+
+<table width="985">
+    <tr>
+        
+        <!--這是左邊的計畫樹狀列表__開始-->
+        <td width="250" rowspan="3" valign="top">
+            {% for plan in plans %}
+            <table plan_id="{{ plan.id }}" id="PlanTable_{{ plan.id }}" {% ifequal target_plan.id plan.id %}bgcolor="FFAC55"{% else %}class="ChangeBgcolor"{% endifequal %}>
+                <tr>
+                    <td valign="top">
+                        <table>
+                            <tr>
+                                <td>
+                                    <span style="margin-left:{{ plan.front }}px">
+                                    {% if plan.uplevel %}
+                                        <img id ="img_{{plan.id}}" src="/media/project/image/file_{{ plan.rLevelNumber }}.png" value ="{{plan.id}}" showorhide ="show" width="12" height="12">
+                                    {% endif %}
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td width="{{ plan.width }}" valign="top">
+                        
+                            <table>
+                                <tr>
+                                    <td>
+                                        <a style="color: #000000" href="/project/replan/{{ plan.id }}/">({{ plan.budget_type.value.0 }}){{ plan.name }}</a>
+                                    </td>
+                                </tr>
+                            </table>
+                        
+                    </td>
+                </tr>
+            </table>
+            {% endfor %}
+        </td>
+        <!--這是左邊的計畫樹狀列表__結束-->
+
+        <td width="1" rowspan="3" valign="top" bgcolor="#B0AFFF"></td>
+
+        <!--這是右邊的上半部__開始-->
+        <td height="100" valign="top">
+            
+            <table>
+                {% if edit %}
+                <tr>
+                <br>
+                    {% if target_plan.uplevel %}
+                    <img class="addPlan" lv="equal" plan_id="{{ target_plan.id }}" src="/media/project/image/plan_add_plan.png" width="25" height="25" title="新增同層計畫">
+                    {% endif %}
+                    　<img class="addPlan" lv="sub" plan_id="{{ target_plan.id }}"  src="/media/project/image/plan_add_subplan.png" width="25" height="25" title="新增下層計畫">
+                    {% if target_plan.uplevel %}
+                    　<img src="/media/project/image/plan_move.png" width="25" height="25" title="切換計畫位置或層級" class="sortPlan" id="sortPlan_{{ target_plan.id }}" plan_id="{{ target_plan.id }}" plan_name="{{ target_plan.name }}">
+                    {% endif %}
+                    {% if target_plan.candelete %}
+                    　<img src="/media/project/image/plan_delete.png" width="25" height="25" title="刪除此計畫" class="deletePlan" id="deletePlan_{{ target_plan.id }}" plan_id="{{ target_plan.id }}" plan_name="{{ target_plan.name }}">
+                    {% endif %}
+                    
+                </tr>
+                {% endif %}
+                <tr>
+                    <td>
+                        {% if edit %}
+                            <a class="Show_Plan_Info style_title" id="Show_Plan_Info_name_{{ target_plan.id }}" plan_id="{{ target_plan.id }}" field_name="name">
+                                {{ target_plan.name }}
+                            </a>
+                            <input class="Hide_Plan_Info" plan_id="{{ target_plan.id }}" field_name="name"
+                                   style="display: none;" id="Edit_Plan_Info_name_{{ target_plan.id }}"
+                                   type="text" name="name" maxlength="50" size="80"
+                                   value="{% if target_plan.name %}{{ target_plan.name }}{% endif %}"
+                                   old_value="{% if target_plan.name %}{{ target_plan.name }}{% endif %}"/>
+                        {% else %}
+                            <span class="style_title" style="color:blue;">{{ target_plan.name }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <table>
+                            <tr>
+                                <td width="65" valign="top">
+                                    <span valign="top" class="style_path">導覽路徑：</span>
+                                </td>
+                                <td>
+                                    <span valign="top" class="style_path"> ／
+                                        {% for lv in target_plan.path %}
+                                            <u><a style="color: #000000" href="/project/replan/{{ lv.id }}/">{{ lv.name }}</a></u> ／
+                                        {% endfor %}
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>　　
+
+            <br>
+            <table>
+                <tr height="25">
+                    <td width="130" align="right">計 畫 編 號　：　</td>
+                    <td width="540" class="Show_Plan_Info" plan_id="{{ target_plan.id }}" field_name="no">
+                        {% if edit %}
+                            <a id="Show_Plan_Info_no_{{ target_plan.id }}">{{ target_plan.no|default_if_none:'' }}</a>
+                            <input class="Hide_Plan_Info" plan_id="{{ target_plan.id }}" field_name="no"
+                                   style="display: none;" id="Edit_Plan_Info_no_{{ target_plan.id }}"
+                                   type="text" name="no" maxlength="128" size="80"
+                                   value="{{ target_plan.no|default_if_none:'' }}"
+                                   old_value="{{ target_plan.no|default_if_none:'' }}"/>
+                        {% else %}
+                            {{ target_plan.no|default_if_none:'' }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr height="25">
+                    <td align="right">主 辦 機 關　：　</td>
+                    <td class="Show_Plan_Info" plan_id="{{ target_plan.id }}" field_name="host">
+                        {% if edit %}
+                            <a id="Show_Plan_Info_host_{{ target_plan.id }}">{{ target_plan.host|default_if_none:'' }}</a>
+                            <input class="Hide_Plan_Info" plan_id="{{ target_plan.id }}" field_name="host"
+                                   style="display: none;" id="Edit_Plan_Info_host_{{ target_plan.id }}"
+                                   type="text" name="host" maxlength="20" size="80"
+                                   value="{{ target_plan.host|default_if_none:'' }}"
+                                   old_value="{{ target_plan.host|default_if_none:'' }}"/>
+                        {% else %}
+                            {{ target_plan.host|default_if_none:'' }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr height="25">
+                    <td align="right">計畫總預算　：　</td>
+                    <td class="Show_Plan_Info" plan_id="{{ target_plan.id }}" field_name="budget">
+                        {% if edit %}
+                            <a id="Show_Plan_Info_budget_{{ target_plan.id }}">{{ target_plan.budget|default_if_none:'0'|intcomma|cutzero }}</a>
+                            <input class="Hide_Plan_Info" plan_id="{{ target_plan.id }}" field_name="budget" input_type="float"
+                                   style="display: none;" id="Edit_Plan_Info_budget_{{ target_plan.id }}"
+                                   type="text" name="budget" maxlength="20" size="20"
+                                   value="{{ target_plan.budget|default_if_none:'0'|cutzero }}"
+                                   old_value="{{ target_plan.budget|default_if_none:'0'|cutzero }}"/>(元)
+                        {% else %}
+                            {{ target_plan.budget|default_if_none:'0'|intcomma|cutzero }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr height="25">
+                    <td align="right">計 畫 說 明　：　</td>
+                    <td align="left" class="Show_Plan_Info" plan_id="{{ target_plan.id }}" field_name="note">
+                        {% if edit %}
+                            <a id="Show_Plan_Info_note_{{ target_plan.id }}">{{ target_plan.note|default_if_none:''|linebreaks }}</a>
+                            <textarea class="Hide_Plan_Info" plan_id="{{ target_plan.id }}" field_name="note"
+                                       style="display: none;" id="Edit_Plan_Info_note_{{ target_plan.id }}"
+                                       old_value="{{ target_plan.note|default_if_none:'' }}"
+                                       name="note" cols="60" rows="5">{{ target_plan.note|default_if_none:'' }}</textarea>
+                        {% else %}
+                            {{ target_plan.note|default_if_none:''|linebreaks }}
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+            
+            <br>
+            <table width="730">
+                <tr>
+                    <td align="left" valign="bottom"></td>
+                    <td align="right">
+                        <img id="getMorePlaninfo" now="hide" width="40" src="/media/project/image/get_info.png" title="顯示詳細資訊">　　
+                        {% if edit %}
+                            {% if target_plan.rSubPlanInList %}
+                                {% if target_plan.auto_sum %}
+                                    <img id="autoSum" plan_id="{{ target_plan.id }}" width="40" src="/media/project/image/auto_sum_not.png" title="切換為『手動輸入』">
+                                {% else %}
+                                    <img id="autoSum" plan_id="{{ target_plan.id }}" width="40" src="/media/project/image/auto_sum.png" title="切換為『自動加總』">
+                                {% endif %}　　
+                            {% endif %}
+                            {% if not target_plan.auto_sum %}
+                                <img id="addPlanBudget" plan_id="{{ target_plan.id }}" width="40" src="/media/project/image/plan_add_budget.png" title="新增年度預算">
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+            <table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+                <tr align="center" valign="middle">
+                    <td width="40" class="cetitle" rowspan="3">年度</td>
+
+
+                    <td class="Show_Plan_Info cetitle_spe1" colspan="6" style="font-size: 20px;" plan_id="{{ target_plan.id }}" field_name="budget_type">
+                        {% if edit %}
+                            <a id="Show_Plan_Info_budget_type_{{ target_plan.id }}">{{ target_plan.budget_type.value }}</a>
+                            <select class="Hide_Plan_Info" plan_id="{{ target_plan.id }}" field_name="budget_type"
+                                    style="display: none;font-size: 20px;" id="Edit_Plan_Info_budget_type_{{ target_plan.id }}"
+                                    name="budget_type" old_value="{{ target_plan.budget_type.id }}">
+                                {% for budget_type in budget_types %}
+                                <option value="{{ budget_type.id }}" {% ifequal target_plan.budget_type.id budget_type.id %}selected="selected"{% endifequal %}>
+                                    <b>{{ budget_type.value }}</b>
+                                </option>
+                                {% endfor %}
+                            </select>
+                        {% else %}
+                            {{ target_plan.budget_type.value }}
+                        {% endif %}
+                    </td>
+                    <td width="160" class="cetitle" rowspan="3">備註</td>
+                    <td class="cetitle" rowspan="3"></td>
+                </tr>
+                <tr align="center" valign="middle">
+                    <td class="cetitle_spe1" colspan="3" style="font-size: 16px;">資本門</td>
+                    <td class="cetitle_spe2" colspan="3" style="font-size: 16px;">經常門</td>
+                    <!--<td class="cetitle_pub" colspan="2" style="font-size: 16px;">經常門</td>-->
+                </tr>
+                <tr align="center" valign="middle">
+                    <td width="85" class="cetitle_spe1">自辦(元)</td>
+                    <td width="85" class="cetitle_spe1">委辦(元)</td>
+                    <td width="85" class="cetitle_spe1">補助(元)</td>
+                    <td width="85" class="cetitle_spe2">自辦(元)</td>
+                    <td width="85" class="cetitle_spe2">委辦(元)</td>
+                    <td width="85" class="cetitle_spe2">補助(元)</td>
+                    <!--<td width="65" class="cetitle">自辦</td>-->
+                    <!--<td width="65" class="cetitle_pub">委辦</td>
+                    <td width="65" class="cetitle_pub">補助</td>-->
+                </tr>
+                {% for b in budgets %}
+                <div><a name="tag_addBudget"></a></div>
+                <tr id="PlanBudget_tr_{{ b.id }}" align="right" valign="middle" height="90">
+                    <td align="center" height="40" class="Show_Plan_Info" plan_id="{{ b.id }}" field_name="year">
+                        {% if edit %}
+                            {% if target_plan.auto_sum %}
+                                {{ b.year }}
+                            {% else %}
+                                <a id="Show_Plan_Info_year_{{ b.id }}">{{ b.year }}</a>
+                                <select class="Hide_Plan_Info" plan_id="{{ b.id }}" field_name="year"
+                                        style="display: none;" id="Edit_Plan_Info_year_{{ b.id }}"
+                                        value="{{ b.year }}" old_value="{{ b.year }}">
+                                    {% for year in years %}
+                                        <option value="{{ year }}" {% ifequal b.year year %}selected{% endifequal %}>{{ year }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% endif %}
+                        {% else %}
+                            {{ b.year }}
+                        {% endif %}
+                    </td>
+                    <td class="Show_Plan_Info" plan_id="{{ b.id }}" field_name="capital_self">
+                        {% if edit %}
+                            {% if target_plan.auto_sum %}
+                                {{ b.capital_self|default_if_none:'0'|intcomma|cutzero }}
+                            {% else %}
+                                <a id="Show_Plan_Info_capital_self_{{ b.id }}" {% if b.capital_self < b.real_capital_self %}style="color:red;"{% endif %}>
+                                   {{ b.capital_self|default_if_none:'0'|intcomma|cutzero }}
+                                </a>
+                                <input class="Hide_Plan_Info" plan_id="{{ b.id }}" field_name="capital_self" input_type="float"
+                                       style="text-align: right; display: none;" id="Edit_Plan_Info_capital_self_{{ b.id }}"
+                                       type="text" name="capital_self" maxlength="20" size="10"
+                                       value="{{ b.capital_self|default_if_none:'0'|cutzero }}"
+                                       old_value="{{ b.capital_self|default_if_none:'0'|cutzero }}"/>
+                            {% endif %}
+                        {% else %}
+                            {{ b.capital_self|default_if_none:'0'|intcomma|cutzero }}
+                        {% endif %}
+                        <span class="gray_color">
+                            <br>{{ b.real_capital_self|intcomma|cutzero }}
+                            <br>----------
+                            <br>{{ b.minus_capital_self|intcomma|cutzero }}
+                        </span>
+                    </td>
+                    <td class="Show_Plan_Info" plan_id="{{ b.id }}" field_name="capital_trust">
+                        {% if edit %}
+                            {% if target_plan.auto_sum %}
+                                {{ b.capital_trust|default_if_none:'0'|intcomma|cutzero }}
+                            {% else %}
+                                <a id="Show_Plan_Info_capital_trust_{{ b.id }}" {% if b.capital_trust < b.real_capital_trust %}style="color:red;"{% endif %}>
+                                   {{ b.capital_trust|default_if_none:'0'|intcomma|cutzero }}
+                                </a>
+                                <input class="Hide_Plan_Info" plan_id="{{ b.id }}" field_name="capital_trust" input_type="float"
+                                       style="text-align: right; display: none;" id="Edit_Plan_Info_capital_trust_{{ b.id }}"
+                                       type="text" name="capital_trust" maxlength="20" size="10"
+                                       value="{{ b.capital_trust|default_if_none:'0'|cutzero }}"
+                                       old_value="{{ b.capital_trust|default_if_none:'0'|cutzero }}"/>
+                            {% endif %}
+                        {% else %}
+                            {{ b.capital_trust|default_if_none:'0'|intcomma|cutzero }}
+                        {% endif %}
+                        <span class="gray_color">
+                            <br>{{ b.real_capital_trust|intcomma|cutzero }}
+                            <br>----------
+                            <br>{{ b.minus_capital_trust|intcomma|cutzero }}
+                        </span>
+                    </td>
+                    <td class="Show_Plan_Info" plan_id="{{ b.id }}" field_name="capital_grant">
+                        {% if edit %}
+                            {% if target_plan.auto_sum %}
+                                {{ b.capital_grant|default_if_none:'0'|intcomma|cutzero }}
+                            {% else %}
+                                <a id="Show_Plan_Info_capital_grant_{{ b.id }}" {% if b.capital_grant < b.real_capital_grant %}style="color:red;"{% endif %}>
+                                    {{ b.capital_grant|default_if_none:'0'|intcomma|cutzero }}
+                                </a>
+                                <input class="Hide_Plan_Info" plan_id="{{ b.id }}" field_name="capital_grant" input_type="float"
+                                       style="text-align: right; display: none;" id="Edit_Plan_Info_capital_grant_{{ b.id }}"
+                                       type="text" name="capital_grant" maxlength="20" size="10"
+                                       value="{{ b.capital_grant|default_if_none:'0'|cutzero }}"
+                                       old_value="{{ b.capital_grant|default_if_none:'0'|cutzero }}"/>
+                            {% endif %}
+                        {% else %}
+                            {{ b.capital_grant|default_if_none:'0'|intcomma|cutzero }}
+                        {% endif %}
+                        <span class="gray_color">
+                            <br>{{ b.real_capital_grant|intcomma|cutzero }}
+                            <br>----------
+                            <br>{{ b.minus_capital_grant|intcomma|cutzero }}
+                        </span>
+                    </td>
+                    <td class="Show_Plan_Info" plan_id="{{ b.id }}" field_name="regular_self">
+                        {% if edit %}
+                            {% if target_plan.auto_sum %}
+                                {{ b.regular_self|default_if_none:'0'|intcomma|cutzero }}
+                            {% else %}
+                                <a id="Show_Plan_Info_regular_self_{{ b.id }}" {% if b.regular_self < b.real_regular_self %}style="color:red;"{% endif %}>
+                                    {{ b.regular_self|default_if_none:'0'|intcomma|cutzero }}
+                                </a>
+                                <input class="Hide_Plan_Info" plan_id="{{ b.id }}" field_name="regular_self" input_type="float"
+                                       style="text-align: right; display: none;" id="Edit_Plan_Info_regular_self_{{ b.id }}"
+                                       type="text" name="regular_self" maxlength="20" size="10"
+                                       value="{{ b.regular_self|default_if_none:'0'|cutzero }}"
+                                       old_value="{{ b.regular_self|default_if_none:'0'|cutzero }}"/>
+                            {% endif %}
+                        {% else %}
+                            {{ b.regular_self|default_if_none:'0'|intcomma|cutzero }}
+                        {% endif %}
+                        <span class="gray_color">
+                            <br>{{ b.real_regular_self|intcomma|cutzero }}
+                            <br>----------
+                            <br>{{ b.minus_regular_self|intcomma|cutzero }}
+                        </span>
+                        
+                    </td>
+                    <td class="Show_Plan_Info" plan_id="{{ b.id }}" field_name="regular_trust">
+                        {% if edit %}
+                            {% if target_plan.auto_sum %}
+                                {{ b.regular_trust|default_if_none:'0'|intcomma|cutzero }}
+                            {% else %}
+                                <a id="Show_Plan_Info_regular_trust_{{ b.id }}" {% if b.regular_trust < b.real_regular_trust %}style="color:red;"{% endif %}>
+                                    {{ b.regular_trust|default_if_none:'0'|intcomma|cutzero }}
+                                </a>
+                                <input class="Hide_Plan_Info" plan_id="{{ b.id }}" field_name="regular_trust" input_type="float"
+                                       style="text-align: right; display: none;" id="Edit_Plan_Info_regular_trust_{{ b.id }}"
+                                       type="text" name="regular_trust" maxlength="20" size="10"
+                                       value="{{ b.regular_trust|default_if_none:'0'|cutzero }}"
+                                       old_value="{{ b.regular_trust|default_if_none:'0'|cutzero }}"/>
+                            {% endif %}
+                        {% else %}
+                            {{ b.regular_trust|default_if_none:'0'|intcomma|cutzero }}
+                        {% endif %}
+                        <span class="gray_color">
+                            <br>{{ b.real_regular_trust|intcomma|cutzero }}
+                            <br>----------
+                            <br>{{ b.minus_regular_trust|intcomma|cutzero }}
+                        </span>
+                    </td>
+                    <td class="Show_Plan_Info" plan_id="{{ b.id }}" field_name="regular_grant">
+                        {% if edit %}
+                            {% if target_plan.auto_sum %}
+                                {{ b.regular_grant|default_if_none:'0'|intcomma|cutzero }}
+                            {% else %}
+                                <a id="Show_Plan_Info_regular_grant_{{ b.id }}" {% if b.regular_grant < b.real_regular_grant %}style="color:red;"{% endif %}>
+                                    {{ b.regular_grant|default_if_none:'0'|intcomma|cutzero }}
+                                </a>
+                                <input class="Hide_Plan_Info" plan_id="{{ b.id }}" field_name="regular_grant" input_type="float"
+                                       style="text-align: right; display: none;" id="Edit_Plan_Info_regular_grant_{{ b.id }}"
+                                       type="text" name="regular_grant" maxlength="20" size="10"
+                                       value="{{ b.regular_grant|default_if_none:'0'|cutzero }}"
+                                       old_value="{{ b.regular_grant|default_if_none:'0'|cutzero }}"/>
+                            {% endif %}
+                        {% else %}
+                            {{ b.regular_grant|default_if_none:'0'|intcomma|cutzero }}
+                        {% endif %}
+                        <span class="gray_color">
+                            <br>{{ b.real_regular_grant|intcomma|cutzero }}
+                            <br>----------
+                            <br>{{ b.minus_regular_grant|intcomma|cutzero }}
+                        </span>
+                    </td>
+                    <!--<td class="Show_Plan_Info" plan_id="{{ b.id }}" field_name="public_trust">
+                        {% if target_plan.auto_sum %}
+                            {{ b.public_trust|default_if_none:'0'|intcomma|cutzero }}
+                        {% else %}
+                            <a id="Show_Plan_Info_public_trust_{{ b.id }}">{{ b.public_trust|default_if_none:'0'|intcomma|cutzero }}</a>
+                            <input class="Hide_Plan_Info" plan_id="{{ b.id }}" field_name="public_trust" input_type="float"
+                                   style="text-align: right; display: none;" id="Edit_Plan_Info_public_trust_{{ b.id }}"
+                                   type="text" name="public_trust" maxlength="20" size="10"
+                                   value="{{ b.public_trust|default_if_none:'0'|cutzero }}"
+                                   old_value="{{ b.public_trust|default_if_none:'0'|cutzero }}"/>
+                        {% endif %}
+                        <span class="gray_color">
+                            <br>{{ b.real_public_trust|intcomma|cutzero }}
+                            <br>----------
+                            <br>{{ b.minus_public_trust|intcomma|cutzero }}
+                        </span>
+                    </td>
+                    <td class="Show_Plan_Info" plan_id="{{ b.id }}" field_name="public_grant">
+                        {% if target_plan.auto_sum %}
+                            {{ b.public_grant|default_if_none:'0'|intcomma|cutzero }}
+                        {% else %}
+                            <a id="Show_Plan_Info_public_grant_{{ b.id }}">{{ b.public_grant|default_if_none:'0'|intcomma|cutzero }}</a>
+                            <input class="Hide_Plan_Info" plan_id="{{ b.id }}" field_name="public_grant" input_type="float"
+                                   style="text-align: right; display: none;" id="Edit_Plan_Info_public_grant_{{ b.id }}"
+                                   type="text" name="public_grant" maxlength="20" size="10"
+                                   value="{{ b.public_grant|default_if_none:'0'|cutzero }}"
+                                   old_value="{{ b.public_grant|default_if_none:'0'|cutzero }}"/>
+                         {% endif %}
+                        <span class="gray_color">
+                            <br>{{ b.real_public_grant|intcomma|cutzero }}
+                            <br>----------
+                            <br>{{ b.minus_public_grant|intcomma|cutzero }}
+                        </span>
+                    </td>-->
+                    <td align="left" class="Show_Plan_Info" plan_id="{{ b.id }}" field_name="memo">
+                        {% if edit %}
+                            <a id="Show_Plan_Info_memo_{{ b.id }}">{{ b.memo|default_if_none:''|linebreaks }}</a>
+                            <textarea class="Hide_Plan_Info" plan_id="{{ b.id }}" field_name="memo"
+                                       style="display: none;" id="Edit_Plan_Info_memo_{{ b.id }}"
+                                       old_value="{{ b.memo|default_if_none:'' }}"
+                                       name="note" cols="15" rows="2">{{ b.memo|default_if_none:'' }}</textarea>
+                        {% else %}
+                            {{ b.memo|default_if_none:''|linebreaks }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if edit %}
+                            {% if not target_plan.auto_sum %}
+                                <img src="/media/project/image/plan_delete.png" width="15" height="15" title="刪除此預算" class="deletePlanBudget" plan_id="{{ b.id }}" year="{{ b.year }}">
+                            {% endif %}
+                        {% endif %}
+                    </td>
+
+                </tr>
+                {% endfor %}
+
+
+            </table>
+
+
+
+            <br><br><br>
+
+
+        </td>
+        <!--這是右邊的上半部__結束-->
+
+    </tr>
+    <tr>
+        <td height="1" bgcolor="#B0AFFF"></td>
+    </tr>
+    <tr>
+
+        <!--這是右邊的下半部__開始-->
+        <td valign="top">
+            <table>
+                <tr>
+<!--                    <td width="200">
+                        {% for t in budget_types %}
+                            <img src="/media/project/image/green_light.png" width="20" title="隱藏此類別"
+                                 id="budget_type_light1_{{ t.id }}">
+                            <a class="Filter_Project_Type" type="budget_type" type_id="{{ t.id }}" now="show">{{ t.value }}</a>
+                            <img src="/media/project/image/green_light.png" width="20" title="隱藏此類別"
+                                 id="budget_type_light2_{{ t.id }}">
+                            <br>
+                        {% endfor %}
+                    </td>-->
+                    <td width="200">
+                        {% for t in budget_sub_types %}
+                            <img src="/media/project/image/green_light.png" width="20" title="隱藏此類別"
+                                 id="budget_sub_type_light1_{{ t.id }}">
+                            <a class="Filter_Project_Type" type="budget_sub_type" type_id="{{ t.id }}" now="show">{{ t.value }}</a>
+                            <img src="/media/project/image/green_light.png" width="20" title="隱藏此類別"
+                                 id="budget_sub_type_light2_{{ t.id }}">
+                            <br>
+                        {% endfor %}
+                    </td>
+                    <td width="200">
+                        {% for t in undertake_types %}
+                            <img src="/media/project/image/green_light.png" width="20" title="隱藏此類別"
+                                 id="undertake_type_light1_{{ t.id }}">
+                            <a class="Filter_Project_Type" type="undertake_type" type_id="{{ t.id }}" now="show">{{ t.value }}</a>
+                            <img src="/media/project/image/green_light.png" width="20" title="隱藏此類別"
+                                 id="undertake_type_light2_{{ t.id }}">
+                            <br>
+                        {% endfor %}
+                    </td>
+                    {% if edit %}
+                    <td width="200" align="right" valign="bottom">
+                        <img src="/media/project/image/edit.png" id="editProjectListBudget" plan_id="{{ target_plan.id }}"
+                             width="50" height="50" title="編輯詳細工程案預算資訊">
+                    </td>
+                    {% endif %}
+                </tr>
+            </table>
+            工程案列表(共<span id="filter_project_num" style="font-size: 20px;">{{ budget_projects.count }}</span>件)：
+            <table class="sortable" style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+                <thead>
+                <tr class="blue_bg" align="center" valign="middle">
+                    <th width="20"><b>年度</b></th>
+                    <th width="40"><b>縣市</b></th>
+                    <th width="60"><b>漁港</b></th>
+                    <th width="150"><b>計畫編號</b></th>
+                    <th width="250"><b>工作名稱</b></th>
+                    <th width="75"><b>核定數<br>(元)</b></th>
+                    <th width="75" class="pink_bg"><b>修正後<br>核定數<br>(元)</b></th>
+                    <th width="75" class="yellow_bg"><b>總工程費<br>(元)</b></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for b in budget_projects %}
+                    <tr class="budget_type_{{ b.fund.project.budget_type.id }} budget_sub_type_{{ b.fund.project.budget_sub_type.id }} undertake_type_{{ b.fund.project.undertake_type.id }} blue_content_bg"
+                        tag="show_project" align="right" valign="middle" height="50">
+                        <td align="center">{{ b.year }}</td>
+                        <td align="center">{{ b.fund.project.place|default_if_none:'' }}</td>
+                        <td align="center">{% for port in b.fund.project.rSubLocation %}{{ port.name }}{% endfor %}</td>
+                        <td align="center">{{ b.fund.project.work_no|default_if_none:'' }}</td>
+                        <td align="left">
+                            <a href="/project/fund/{{ b.fund.project.id }}/" target="_blank">{{ b.fund.project.name }}</a>
+                        </td>
+                        <td title="核定數(元)">{{ b.capital_ratify_budget|default_if_none:''|intcomma|cutzero }}</td>
+                        <td class="pink_content_bg" title="修正後核定數(元)">{{ b.capital_ratify_revision|default_if_none:''|intcomma|cutzero }}</td>
+                        <td class="yellow_content_bg" title="總工程費(元)">{{ b.fund.rTotalProjectBudget|default_if_none:''|intcomma|cutzero }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </td>
+        <!--這是右邊的下半部__結束-->
+        
+    </tr>
+</table>
+
+
+
+
+
+{% endblock %}
+

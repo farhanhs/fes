@@ -1,0 +1,578 @@
+{% extends "fishuser/zh-tw/base.html" %}
+{% load i18n %}
+{% load humanize %}
+{% load utiltags %}
+
+{% block body %}
+<h2>搜尋遠端工程</h2>
+<br>
+
+<div align="left">
+    <span style="color: red;" align="left">
+        <ol>
+            <li>注意：輸入條件越多，符合的資料可能會較少，例如年度選擇"100"、縣市選擇"台南市"，則同時符合兩個條件之工程才會出現。</li>
+            <li>可使用空白或半形逗點來一次搜尋多組關鍵字，例如想找工程名稱含有"護岸"及含有"邊坡"的，則輸入"護岸 邊坡"，符合其中一項即會出現。</li>
+        </ol>
+    </span>
+</div>
+
+<table class="table">
+    <caption>請輸入搜尋條件</caption>
+    <tr>
+        <td width="15%" class="warning" align="right">
+            年度(多選)
+        </td>
+        <td width="75%" colspan="3" rowspan="1">
+            <select id="years" class="selectpicker show-menu-arrow form-control" multiple style="height:35px">
+                {% for y in years %}
+                    <option value="{{ y }}" {% if this_year == y %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td width="10%" rowspan="9">
+            <button id="search_project" class="btn btn-info btn-lg" page=1 ype="button">搜尋工程</button>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning" align="right">
+            經費來源計畫
+        </td>
+        <td colspan="3" rowspan="1">
+            <div class="row">
+                <div class="col-xs-8">
+                    <select id="plan" class="form-control input-sm">
+                        <option value="" selected>－ 全部 －</option>
+                        {% for plan in plans %}
+                        <option value="{{ plan.id }}">{{ plan.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-xs-4">
+                    <select id="sub_plan" class="form-control input-sm">
+                        <option value="true">包含下層計畫</option>
+                        <option value="false" selected>不包含下層計畫</option>
+                    </select>
+                </div>
+            </div>
+            
+        </td>
+    </tr>
+    <tr>
+        <td class="warning" align="right">
+            工程名稱
+        </td>
+        <td colspan="3" rowspan="1">
+            <input id="name" size="56" type="text" class="form-control input-sm"></td>
+    </tr>
+    <tr>
+        <td class="warning" align="right">
+            廠商名稱
+        </td>
+        <td colspan="3" rowspan="1">
+            <input id="bid_final" size="56" type="text" class="form-control input-sm"></td>
+    </tr>
+    <tr>
+        <td class="warning" align="right">標案編號</td>
+        <td colspan="3" rowspan="1">
+            <input id="pcc_no" size="40" type="text" class="form-control input-sm"></td>
+    </tr>
+    <tr>
+        <td class="warning" align="right">負責工程師</td>
+        <td colspan="3" rowspan="1">
+            <input id="eng_name" size="40" type="text" class="form-control input-sm"></td>
+    </tr>
+    <tr>
+        <td class="warning" align="right">
+            執行機關
+        </td>
+        <td width="32.5%">
+            <select id="unit" class="form-control input-sm">
+                {% if perms.fishuser.view_all_project_in_management_system %}
+                    <option value="">－ 全部 －</option>
+                {% endif %}
+                {% for unit in units %}
+                    <option value="{{ unit.id }}" {% ifequal user.user_profile.unit.id unit.id %}selected{% endifequal %}>－ {{ unit.name }} －</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td class="warning" align="right" width="10%">
+            採購類別
+        </td>
+        <td width="27.5%">
+            <div class="row">
+                <div class="col-xs-7">
+                    <select id="purchase_type" class="form-control input-sm">
+                        <option value="" selected>－ 全部 －</option>
+                        {% for purchase_type in option.purchase_type %}
+                        <option value="{{ purchase_type.id }}">{{ purchase_type.value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-xs-5" style="font-size: 12px;">
+                    (勞務/工程)
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning" align="right">
+            縣市
+        </td>
+        <td>
+            <select id="place" class="RenewLocationList form-control input-sm">
+                <option value="">－ 全部 －</option>
+                {% for place in places %}
+                    <option value="/fishuser/api/v2/place/{{ place.id }}/">－ {{ place.name }} －</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td class="warning" align="right">
+            承辦方式
+        </td>
+        <td>
+            <div class="row">
+                <div class="col-xs-7">
+                    <select id="undertake_type" class="form-control input-sm">
+                        <option value="" selected>－ 全部 －</option>
+                        {% for undertake_type in option.undertake_type %}
+                            <option value="{{ undertake_type.id }}">{{ undertake_type.value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-xs-5" style="font-size: 12px;">
+                    (自/委/補)
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning" align="right">
+            漁港
+        </td>
+        <td>
+            <select id="fishing_port" class="form-control input-sm">
+                <option value="" selected>－ 全部 －</option>
+                {% for port in fishing_ports %}
+                    <option value="{{ port.id }}">{{ port.place.name }} - {{ port.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td class="warning" align="right">
+            工程屬性
+        </td>
+        <td>
+            <select id="project_type" class="form-control input-sm">
+                <option value="" selected>－ 全部 －</option>
+                {% for type in option.project_type_sort %}
+                    <option value="{{ type.id }}">{{ type.value }}</option>
+                {% endfor %}
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning" align="right">
+            養殖區
+        </td>
+        <td>
+            <select id="aquaculture" class="form-control input-sm">
+                <option value="" selected>－ 全部 －</option>
+                {% for aqua in aquacultures %}
+                    <option value="{{ port.id }}">{{ aqua.place.name }} - {{ aqua.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td class="warning" align="right">
+            每頁顯示
+        </td>
+        <td>
+            <div class="input-group">
+                <select id="per_page" class="form-control input-sm">
+                    <option value=25 selceted>25</option>
+                    <option value=50>50</option>
+                    <option value=100>100</option>
+                    <option value="">全部</option>
+                </select>
+                <span class="input-group-addon">筆</span>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning" align="right">
+            是否結案
+        </td>
+        <td>
+            <select id="is_finish" class="form-control input-sm">
+                <option value="" selected>－ 全部 －</option>
+                <option value="false">尚未結案</option>
+                <option value="true">已結案</option>
+            </select>
+        </td>
+        <td align="right">
+        </td>
+        <td>
+        </td>
+    </tr>
+</table>
+
+
+<hr style="color: #FFC991;" align="center" size="1" width="900">
+<br><br>
+<div class="alert alert-info" id="reportTable" style="display:none;">
+    <form action="/project/print_custom_report/" method="post">
+        自定義報表匯出功能(可將您所搜尋的工程案匯出到Excel檔案)
+        <input type="hidden" name="csrfmiddlewaretoken" id="csrfmiddlewaretoken">
+        <div class="row">
+            <div class="col-md-6">
+                <select id="custom_report" class="form-control input-sm" name="custom_report">
+                    <option value="">請選擇要匯出的報表名稱</option>
+                    {% for report in reports %}
+                        <option value="{{ report.id }}" id="option_report_{{ report.id }}" fields="{% for f in report.fields.all %}{{ f.id }},{% endfor %}">{{ report.name }}</option>
+                    {% endfor %}
+                </select>
+                <input type="text" value="" id="search_result_ids" name="search_result_ids" style="display:none;">
+            </div>
+            <div class="col-md-6" align="left">
+                <button style="display:none;" type="button" class="btn btn-warning btn-sm" id="edit_report_field" data-toggle="modal" data-target="#edit_report_field_dialog">編輯欄位</button>
+                <button style="display:none;" class="btn btn-info btn-sm" id="make_custom_excel_file">匯出Excel報表</button>
+                <button type="button" class="btn btn-success btn-sm" id="create_report">新增報表</button>
+                <button type="button" style="display:none;" class="btn btn-danger btn-sm" id="delete_report">刪除報表</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+<hr style="color: #FFC991;" align="center" size="1" width="900">
+<br><br>
+<ul class="pagination pages_list"></ul> <span class="total_count"></span>
+<br>
+<table id="SearchResultTable" class="sortable table table-bordered" style="text-align: center; display: none; font-size: 14px;">
+    <thead>
+        <tr class="success">
+            <th width="5%">序<br>號</th>
+            <th width="3%" style="text-align: center;">結<br>案</th>
+            <th width="26%">經費來源計畫<br>年度-工程名稱</th>
+            <th width="5%">施工相片數量</th>
+            <th width="5%">相片<br>系統</th>
+            <th width="13%">工程進度</th>
+            <th width="5%">報表<br>系統</th>
+            <th width="12%">執行機關</th>
+            <th width="8%">負責主辦</th>
+            <th width="29%">工程經費</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<br>
+<ul class="pagination pages_list"></ul> <span class="total_count"></span>
+
+
+
+<div class="modal fade" id="edit_report_field_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style="width:950px; margin-left: -200px;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">
+                    <div class="row">
+                        <div class="col-md-2">
+                            報表名稱：
+                        </div>
+                        <div class="col-md-9">
+                            <input
+                                id="select_report_name"
+                                type="text" class="BlurUpdateInfo form-control"
+                                field_type="str"
+                                row_id=""
+                                field_name="name"
+                                table_name="exportcustomreport"
+                                module_name='project'
+                                placeholder="待輸入"
+                                old_value=""
+                                value=""/>
+                        </div>
+                    </div>
+                </h4>
+            </div>
+            <div class="modal-body">
+                {% for tag in field_tags %}
+                    <div class="alert alert-info">{{ tag.value }}</div>
+                    <div class="row">
+                        {% for f in tag.fields %}
+                            <div class="col-md-3" align="left">
+                                <button id="field_{{ f.id }}" class="report_field_btn btn">{{ forloop.counter }}.{{ f.name }}</button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">完成編輯，關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/x-jquery-tmpl" id="HideSearchTr">
+    <tr style="text-align: center;" row_id="${id}" class="${class_name}">
+        <td class="active">${sort}</td>
+        <td>${is_close}</td>
+        <td align="left" title="標案編號：『${pcc_no}』">
+            ${plan__name__list}<br>
+            <a href="/frcm/project_profile/${id}/">
+                ${year}年 - ${name}
+            </a>
+        </td>
+        <td>${images_count}張</td>
+        <td>
+            <a target="check_point_photo_${id}"
+                href="/frcm/go_photo/${id}/">
+                <img width="30" src="/media/frcm/v2/image/eng-photo.png" align="absmiddle">
+            </a>
+        </td>   
+        <td align="left" name="progress">
+            預：${pcc_s_percent}%
+            <br>實：${pcc_a_percent}%</td>
+        <td>
+            <a target="daiylreport_${id}"
+                href="/dailyreport/start_page/${id}/">
+                <img width="30" src="/media/frcm/v2/image/daily-report.png" align="absmiddle">
+            </a>
+        </td>
+        <td align="center">${unit__name}</td>
+        <td align="center">${importer}</td>
+        <td align="left">
+            契約金額:<br>${engs_price}<br>
+            累計實際完成金額:<br>${act_money}<br>
+        </td>
+    </tr>
+</script>
+
+
+
+<script type="text/javascript">
+    function search_project(){
+        var $obj = $(this);
+
+        var string = 'years=' + $('#years').val();
+        string += '&plan=' + $('#plan').val();
+        string += '&sub_plan=' + $('#sub_plan').val();
+        string += '&name=' + $('#name').val();
+        string += '&bid_final=' + $('#bid_final').val();
+        string += '&pcc_no=' + $('#pcc_no').val();
+        string += '&eng_name=' + $('#eng_name').val();
+        string += '&unit=' + $('#unit').val();
+        string += '&place=' + $('#place').val();
+        string += '&purchase_type=' + $('#purchase_type').val();
+        string += '&undertake_type=' + $('#undertake_type').val();
+        string += '&fishing_port=' + $('#fishing_port').val();
+        string += '&aquaculture=' + $('#aquaculture').val();
+        string += '&project_type=' + $('#project_type').val();
+        string += '&is_finish=' + $('#is_finish').val();
+
+        var per_page = $('#per_page').val();
+        var page = parseInt($obj.attr('page'));
+        if (!per_page){
+            per_page = 1000000;
+        };
+        per_page = parseInt(per_page);
+        string += '&offset=' + ((page-1) * per_page);
+        string += '&limit=' + per_page;
+        url = '/fishuser/api/v2/project/search/?' + string;
+
+        $.ajax({
+            url: url,
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                $('.resultTr').remove();
+                $('#SearchResultTable').show();
+                if (data.objects.length == 0){
+                    $('#reportTable').hide();
+                } else {
+                    $('#reportTable').show();
+                }
+
+                for (var i=0; i<data.objects.length; i++){
+                    data.objects[i]['class_name'] = 'resultTr';
+                    data.objects[i]['sort'] = i+1+(page-1)*per_page;
+                    if (!data.objects[i]['pcc_no']){
+                        data.objects[i]['pcc_no'] = '';
+                    }
+                    if (data.objects[i]['is_close']){
+                        data.objects[i]['is_close'] = 'Ｏ';
+                    } else {
+                        data.objects[i]['is_close'] = '';
+                    }
+                    var $div = $('#HideSearchTr').tmpl(data.objects[i]).appendTo($('#SearchResultTable > tbody:last'));
+                    if (parseFloat(data.objects[i]['pcc_s_percent'])==0 && parseFloat(data.objects[i]['pcc_a_percent'])==0){
+                        $div.find('[name="progress"]').addClass('active');
+                    }
+                }
+                var ids = data.result_ids;
+                $('#search_result_ids').val(ids);
+
+                //製造分頁
+                if (data.meta.total_count){
+                    if ($('.pagination').html()) {
+                        $('.pagination').twbsPagination('destroy');
+                    }
+                    $('.pagination').twbsPagination({
+                        totalPages: Math.ceil(data.meta.total_count/per_page),
+                        startPage: page,
+                        visiblePages: Math.min(Math.ceil(data.meta.total_count/per_page), 10),
+                        onPageClick: function (event, page) {
+                            renew_search(page);
+                        }
+                    });
+                } else {
+                    if ($('.pagination').html()) {
+                        $('.pagination').twbsPagination('destroy');
+                    }
+                }
+                $('.total_count').html('共有' + Math.ceil(data.meta.total_count/per_page) + '頁，' + data.meta.total_count + '筆資料');
+            },
+            error: REST_ERROR
+        })
+    }
+
+    function renew_search(page){
+        $('#search_project').attr('page', page);
+        $('#search_project').click();
+        $('#search_project').attr('page', '1');
+    }
+
+    function custom_report() {
+        var $obj = $(this);
+        var value = $obj.val();
+        if (value){
+            $('#edit_report_field').show();
+            $('#make_custom_excel_file').show();
+            $('#delete_report').show();
+        } else {
+            $('#edit_report_field').hide();
+            $('#make_custom_excel_file').hide();
+            $('#delete_report').hide();
+        }
+    }
+
+    function edit_report_field() {
+        var fields = $('#option_report_' + $('#custom_report').val()).attr('fields').split(',');
+        $('.report_field_btn').attr('class', 'report_field_btn btn');
+        $('.report_field_btn').attr('select', 'false'); 
+        for (i=0;i<fields.length;i++){
+            $('#field_' + fields[i]).attr('class', 'report_field_btn btn btn-success');
+            $('#field_' + fields[i]).attr('select', 'true'); 
+        }
+        $('#select_report_name').attr('row_id', $('#custom_report').val());
+        $('#select_report_name').attr('value', $('#custom_report').find(":selected").text());
+        $('#select_report_name').attr('old_value', $('#custom_report').find(":selected").text());
+    }
+
+    function select_report_name(){
+        var $obj = $(this);
+        $('#custom_report').find(":selected").text($obj.val());
+    }
+
+    function report_field_btn() {
+        var $obj = $(this);
+        var field_id = $obj.attr('id').split('_')[1];
+        var report_id = $('#custom_report').val();
+        var select = $obj.attr('select');
+        var data = {
+                csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN
+            };
+        if (select=='true'){
+            data['fields_remove'] = field_id;
+            $obj.attr('class', 'report_field_btn btn');
+            $obj.attr('select', 'false');
+            var fields = $('#option_report_' + $('#custom_report').val()).attr('fields');
+            var fields = $('#option_report_' + $('#custom_report').val()).attr('fields', fields.replace(field_id + ',', ''));
+        } else {
+            data['fields_add'] = field_id;
+            $obj.attr('class', 'report_field_btn btn btn-success');
+            $obj.attr('select', 'true'); 
+            var fields = $('#option_report_' + $('#custom_report').val()).attr('fields');
+            var fields = $('#option_report_' + $('#custom_report').val()).attr('fields', fields + field_id + ',');
+        }
+        $.ajax({
+            url: '/project/api/v2/exportcustomreport/' + report_id + '/',
+            type: 'PUT',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (json, text, xhr) {
+            },
+            error: function (data) {
+            },
+        })
+    }
+
+    function delete_report() {
+        var report_id = $('#custom_report').val();
+        var text = $('#custom_report').find(":selected").text();
+        if (confirm('你確定要刪除『' + text + '』這個報表嗎？')){
+            $.ajax({
+                url: '/project/api/v2/exportcustomreport/' + report_id + '/',
+                type: 'DELETE',
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function (json, text, xhr) {
+                    $('#custom_report').find(":selected").remove();
+                },
+                error: function (data) {
+                },
+            })
+        }
+    }
+
+    function create_report() {
+        var user_id = {{ user.id }};
+        var input = prompt("請輸入欲新增的報表名稱:");
+        if (!input){
+            alert('報表名稱不能是空白!!!');
+            return false;
+        }
+        var data = {
+                csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                owner: '/fishuser/api/v2/user/' + user_id + '/',
+                name: input,
+            };
+        $.ajax({
+            url: '/project/api/v2/exportcustomreport/',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (json, text, xhr) {
+                var $url = $.url(xhr.getResponseHeader('Location'));
+                var id = $url.segment(-1);
+                $("#custom_report").append($("<option fields='' id='option_report_" + id + "'></option>").attr("value", id).text(input));
+                $("#custom_report").val(id);
+                $("#custom_report").change();
+            },
+            error: function (data) {
+            },
+        })
+    }
+
+
+    $(document).ready(function(){
+        $('#csrfmiddlewaretoken').val(CSRFMIDDLEWARETOKEN);
+        $('#search_project').click(search_project);
+        $('#custom_report').change(custom_report); //選擇自定義報表會出現 編輯 匯出 刪除 三顆按鈕
+        $('#edit_report_field').click(edit_report_field); //按下編輯後，改變dialog的欄位選擇狀態
+        $('.report_field_btn').click(report_field_btn); //新增或移除選擇的欄位
+        $('#delete_report').click(delete_report); //移除自定義報表
+        $('#create_report').click(create_report); //新增自定義報表
+        $('#select_report_name').blur(select_report_name); //變更報表名稱，則一併改變下拉式選單的名稱
+        $('#make_custom_excel_file').click(make_custom_excel_file); //匯出EXCEL報表
+    });
+
+</script>
+
+
+{% endblock%}

@@ -1,0 +1,860 @@
+{% extends 'supervise/index.html' %}
+{% load utiltags %}
+{% load humanize %}
+{% block menu %}
+    <ul id="menu" value ="/supervise/search/"></ul>
+{% endblock %}
+
+{% block content %}
+{% if edit %}
+    <div id="side">
+      <div id="basket">
+          <input id="error_keyword" type="text" name="error_keyword" maxlength="20" size="16" value=""/>
+          <input id="search_Error_Keyword" type="submit" value="缺失搜尋" />
+          <a class="hide_or_show_Error_Search" action="hide">(隱藏)</a>
+          <span id="search_Error_Result"></span>
+      </div>
+    </div>
+    <script src="/media/supervise/jQuery-Stickybox-master/js/jquery.easing.1.3.js"></script>
+    <script src="/media/supervise/jQuery-Stickybox-master/js/stickysidebar.jquery.js"></script>
+
+    <script type="text/javascript" src="/media/supervise/filemaker/js/base64.js"></script>
+    <script type="text/javascript" src="/media/supervise/filemaker/js/jszip.js"></script>
+    <script type="text/javascript" src="/media/supervise/filemaker/js/jszip-load.js"></script>
+    <script type="text/javascript" src="/media/supervise/filemaker/js/jszip-inflate.js"></script>
+
+    <!-- Include docxgen js lib -->
+    <script type="text/javascript" src="/media/supervise/filemaker/js/docxgen.js"></script>
+    <script type="text/javascript" src="/media/supervise/filemaker/js/generant.js"></script>
+    
+    <script>
+        $(document).ready(function(){
+        	var guide = '{% for g in p.outguide.all %}外部委員：{{ g.name }}<w:br />{% endfor %}{% for g in p.inguide.all %}內部委員：{{ g.name }}<w:br />{% endfor %}###'.replace('<w:br />###', '');
+        	var captain = '{% for g in p.captain.all %}{{ g.name }}、{% endfor %}###'.replace('、###', '');
+        	var worker = '{% for g in p.worker.all %}{{ g.name }}、{% endfor %}###'.replace('、###', '');
+        	var score = "{{ p.score }}";
+        	if ({{ p.score }} >= 90){
+        		score += '(優等)';
+        	} else if ({{ p.score }} >= 80){
+        		score += '(甲等)';
+        	} else if ({{ p.score }} >= 70){
+        		score += '(乙等)';
+        	} else if ({{ p.score }} >= 60){
+        		score += '(丙等)';
+        	} else if ({{ p.score }} < 60){
+        		score += '(丁等)';
+        	}
+            var data = {
+                'plan': "{{ p.plan }}", 'subordinate_agencies_unit': "{{ p.subordinate_agencies_unit.name }}",
+                'date': "{{ p.date }}", 'project': "{{ p.project }}", 'place': "{{ p.place.name }}", 'location': "{{ p.location }}", 
+                'project_organizer_agencies': "{{ p.project_organizer_agencies }}", 'project_manage_unit': "{{ p.project_manage_unit }}",
+                'designer': "{{ p.designer }}", 'inspector': "{{ p.inspector }}", 'construct': "{{ p.construct }}",
+                'budget_price': "{{ p.budget_price }}", 'contract_price': "{{ p.contract_price }}",
+                'info': $('#show_info__info').html(), 'progress_date': "{{ p.progress_date }}",
+                'scheduled_progress': "{{ p.scheduled_progress }}", 
+                'actual_progress': "{{ p.actual_progress }}", 
+                'scheduled_money': "{{ p.scheduled_money }}", 
+                'actual_money': "{{ p.actual_money }}", 
+                'guide': guide,
+                'captain': captain,
+                'worker': worker,
+                'score': score,
+                'start_date': "{{ p.start_date }}", 
+                'expected_completion_date': "{{ p.expected_completion_date }}",
+                'merit': $('#show_info__merit').html(),
+                'advise': $('#show_info__advise').html(),
+                'other_advise': $('#show_info__other_advise').html(),
+                'test': $('#show_info__test').html(),
+                'construct_deduction': "{{ p.construct_deduction }}",
+                'inspector_deduction': "{{ p.inspector_deduction }}",
+                'organizer_deduction': "{{ p.organizer_deduction }}",
+                'project_manage_deduction': "{{ p.project_manage_deduction }}"
+            };
+
+            {% for e in errors %}
+            	data['error' + {{ forloop.counter }}] = "{{ e.ec.no }}({{ e.level.name }}) - {{ e.context }}<w:br />";
+            {% endfor %}
+
+            $("#makeDocSuperviseCase").DocxGenerant(
+            	"/media/supervise/filemaker/supervise_caseinfo.docx", 
+	            data,
+	            "{{ p.date }}-{{ p.place.name }}-{{ p.project }}督導紀錄表.docx",
+	            "(檔案準備中...)",
+	            "(下載Word檔案)"
+             )
+        });
+    </script>
+    <script>
+      $(function () {
+        var h = getBrowserHeight()-75;
+        var w = getBrowserWidth();
+
+        $("#basket").stickySidebar({
+            timer: 400
+          , easing: "easeInOutBack",
+          padding: h-325,
+        });
+
+      });
+    </script>
+{% endif %}
+<br>
+<h1>督導日期：{{ p.date }}{% if edit %}　<a style="font-size: 14px;" id="makeDocSuperviseCase"><button>(檔案準備中...)</button></a>{% endif %}</h1>
+<br>
+
+<br>
+<table border="1" style="border-collapse: collapse">
+    <tr>
+        <td class="table_title" width=110>列管計畫名稱</td>
+        {% if edit %}
+            <td width=530 colspan="3" class="change_edit_type" field_name="plan">
+                <a id="show_info__plan">{{ p.plan }}</a>
+                <input class="input_text change_view_type" id="edit_info__plan" type="text" name="plan"
+                table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='str'
+                needExist='True' size=65 value="{{ p.plan }}" old_value="{{ p.plan }}"/>
+            </td>
+        {% else %}
+            <td width=530 colspan="3">
+                <span class="blue_font_style">{{ p.plan }}</span>
+            </td>
+        {% endif %}
+        <td class="table_title" width=110>計畫主辦機關</td>
+        <td width=210><span class="blue_font_style">行政院農業部漁業署</span></td>
+    </tr>
+    <tr>
+        <td class="table_title">標案所屬<br>工程主管機關</td>
+        {% if edit %}
+            <td colspan="3" class="change_edit_type" field_name="subordinate_agencies_unit">
+                <a id="show_info__subordinate_agencies_unit">{{ p.subordinate_agencies_unit }}</a>
+                <select class="input_text change_view_type" name="subordinate_agencies_unit"
+                id="edit_info__subordinate_agencies_unit" type="integer" style="display: none;"
+                row_id="{{ p.id }}" table_name="SuperviseCase" needExist='True'
+                old_value="{{ p.subordinate_agencies_unit.id }}">
+                    <option value="">請選擇單位</option>
+                    {% for i in subordinate_agencies_units %}
+                        <option {%ifequal i.0 p.subordinate_agencies_unit.id %}selected{% endifequal %} value="{{ i.0 }}">{{ i.1 }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        {% else %}
+            <td colspan="3">
+                <span class="blue_font_style">{{ p.subordinate_agencies_unit.fullname }}</span>
+            </td>
+        {% endif %}
+        <td class="table_title">督導日期</td>
+        {% if edit %}
+            <td class="change_edit_type" field_name="date">
+                <a id="show_info__date">{{ p.date }}</a>
+                <input class="input_text setDate change_view_type" id="edit_info__date" type="text" name="date"
+                table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='date'
+                needExist='True' size=10 value="{{ p.date }}" old_value="{{ p.date }}"/>
+            </td>
+        {% else %}
+            <td>
+                <span class="blue_font_style">{{ p.date }}</span>
+            </td>
+        {% endif %}
+    </tr>
+    <tr>
+        <td class="table_title">標案名稱</td>
+        {% if edit %}
+            <td colspan="3" class="change_edit_type" field_name="project">
+                <a id="show_info__project">{{ p.project }}</a>
+                <input class="input_text change_view_type" id="edit_info__project" type="text" name="project"
+                table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='str'
+                needExist='True' size=65 value="{{ p.project }}" old_value="{{ p.project }}"/>
+            </td>
+        {% else %}
+            <td colspan="3">
+                <span class="blue_font_style">{{ p.project }}</span>
+            </td>
+        {% endif %}
+        <td class="table_title">地點</td>
+        <td>
+            <table>
+                <tr>
+                    {% if edit %}
+                        <td width=105 class="change_edit_type" field_name="place">
+                            <a id="show_info__place">{{ p.place.name }}</a>
+                            <select class="input_text change_view_type" name="place"
+                            id="edit_info__place" type="integer" style="display: none;"
+                            row_id="{{ p.id }}" table_name="SuperviseCase" needExist='True'
+                            old_value="{{ p.place.id }}">
+                                <option value="">請選擇單位</option>
+                                {% for i in places %}
+                                    <option {%ifequal i.0 p.place.id %}selected{% endifequal %} value="{{ i.0 }}">{{ i.1 }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    {% else %}
+                        <td colspan="3">
+                            <span class="blue_font_style">{{ p.place.name }}</span>
+                        </td>
+                    {% endif %}
+                    {% if edit %}
+                        <td id="location_td" width=105 class="change_edit_type" field_name="location">
+                            <a id="show_info__location">{% if not p.location.name %}請選擇區域{% else %}{{ p.location.name }}{% endif %}</a>
+                            <select class="input_text change_view_type" name="location"
+                            id="edit_info__location" type="integer" style="display: none;"
+                            row_id="{{ p.id }}" table_name="SuperviseCase" needExist='False'
+                            old_value="{{ p.location.id }}">
+                                <option value="">請選擇區域</option>
+                                {% for i in locations %}
+                                    <option {%ifequal i.0 p.location.id %}selected{% endifequal %} value="{{ i.0 }}">{{ i.1 }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    {% else %}
+                        <td colspan="3">
+                            <span class="blue_font_style">{{ p.location.name }}</span>
+                        </td>
+                    {% endif %}
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td class="table_title">標案主辦機關</td>
+        {% if edit %}
+            <td colspan="3" class="change_edit_type" field_name="project_organizer_agencies">
+                <a id="show_info__project_organizer_agencies">{{ p.project_organizer_agencies }}</a>
+                <input class="input_text change_view_type" id="edit_info__project_organizer_agencies" type="text" name="project_organizer_agencies"
+                table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='str'
+                needExist='False' size=65 value="{{ p.project_organizer_agencies }}" old_value="{{ p.project_organizer_agencies }}"/>
+            </td>
+        {% else %}
+            <td colspan="3">
+                <span class="blue_font_style">{{ p.project_organizer_agencies }}</span>
+            </td>
+        {% endif %}
+        <td class="table_title">專案管理單位</td>
+        {% if edit %}
+            <td colspan="3" class="change_edit_type" field_name="project_manage_unit">
+                <a id="show_info__project_manage_unit">{{ p.project_manage_unit }}</a>
+                <input class="input_text change_view_type" id="edit_info__project_manage_unit" type="text" name="project_manage_unit"
+                table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='str'
+                needExist='Fale' size=24 value="{{ p.project_manage_unit }}" old_value="{{ p.project_manage_unit }}"/>
+            </td>
+        {% else %}
+            <td colspan="3">
+                <span class="blue_font_style">{{ p.project_manage_unit }}</span>
+            </td>
+        {% endif %}
+    </tr>
+    <tr>
+        <td class="table_title">設計單位</td>
+        {% if edit %}
+            <td width=210 class="change_edit_type" field_name="designer">
+                <a id="show_info__designer">{{ p.designer }}</a>
+                <input class="input_text change_view_type" id="edit_info__designer" type="text" name="designer"
+                table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='str'
+                needExist='False' size=24 value="{{ p.designer }}" old_value="{{ p.designer }}"/>
+            </td>
+        {% else %}
+            <td>
+                <span width=210 class="blue_font_style">{{ p.designer }}</span>
+            </td>
+        {% endif %}
+        <td class="table_title" width=110>監造單位</td>
+        {% if edit %}
+            <td width=210 class="change_edit_type" field_name="inspector">
+                <a id="show_info__inspector">{{ p.inspector }}</a>
+                <input class="input_text change_view_type" id="edit_info__inspector" type="text" name="inspector"
+                table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='str'
+                needExist='False' size=24 value="{{ p.inspector }}" old_value="{{ p.inspector }}"/>
+            </td>
+        {% else %}
+            <td width=210>
+                <span class="blue_font_style">{{ p.inspector }}</span>
+            </td>
+        {% endif %}
+        <td class="table_title">承包商</td>
+        {% if edit %}
+            <td width=210 class="change_edit_type" field_name="construct">
+                <a id="show_info__construct">{{ p.construct }}</a>
+                <input class="input_text change_view_type" id="edit_info__construct" type="text" name="construct"
+                table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='str'
+                needExist='False' size=24 value="{{ p.construct }}" old_value="{{ p.construct }}"/>
+            </td>
+        {% else %}
+            <td width=210>
+                <span class="blue_font_style">{{ p.construct }}</span>
+            </td>
+        {% endif %}
+    </tr>
+    <tr>
+        <td class="table_title">發包預算(千元)</td>
+        {% if edit %}
+            <td colspan="3" width=210 class="change_edit_type" field_name="budget_price">
+                <a id="show_info__budget_price">{{ p.budget_price|intcomma|cutzero }}</a>
+                <input class="input_text change_view_type" id="edit_info__budget_price" type="text" name="budget_price"
+                table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='float'
+                needExist='False' size=24 value="{{ p.budget_price }}" old_value="{{ p.budget_price }}"/> 仟元
+            </td>
+        {% else %}
+            <td colspan="3" width=210>
+                <span class="blue_font_style">{{ p.budget_price|intcomma|cutzero }}</span> 仟元
+            </td>
+        {% endif %}
+        <td class="table_title">契約金額(千元)</td>
+        {% if edit %}
+            <td width=210 class="change_edit_type" field_name="contract_price">
+                <a id="show_info__contract_price">{{ p.contract_price|intcomma|cutzero }}</a>
+                <input class="input_text change_view_type" id="edit_info__contract_price" type="text" name="contract_price"
+                table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='float'
+                needExist='False' size=24 value="{{ p.contract_price }}" old_value="{{ p.contract_price }}"/> 仟元
+            </td>
+        {% else %}
+            <td width=210>
+                <span class="blue_font_style">{{ p.contract_price|intcomma|cutzero }}</span> 仟元
+            </td>
+        {% endif %}
+    </tr>
+    <tr height=200>
+        <td class="table_title">工程概要</td>
+        {% if edit %}
+            <td width=850 colspan="5" class="change_edit_type" field_name="info">
+                <a id="show_info__info">{{ p.info|linebreaks }}</a>
+                <textarea style="display: none;" class="input_textarea change_view_type"
+                data_type='str' table_name="SuperviseCase" row_id="{{ p.id }}" needExist='False'
+                old_value="{{ p.info|linebreaks }}"
+                id="edit_info__info" name="info" cols="103" rows="10">{{ p.info }}</textarea>
+            </td>
+        {% else %}
+            <td width=850 colspan="5">
+                <span class="blue_font_style" id="show_info__info">{{ p.info|linebreaks }}</span>
+            </td>
+        {% endif %}
+    </tr>
+    <tr>
+        <td class="table_title">工程進度、<br>經費支用及<br>目前施工概況</td>
+        <td colspan="5">
+            <table>
+                <tr>
+                    {% if edit %}
+                        <td colspan="3" class="change_edit_type" field_name="progress_date">
+                            截至
+                            <a id="show_info__progress_date">{{ p.date }}</a>
+                            <input class="input_text setDate change_view_type" id="edit_info__progress_date" type="text" name="progress_date"
+                            table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='progress_date'
+                            needExist='True' size=6 value="{{ p.progress_date }}" old_value="{{ p.progress_date }}"/>止：
+                        </td>
+                    {% else %}
+                        <td>
+                            <span class="blue_font_style">{{ p.progress_date }}</span>
+                        </td>
+                    {% endif %}
+                </tr>
+                <tr>
+                    <td>1.工程累計進度：</td>
+                    {% if edit %}
+                        <td width=210 class="change_edit_type" field_name="scheduled_progress">
+                            預定：
+                            <a id="show_info__scheduled_progress">{{ p.scheduled_progress|intcomma|cutzero }}</a>
+                            <input class="input_text change_view_type" id="edit_info__scheduled_progress" type="text" name="scheduled_progress"
+                            table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='float'
+                            needExist='False' size=7 value="{{ p.scheduled_progress }}" old_value="{{ p.scheduled_progress }}"/> %
+                        </td>
+                    {% else %}
+                        <td width=210>
+                            <span class="blue_font_style">{{ p.scheduled_progress|intcomma|cutzero }}</span> %
+                        </td>
+                    {% endif %}
+                    {% if edit %}
+                        <td width=210 class="change_edit_type" field_name="actual_progress">
+                            實際：
+                            <a id="show_info__actual_progress">{{ p.actual_progress|intcomma|cutzero }}</a>
+                            <input class="input_text change_view_type" id="edit_info__actual_progress" type="text" name="actual_progress"
+                            table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='float'
+                            needExist='False' size=7 value="{{ p.actual_progress }}" old_value="{{ p.actual_progress }}"/> %
+                        </td>
+                    {% else %}
+                        <td width=210>
+                            <span class="blue_font_style">{{ p.actual_progress|intcomma|cutzero }}</span> %
+                        </td>
+                    {% endif %}
+                </tr>
+                <tr>
+                    <td>2.經費累計支用：</td>
+                    {% if edit %}
+                        <td width=210 class="change_edit_type" field_name="scheduled_money">
+                            預定：
+                            <a id="show_info__scheduled_money">{{ p.scheduled_money|intcomma|cutzero }}</a>
+                            <input class="input_text change_view_type" id="edit_info__scheduled_money" type="text" name="scheduled_money"
+                            table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='float'
+                            needExist='False' size=7 value="{{ p.scheduled_money }}" old_value="{{ p.scheduled_money }}"/> 仟元
+                        </td>
+                    {% else %}
+                        <td width=210>
+                            <span class="blue_font_style">{{ p.scheduled_money|intcomma|cutzero }}</span> 仟元
+                        </td>
+                    {% endif %}
+                    {% if edit %}
+                        <td width=210 class="change_edit_type" field_name="actual_money">
+                            實際：
+                            <a id="show_info__actual_money">{{ p.actual_money|intcomma|cutzero }}</a>
+                            <input class="input_text change_view_type" id="edit_info__actual_money" type="text" name="actual_money"
+                            table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='float'
+                            needExist='False' size=7 value="{{ p.actual_money }}" old_value="{{ p.actual_money }}"/> 仟元
+                        </td>
+                    {% else %}
+                        <td width=210>
+                            <span class="blue_font_style">{{ p.actual_money|intcomma|cutzero }}</span> 仟元
+                        </td>
+                    {% endif %}
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td class="table_title">督導委員</td>
+        <td colspan="3" valign="top">
+            <table valign="top">
+                <tr valign="top">
+                    <td>
+                        <table width=265>
+                            <tr align="center">
+                                <td colspan="2" bgcolor='#FFE7CD'>內部委員</td>
+                            </tr>
+                            {% for inguide in p.inguide.all %}
+                            <tr align="center" id="tr_inguide_{{ inguide.id }}">
+                                <td width=240>{{ inguide.name }}</td>
+                                <td>
+                                {% if edit %}
+                                <img src="/media/images/delete.png" row_id="{{ inguide.id }}"
+                                case_id="{{ p.id }}" class="deleteGuide" field_name="inguide"
+                                title="刪除">
+                                {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% if edit %}
+                            <tr id="insert_place_inguide" style="display: none;"><td></td></tr>
+                            
+                            <tr align="center">
+                                <td width=240>
+                                    <input id="inguide" type="text" name="inguide" maxlength="10" value=""/>
+                                </td>
+                                <td>
+                                <img src="/media/images/additem.png"
+                                case_id="{{ p.id }}" class="addGuide" field_name="inguide"
+                                title="新增">
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </td>
+                    <td>
+                        <table width=265>
+                            <tr align="center">
+                                <td colspan="2" bgcolor='#CDE5FF'>外部委員</td>
+                            </tr>
+                            {% for outguide in p.outguide.all %}
+                            <tr align="center" id="tr_outguide_{{ outguide.id }}">
+                                <td width=240>{{ outguide.name }}</td>
+                                <td>
+                                {% if edit %}
+                                <img src="/media/images/delete.png" row_id="{{ outguide.id }}"
+                                case_id="{{ p.id }}" class="deleteGuide" field_name="outguide"
+                                title="刪除">
+                                {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% if edit %}
+                            <tr id="insert_place_outguide" style="display: none;"><td></td></tr>
+                            
+                            <tr align="center">
+                                <td width=240>
+                                    <input id="outguide" type="text" name="outguide" maxlength="10" value=""/>
+                                </td>
+                                <td>
+                                <img src="/media/images/additem.png"
+                                case_id="{{ p.id }}" class="addGuide" field_name="outguide"
+                                title="新增">
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+        <td class="table_title">開工及<br>預定完工日期</td>
+        <td>
+            <table>
+                <tr>
+                {% if edit %}
+                    <td class="change_edit_type" field_name="start_date">
+                        開工：
+                        <a id="show_info__start_date">{{ p.start_date }}</a>
+                        <input class="input_text setDate change_view_type" id="edit_info__start_date" type="text" name="start_date"
+                        table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='date'
+                        needExist='True' size=10 value="{{ p.start_date }}" old_value="{{ p.start_date }}"/>
+                    </td>
+                {% else %}
+                    <td>
+                        開工：<span class="blue_font_style">{{ p.start_date }}</span>
+                    </td>
+                {% endif %}
+                </tr>
+                <tr>
+                {% if edit %}
+                    <td class="change_edit_type" field_name="expected_completion_date">
+                        完工：
+                        <a id="show_info__expected_completion_date">{{ p.expected_completion_date }}</a>
+                        <input class="input_text setDate change_view_type" id="edit_info__expected_completion_date" type="text" name="expected_completion_date"
+                        table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='date'
+                        needExist='True' size=10 value="{{ p.expected_completion_date }}" old_value="{{ p.expected_completion_date }}"/>
+                    </td>
+                {% else %}
+                    <td>
+                        完工：<span class="blue_font_style">{{ p.expected_completion_date }}</span>(預定)
+                    </td>
+                {% endif %}
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td class="table_title">領隊<br>及工作人員</td>
+        <td colspan="3">
+            <table valign="top">
+                <tr valign="top">
+                    <td>
+                        <table width=265>
+                            <tr align="center">
+                                <td colspan="2" bgcolor='#FFE7CD'>領　　隊</td>
+                            </tr>
+                            {% for captain in p.captain.all %}
+                            <tr align="center" id="tr_captain_{{ captain.id }}">
+                                <td width=240>{{ captain.name }}</td>
+                                <td>
+                                {% if edit %}
+                                <img src="/media/images/delete.png" row_id="{{ captain.id }}"
+                                case_id="{{ p.id }}" class="deleteGuide" field_name="captain"
+                                title="刪除">
+                                {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% if edit %}
+                            <tr id="insert_place_captain" style="display: none;"><td></td></tr>
+                            
+                            <tr align="center">
+                                <td width=240>
+                                    <input id="captain" type="text" name="captain" maxlength="10" value=""/>
+                                </td>
+                                <td>
+                                <img src="/media/images/additem.png"
+                                case_id="{{ p.id }}" class="addGuide" field_name="captain"
+                                title="新增">
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </td>
+                    <td>
+                        <table width=265>
+                            <tr align="center">
+                                <td colspan="2" bgcolor='#CDE5FF'>工作人員</td>
+                            </tr>
+                            {% for worker in p.worker.all %}
+                            <tr align="center" id="tr_worker_{{ worker.id }}">
+                                <td width=240>{{ worker.name }}</td>
+                                <td>
+                                {% if edit %}
+                                <img src="/media/images/delete.png" row_id="{{ worker.id }}"
+                                case_id="{{ p.id }}" class="deleteGuide" field_name="worker"
+                                title="刪除">
+                                {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% if edit %}
+                            <tr id="insert_place_worker" style="display: none;"><td></td></tr>
+                            
+                            <tr align="center">
+                                <td width=240>
+                                    <input id="worker" type="text" name="worker" maxlength="10" value=""/>
+                                </td>
+                                <td>
+                                <img src="/media/images/additem.png"
+                                case_id="{{ p.id }}" class="addGuide" field_name="worker"
+                                title="新增">
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+        <td class="table_title">分數(等級)</td>
+        {% if edit %}
+            <td class="change_edit_type" field_name="score">
+                <a id="show_info__score">{{ p.score|intcomma|cutzero }}</a>
+                <input class="input_text ScoreLevel change_view_type" id="edit_info__score" type="text" name="score"
+                table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='float'
+                needExist='False' size=18 value="{{ p.score }}" old_value="{{ p.score }}"/>
+                <span id="edit_info__score_level">({{ score_level }})</span>
+            </td>
+        {% else %}
+            <td>
+                <span class="blue_font_style">{{ p.score|intcomma|cutzero }}</span>(score_level)
+            </td>
+        {% endif %}
+    </tr>
+    <tr height=200>
+        <td class="table_title">優點</td>
+        {% if edit %}
+            <td colspan="5" class="change_edit_type" field_name="merit">
+                <a id="show_info__merit">{{ p.merit|linebreaks }}</a>
+                <textarea style="display: none;" class="input_textarea change_view_type"
+                data_type='str' table_name="SuperviseCase" row_id="{{ p.id }}" needExist='False'
+                old_value="{{ p.merit|linebreaks }}"
+                id="edit_info__merit" name="merit" cols="103" rows="20">{{ p.merit }}</textarea>
+            </td>
+        {% else %}
+            <td colspan="5">
+                <span class="blue_font_style" id="show_info__merit">{{ p.merit|linebreaks }}</span>
+            </td>
+        {% endif %}
+    </tr>
+    <tr>
+        <td align="center" bgcolor="#FFCECD" id="add_New_Error" case_id="{{ p.id }}" {% if edit %} title="點擊新增缺失"{% endif %}>
+            缺點<img src="/media/images/additem.png" >
+        </td>
+        <td colspan="5">
+            <table border="1" style="border-collapse: collapse">
+                <tr bgcolor="#E8FFF5" align="center">
+                    {% if edit %}
+                    <td width=20></td>
+                    {% endif %}
+                    <td width=70>缺失編號</td>
+                    <td width=50>缺失<br>程度</td>
+                    <td width=750>
+                                            缺　失　內　容
+                                            {% if edit %}
+                                            <a class="hide_or_show_Error_Search" action="show">(開啟缺失篩選小工具)</a>
+                                            {% endif %}
+                                        </td>
+                </tr>
+                {% for error in errors %}
+                <tr id="error_tr_{{ error.id }}">
+                    {% if edit %}
+                    <td>
+                        <img src="/media/images/delete.png" row_id="{{ error.id }}" table_name="Error"
+                                error_id="{{ error.id }}" class="deleteError"
+                                title="刪除">
+                    </td>
+                    {% endif %}
+                    <td><span class="blue_font_style">{{ error.ec.no }}</span></td>
+                    {% if edit %}
+                        <td align="center" class="change_edit_type" field_name="error_level_{{ error.id }}">
+                            <a id="show_info__error_level_{{ error.id }}">{{ error.level.name }}</a>
+                            <input class="input_text change_view_type_error" id="edit_info__error_level_{{ error.id }}"
+                            type="text" name="error_level" field_name="error_level_{{ error.id }}"
+                            table_name="Error" row_id="{{ error.id }}" style="display: none;"
+                            size=4 value="{{ error.level.name }}" old_value="{{ error.level.name }}"/>
+                        </td>
+                    {% else %}
+                        <td align="center">
+                            <span class="blue_font_style">{{ error.level.name }}</span>
+                        </td>
+                    {% endif %}
+                    {% if edit %}
+                        <td class="change_edit_type" field_name="context_{{ error.id }}">
+                            <a id="show_info__context_{{ error.id }}">{{ error.context }}</a>
+                            <input class="input_text change_view_type_error" id="edit_info__context_{{ error.id }}"
+                            type="text" name="context" field_name="context_{{ error.id }}"
+                            table_name="Error" row_id="{{ error.id }}" style="display: none;"
+                            size=90 value="{{ error.context }}" old_value="{{ error.context }}"/>
+                        </td>
+                    {% else %}
+                        <td>
+                            <span class="blue_font_style">{{ error.context }}</span>
+                        </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+                <tr id="insert_Error_Place" style="display: none;"></tr>
+            </table>
+        
+        
+        </td>
+    </tr>
+    <tr height=200>
+        <td class="table_title">規劃設計<br>問題及建議</td>
+        {% if edit %}
+            <td colspan="5" class="change_edit_type" field_name="advise">
+                <a id="show_info__advise">{{ p.advise|linebreaks }}</a>
+                <textarea style="display: none;" class="input_textarea change_view_type"
+                data_type='str' table_name="SuperviseCase" row_id="{{ p.id }}" needExist='False'
+                old_value="{{ p.advise|linebreaks }}"
+                id="edit_info__advise" name="advise" cols="103" rows="20">{{ p.advise }}</textarea>
+            </td>
+        {% else %}
+            <td colspan="5">
+                <span class="blue_font_style" id="show_info__advise">{{ p.advise|linebreaks }}</span>
+            </td>
+        {% endif %}
+    </tr>
+    <tr height=200>
+        <td class="table_title">其他建議</td>
+        {% if edit %}
+            <td colspan="5" class="change_edit_type" field_name="other_advise">
+                <a id="show_info__other_advise">{{ p.other_advise|linebreaks }}</a>
+                <textarea style="display: none;" class="input_textarea change_view_type"
+                data_type='str' table_name="SuperviseCase" row_id="{{ p.id }}" needExist='False'
+                old_value="{{ p.other_advise|linebreaks }}"
+                id="edit_info__other_advise" name="other_advise" cols="103" rows="20">{{ p.other_advise }}</textarea>
+            </td>
+        {% else %}
+            <td colspan="5">
+                <span class="blue_font_style" id="show_info__other_advise">{{ p.other_advise|linebreaks }}</span>
+            </td>
+        {% endif %}
+    </tr>
+    <tr>
+        <td class="table_title">扣點統計</td>
+        <td colspan="5">
+            <table>
+                <tr>
+                {% if edit %}
+                    <td class="change_edit_type" field_name="construct_deduction">
+                        承攬廠商　　扣點：
+                        <a id="show_info__construct_deduction">{{ p.construct_deduction|intcomma|cutzero }}</a>
+                        <input class="input_text construct_deductionLevel change_view_type" id="edit_info__construct_deduction" type="text" name="construct_deduction"
+                        table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='integer'
+                        needExist='False' size=24 value="{{ p.construct_deduction }}" old_value="{{ p.construct_deduction }}"/>
+                        <span id="edit_info__construct_deduction_level"></span>
+                    </td>
+                {% else %}
+                    <td>
+                        承攬廠商　　扣點：<span class="blue_font_style">{{ p.construct_deduction|intcomma|cutzero }}</span>
+                    </td>
+                {% endif %}
+                </tr>
+                <tr>
+                {% if edit %}
+                    <td class="change_edit_type" field_name="inspector_deduction">
+                        監造廠商　　扣點：
+                        <a id="show_info__inspector_deduction">{{ p.inspector_deduction|intcomma|cutzero }}</a>
+                        <input class="input_text inspector_deductionLevel change_view_type" id="edit_info__inspector_deduction" type="text" name="inspector_deduction"
+                        table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='integer'
+                        needExist='False' size=24 value="{{ p.inspector_deduction }}" old_value="{{ p.inspector_deduction }}"/>
+                        <span id="edit_info__inspector_deduction_level"></span>
+                    </td>
+                {% else %}
+                    <td>
+                        監造廠商　　扣點：<span class="blue_font_style">{{ p.inspector_deduction|intcomma|cutzero }}</span>
+                    </td>
+                {% endif %}
+                </tr>
+                <tr>
+                {% if edit %}
+                    <td class="change_edit_type" field_name="organizer_deduction">
+                        主辦單位　　扣點：
+                        <a id="show_info__organizer_deduction">{{ p.organizer_deduction|intcomma|cutzero }}</a>
+                        <input class="input_text organizer_deductionLevel change_view_type" id="edit_info__organizer_deduction" type="text" name="organizer_deduction"
+                        table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='integer'
+                        needExist='False' size=24 value="{{ p.organizer_deduction }}" old_value="{{ p.organizer_deduction }}"/>
+                        <span id="edit_info__organizer_deduction_level"></span>
+                    </td>
+                {% else %}
+                    <td>
+                        主辦單位　　扣點：<span class="blue_font_style">{{ p.organizer_deduction|intcomma|cutzero }}</span>
+                    </td>
+                {% endif %}
+                </tr>
+                <tr>
+                {% if edit %}
+                    <td class="change_edit_type" field_name="project_manage_deduction">
+                        專案管理單位扣點：
+                        <a id="show_info__project_manage_deduction">{{ p.project_manage_deduction|intcomma|cutzero }}</a>
+                        <input class="input_text project_manage_deductionLevel change_view_type" id="edit_info__project_manage_deduction" type="text" name="project_manage_deduction"
+                        table_name="SuperviseCase" row_id="{{ p.id }}" style="display: none;" data_type='integer'
+                        needExist='False' size=24 value="{{ p.project_manage_deduction }}" old_value="{{ p.project_manage_deduction }}"/>
+                        <span id="edit_info__project_manage_deduction_level"></span>
+                    </td>
+                {% else %}
+                    <td>
+                        專案管理單位扣點：<span class="blue_font_style">{{ p.project_manage_deduction|intcomma|cutzero }}</span>
+                    </td>
+                {% endif %}
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr height=200>
+        <td class="table_title">檢驗拆驗</td>
+        {% if edit %}
+            <td colspan="5" class="change_edit_type" field_name="test">
+                <a id="show_info__test">{{ p.test|linebreaks }}</a>
+                <textarea style="display: none;" class="input_textarea change_view_type"
+                data_type='str' table_name="SuperviseCase" row_id="{{ p.id }}" needExist='False'
+                old_value="{{ p.test|linebreaks }}"
+                id="edit_info__test" name="test" cols="103" rows="20">{{ p.test }}</textarea>
+            </td>
+        {% else %}
+            <td colspan="5">
+                <span class="blue_font_style" id="show_info__test">{{ p.test|linebreaks }}</span>
+            </td>
+        {% endif %}
+    </tr>
+</table>
+
+<br><br>
+<hr align="left" width="800" size="1" style="color: #FFC991;">
+<br>
+{% if edit %}
+    缺失相片上傳區：
+    <table>
+        <tr>
+            <td>選擇檔案：</td>
+            <td><input id="newfile_file_{{ p.id }}" name="newfile_file_{{ p.id }}" type="file"/></td>
+        </tr>
+        <tr>
+            <td>名　　稱：</td>
+            <td><input id="newfile_name_{{ p.id }}" type="text" size="50" maxlength="70" value=""/></td>
+        </tr>
+        <tr>
+            <td valign="top">備　　註：</td>
+            <td><textarea id="newfile_memo_{{ p.id }}" cols="40" rows="5"></textarea></td>
+        </tr>
+        <tr>
+            <td valign="top"></td>
+            <td>
+                <input id="upload_Photo_File" supervise_id="{{ p.id }}" type="submit" value="確定上傳照片" />
+                <span id="checked_msg" style="color: red;"></span>
+            </td>
+        </tr>
+    </table>
+    <br>
+    <hr align="left" width="800" size="1" style="color: #FFC991;">
+{% endif %} 
+<br>
+<table width=950>
+    <tr>
+        <td valign="middle" align="center">
+            {% for photo in photos %}
+            <span id="error_Photo_{{ photo.id }}">
+                <a class="show_Big_Error_Photo" image_src="/{{ photo.rUrl }}" title="{{ photo.name }}-{{ photo.memo }}">
+                    <img src="/{{ photo.rThumbUrl }}" width=150 title="{{ photo.name }}-{{ photo.memo }}">
+                </a>
+                {% if edit %}
+                <img class="deleteErrorPhoto" row_id='{{ photo.id }}' src="/media/images/delete.png" width=20 title="刪除照片">
+                {% endif %}
+            </span>
+            {% endfor %}
+            <span id="insert_New_Error_Photo"></span>
+        </td>
+    </tr>
+</table>
+
+
+
+
+
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'harbor/editmemu.html' %}
+
+{% block sidecontent %}
+<a id="location" class="port" loca="{{ classification.place.id }}"></a><br>
+
+<form enctype="multipart/form-data" action="./" method="POST">
+{% include 'harbor/porteditmenu.html' %}
+<h2>
+<table>
+    <tr align="left">
+        <td width="70">年度</td>
+        <td><input type="text" name="new__year" class="requisite" value=""></td>
+    </tr>
+    <tr align="left">
+        <td>項目</td>
+        <td><input type="text" name="new__item" class="requisite" value=""></td>
+    </tr>
+    <tr align="left">
+        <td>數量</td>
+        <td><input type="text" name="new__num" value=""></td>
+    </tr>
+    <tr align="left">
+        <td>備註</td>
+        <td><textarea cols="25" rows="2" name="new__memo"></textarea></td>
+    </tr>
+</table>
+</h2>
+<br>
+<input type="submit" id="submit" name="submit" class="submit" value="--------確定新增--------" onClick="submiting(this)">
+<font id="caution" color="#E100F0" size="2.8">請檢查必填欄位！</font><br><br><br>
+<hr width="800" color="#ff8000" noshade title="這不是分隔線">
+<br><br>
+<h3>
+<table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+    <tr align="center" bgcolor="#FFFF99">
+        <td></td>
+        <td>年度</td>
+        <td>項目</td>
+        <td>數量</td>
+        <td>備註</td>
+        <td></td>
+    </tr>
+    {% for mainproject in list %}
+    <tr id="mainproject_{{ mainproject.id }}">
+        <td>{{ forloop.counter }}</td>
+        <td><input type="text" class="requisite" name="mainproject__year__{{ mainproject.id }}" value="{% if mainproject.year %}{{ mainproject.year }}{% endif %}"></td>
+        <td><input type="text" class="requisite" name="mainproject__item__{{ mainproject.id }}" value="{% if mainproject.item %}{{ mainproject.item}}{% endif %}"></td>
+        <td><input type="text" class="requisite" name="mainproject__num__{{ mainproject.id }}" value="{% if mainproject.num %}{{ mainproject.num }}{% endif %}"></td>
+        <td><textarea cols="25" rows="1" name="mainproject__memo__{{ mainproject.id }}">{% if mainproject.memo %}{{ mainproject.memo }}{% endif %}</textarea></td>
+        <td><button id="del_mainproject_{{ mainproject.id }}" class="delRow">刪除紀錄</button></td>
+    </tr>
+    {% endfor %}
+</table>
+</h3>
+<br>
+<input type="submit" id="submit" name="submit" value="--------確定修改--------" onClick="submiting(this)">
+
+</form>
+
+{% endblock %}

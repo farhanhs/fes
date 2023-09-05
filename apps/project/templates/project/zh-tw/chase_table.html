@@ -1,0 +1,92 @@
+
+<tr class="active">
+    <td colspan="26">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="alert alert-info" style="margin-bottom: 0px !important;">
+                    <div class="row">
+                        <div class="col-md-2">
+                            {% if chase_time.read_ex_chase %}
+                                <button class="btn btn-lg btn-info get_new_chase_table" title="看前一次追蹤紀錄" chase_id="{{ chase_time.read_ex_chase.id }}">
+                                    <span class="glyphicon glyphicon-arrow-left"></span>
+                                </button>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <span style="font-size: 16px;">
+                                追蹤開始日期：{{ chase_time.chase_date }}<br>(第 {{ chase_time.past_day }} 天)
+                            </span>
+                        </div>
+                        <div class="col-md-2">
+                            {% if chase_time.read_next_chase %}
+                                <button class="btn btn-lg btn-info get_new_chase_table" title="看下一次追蹤紀錄" chase_id="{{ chase_time.read_next_chase.id }}">
+                                    <span class="glyphicon glyphicon-arrow-right"></span>
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="alert alert-danger" style="margin-bottom: 0px !important;">
+                    <span style="font-size: 16px;">
+                        追蹤總件數：{{ chase_time.num }} 件<br><br>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </td>
+</tr>
+<tr >
+    <td style="min-width: 60px;"></td>
+    {% for i in places %}
+        <td class="show_projects pointer" 
+            table_title="{{ i.name }} - (填寫完畢 + 已匯入尚未填寫 + 尚未匯入)"
+            ids="{% for j in i.check %}{{ j.project.id }},{% endfor %}{% for j in i.import_not_check %}{{ j.project.id }},{% endfor %}{% for j in i.not_import_not_check %}{{ j.project.id }},{% endfor %}"
+            bgcolor="{% if i.is_north %}#D4E6F8{% else %}#F8E6D4{% endif %}">
+            {{ i.name }}
+        </td>
+    {% endfor %}
+</tr>
+<tr>
+    <td class="success show_projects pointer"
+        table_title="(填寫完畢)"
+        ids="{% for i in places %}{% for j in i.check %}{{ j.project.id }},{% endfor %}{% endfor %}">
+        填寫完畢
+    </td>
+    {% for i in places %}
+        <td {% if i.check %}class="show_projects pointer"{% endif %}
+            table_title="{{ i.name }} - (填寫完畢)"
+            ids="{% for j in i.check %}{{ j.project.id }},{% endfor %}">
+            {% if i.check %}{{ i.check.count }}{% endif %}
+        </td>
+    {% endfor %}
+</tr>
+<tr>
+    <td class="warning show_projects pointer"
+        table_title="(已匯入尚未填寫)"
+        ids="{% for i in places %}{% for j in i.import_not_check %}{{ j.project.id }},{% endfor %}{% endfor %}">
+        已匯入<br>尚未填寫
+    </td>
+    {% for i in places %}
+        <td {% if i.import_not_check %}class="show_projects pointer"{% endif %}
+            table_title="{{ i.name }} - (已匯入尚未填寫)"
+            ids="{% for j in i.import_not_check %}{{ j.project.id }},{% endfor %}">
+            {% if i.import_not_check %}{{ i.import_not_check.count }}{% endif %}
+        </td>
+    {% endfor %}
+</tr>
+<tr>
+    <td class="danger show_projects pointer"
+        table_title="(尚未匯入)"
+        ids="{% for i in places %}{% for j in i.not_import_not_check %}{{ j.project.id }},{% endfor %}{% endfor %}">
+        尚未匯入
+    </td>
+    {% for i in places %}
+        <td {% if i.not_import_not_check %}class="show_projects pointer"{% endif %}
+            table_title="{{ i.name }} - (尚未匯入)"
+            ids="{% for j in i.not_import_not_check %}{{ j.project.id }},{% endfor %}">
+            {% if i.not_import_not_check %}{{ i.not_import_not_check.count }}{% endif %}
+        </td>
+    {% endfor %}
+</tr>

@@ -1,0 +1,510 @@
+{% extends "fishuser/zh-tw/base.html" %}
+{% load i18n %}
+{% load humanize %}
+{% load utiltags %}
+{% load guardian_tags %}
+
+{% block body %}
+
+<style type="text/css">
+    .lobibox-prompt {
+        top: 200px !important;
+    }
+</style>
+<table class="table table-hover" id="table_condition">
+    <caption>請輸入搜尋條件</caption>
+    <col width="17%">
+    <col width="33%">
+    <col width="17%">
+    <col width="33%">
+    <tr>
+        <td class="active" align="right">
+            搜尋範圍
+        </td>
+        <td colspan="3">
+            <select class="form-control input-sm" name="on_pcc_now">
+                <option value=""> 全部 (109年起有完整資料) </option>
+                <option value="true" selected> 【尚未驗收及本年度內驗收】之標案 </option>
+            </select>
+        </td>
+    </tr>
+    
+    <tr>
+        <td class="active" align="right">
+            標案編號
+        </td>
+        <td>
+            <input class="form-control input-sm" name="uid__icontains" value="">
+        </td>
+        <td class="active" align="right">
+            標案名稱
+        </td>
+        <td>
+            <input class="form-control input-sm" name="name__icontains" value="">
+        </td>
+    </tr>
+    <tr>
+        <td class="active" align="right">
+            主辦機關
+        </td>
+        <td>
+            <input class="form-control input-sm" name="host_department__icontains" value="">
+        </td>
+        <td class="active" align="right">
+            規劃單位
+        </td>
+        <td>
+            <input class="form-control input-sm" name="planning_unit__icontains" value="">
+        </td>
+    </tr>
+    <tr>
+        <td class="active" align="right">
+            主管機關
+        </td>
+        <td>
+            <input class="form-control input-sm" name="host_department__icontains" value="">
+        </td>
+        <td class="active" align="right">
+            設計單位
+        </td>
+        <td>
+            <input class="form-control input-sm" name="design_unit__icontains" value="">
+        </td>
+    </tr>
+    <tr>
+        <td class="active" align="right">
+            執行機關
+        </td>
+        <td>
+            <input class="form-control input-sm" name="implementation_department__icontains" value="">
+        </td>
+        <td class="active" align="right">
+            監造單位
+        </td>
+        <td>
+            <input class="form-control input-sm" name="inspector_name__icontains" value="">
+        </td>
+    </tr>
+    <tr>
+        <td class="active" align="right">
+            專案管理單位
+        </td>
+        <td>
+            <input class="form-control input-sm" name="project_manage_unit__icontains" value="">
+        </td>
+        <td class="active" align="right">
+            得標廠商
+        </td>
+        <td>
+            <input class="form-control input-sm" name="constructor__icontains" value="">
+        </td>
+    </tr>
+    <tr>
+        <td class="active" align="right">
+            縣市
+        </td>
+        <td>
+            <select class="form-control input-sm" name="engineering_county__icontains">
+                <option value=""> 全部 </option>
+                {% for place in places %}
+                    <option value="{{ place.name }}">{{ place.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td class="active" align="right">
+            工程概要
+        </td>
+        <td>
+            <input class="form-control input-sm" name="project_memo__icontains" value="">
+        </td>
+    </tr>
+    <tr>
+        <td class="active" align="right">
+            實際決標日期
+        </td>
+        <td colspan="3">
+            <div class="row">
+                <div class="col-md-4">
+                    <input class="form-control input-sm datepicker" do_nothing="true" name="r_decide_tenders_date__gte" value="">
+                </div>
+                <div class="col-md-1">~</div>
+                <div class="col-md-4">
+                    <input class="form-control input-sm datepicker" do_nothing="true" name="r_decide_tenders_date__lte" value="">
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td class="active" align="right">
+            實際開工日期
+        </td>
+        <td colspan="3">
+            <div class="row">
+                <div class="col-md-4">
+                    <input class="form-control input-sm datepicker" do_nothing="true" name="r_start_date__gte" value="">
+                </div>
+                <div class="col-md-1">~</div>
+                <div class="col-md-4">
+                    <input class="form-control input-sm datepicker" do_nothing="true" name="r_start_date__lte" value="">
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td class="active" align="right">
+            發包預算
+        </td>
+        <td colspan="3">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input class="form-control input-sm input_number" style="text-align: right;" name="contract_budget__gte" value="">
+                        <span class="input-group-addon">元</span>
+                    </div>
+                </div>
+                <div class="col-md-1">~</div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input class="form-control input-sm input_number" style="text-align: right;" name="contract_budget__lte" value="">
+                        <span class="input-group-addon">元</span>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td class="active" align="right">
+            決標金額
+        </td>
+        <td colspan="3">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input class="form-control input-sm input_number" style="text-align: right;" name="decide_tenders_price__gte" value="">
+                        <span class="input-group-addon">元</span>
+                    </div>
+                </div>
+                <div class="col-md-1">~</div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input class="form-control input-sm input_number" style="text-align: right;" name="decide_tenders_price__lte" value="">
+                        <span class="input-group-addon">元</span>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td class="active" align="right">
+            預定進度
+        </td>
+        <td>
+            <div class="row">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <input class="form-control input-sm input_number" style="text-align: right;" name="percentage_of_predict_progress__gte" value="">
+                        <span class="input-group-addon">%</span>
+                    </div>
+                </div>
+                <div class="col-md-1">~</div>
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <input class="form-control input-sm input_number" style="text-align: right;" name="percentage_of_predict_progress__lte" value="">
+                        <span class="input-group-addon">%</span>
+                    </div>
+                </div>
+            </div>
+        </td>
+        <td class="active" align="right">
+            進度差異
+        </td>
+        <td>
+            <div class="row">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <input class="form-control input-sm input_number" style="text-align: right;" name="percentage_of_dulta__gte" value="">
+                        <span class="input-group-addon">%</span>
+                    </div>
+                </div>
+                <div class="col-md-1">~</div>
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <input class="form-control input-sm input_number" style="text-align: right;" name="percentage_of_dulta__lte" value="">
+                        <span class="input-group-addon">%</span>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td class="active" align="right">
+            實際進度
+        </td>
+        <td>
+            <div class="row">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <input class="form-control input-sm input_number" style="text-align: right;" name="percentage_of_real_progress__gte" value="">
+                        <span class="input-group-addon">%</span>
+                    </div>
+                </div>
+                <div class="col-md-1">~</div>
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <input class="form-control input-sm input_number" style="text-align: right;" name="percentage_of_real_progress__lte" value="">
+                        <span class="input-group-addon">%</span>
+                    </div>
+                </div>
+            </div>
+        </td>
+        <td class="active" align="right">
+            重點追蹤
+        </td>
+        <td>
+            <select class="form-control input-sm" name="chase">
+                <option value=""> 全部 </option>
+                <option value="true"> 僅搜尋重點追蹤 </option>
+            </select>
+        </td>
+    </tr>
+</table>
+<div class="row">
+    <div class="col-md-4">
+        
+    </div>
+    <div class="col-md-2">
+        <button class="search_project btn btn-info btn-lg" page="1" type="button">搜尋</button>
+    </div>
+    <div class="col-md-6">
+        <button class="btn btn-primary btn-lg" id="export_excel" onclick="export_excel()" style="display:none;float:right" type="button">匯出督導選案表</button>
+        <button class="btn btn-primary btn-lg" id="export_excel2" onclick="export_excel2()" style="display:none;float:right;margin-right:8px" type="button">匯出進度控管表</button>
+    </div>
+</div>
+
+
+<br><br><br>
+
+<span class="pages_list"></span>
+<br>
+<table class="sortable table table-bordered" id="SearchResultTable" style="font-size: 12px; display:none; table-layout: fixed">
+    <col width="30px">
+    <col width="40px">
+    <col width="30px">
+    <col width="30px">
+    <col>
+    <col width="100px">
+    <col width="90px">
+    <col width="180px">
+    <thead>
+        <tr class="success">
+            <th style="text-align: center;">序<br>號</th>
+            <th style="text-align: center;">重<br>點<br>追<br>蹤</th>
+            <th style="text-align: center;">詳<br>細</th>
+            <th style="text-align: center;">新<br>增<br>督<br>導</th>
+            <th style="text-align: center;">標案編號<br>執行機關<br>標案名稱</th>
+            <th style="text-align: center;">發包預算(千元)<br>決標金額(千元)</th>
+            <th style="text-align: center;">預定進度<br>實際進度</th>
+            <th style="text-align: center;">監造單位<br>得標廠商</th>
+        </tr>       
+    </thead>
+    <tbody>
+        
+    </tbody>
+</table>
+
+<form action="/supervise/export_pcc_project_excel/" method="post" id="form1" name="form1" style='display:none'>
+    <input type="text" name="all_ids" value="">
+    {% csrf_token %}
+</form>
+
+<form action="/supervise/export_pcc_project_excel2/" method="post" id="form2" name="form2" style='display:none'>
+    <input type="text" name="all_ids" value="">
+    {% csrf_token %}
+</form>
+
+<script type="text/x-jquery-tmpl" id="HideSearchTr">
+    <tr row_id="${uid}" style="text-align: center;" class="${class_name}">
+        <td class="active">${sort}</td>
+        <td class="active"><input type="checkbox" style="width:25px;height:25px" name="chase" class="pointer update_chase_project"></td>
+        <td>
+            <a target="_blank" href="/frcm/print_pcc_information/${uid}/">
+                <span class="glyphicon glyphicon-share" aria-hidden="true"></span>
+            </a>
+        </td>
+        <td>
+            <span class="glyphicon glyphicon-plus create_case pointer" aria-hidden="true"></span>
+        </td>
+        <td align="left" class="hide_long_string" title="${name}">
+            ${uid}
+            <br>${implementation_department}
+            <br>${name}
+        </td>
+        <td align="left">
+            發包：${contract_budget}
+            <br>決標：${decide_tenders_price}
+        </td>
+        <td align="left" style="background-color: ${dulta_color}">
+            預：${percentage_of_predict_progress}%
+            <br>實：${percentage_of_real_progress}%
+        </td>
+        <td align="left" class="hide_long_string">
+            ${inspector_name}
+            <br>${constructor}
+        </td>
+    </tr>
+</script>
+
+
+<script type="text/javascript">
+    (function($) {
+      $.fn.inputFilter = function(inputFilter) {
+        return this.on("input keydown keyup mousedown mouseup select contextmenu drop", function() {
+          if (inputFilter(this.value)) {
+            this.oldValue = this.value;
+            this.oldSelectionStart = this.selectionStart;
+            this.oldSelectionEnd = this.selectionEnd;
+          } else if (this.hasOwnProperty("oldValue")) {
+            this.value = this.oldValue;
+            this.setSelectionRange(this.oldSelectionStart, this.oldSelectionEnd);
+          } else {
+            this.value = "";
+          }
+        });
+      };
+    }(jQuery));
+
+    function search_project(){
+        var $obj = $(this);
+        var string = '';
+        $.each($('#table_condition').find('input,select'), function(){
+            var $obj = $(this);
+            var name = $obj.attr('name');
+            var value = $obj.val();
+            if (value){
+                string += '&' + name + '=' + value;
+            };
+        });
+
+        $.ajax({
+            url: '/supervise/api/v2/pccproject/?limit=100000' + string,
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                $('.resultTr').remove();
+                $('#SearchResultTable').show();
+                if (data.objects.length == 0){
+                    $('#export_excel').hide();
+                    $('#export_excel2').hide();
+                } else {
+                    $('#export_excel').show();
+                    $('#export_excel2').show();
+                };
+                var all_ids = [];
+                for (var i=0; i<data.objects.length; i++){
+                    data.objects[i]['class_name'] = 'resultTr';
+                    data.objects[i]['sort'] = i+1;
+                    data.objects[i]['contract_budget'] = TransformThousands(parseInt(data.objects[i]['contract_budget']/1000));
+                    data.objects[i]['decide_tenders_price'] = TransformThousands(parseInt(data.objects[i]['decide_tenders_price']/1000));
+                    if (data.objects[i]['percentage_of_dulta'] < 0){
+                        data.objects[i]['dulta_color'] = '#FFCECD';
+                    } else {
+                        data.objects[i]['dulta_color'] = 'white';
+                    };
+                    all_ids.push(data.objects[i]['uid']);
+                    var $div = $('#HideSearchTr').tmpl(data.objects[i]).appendTo($('#SearchResultTable > tbody:last'));
+                    if (data.objects[i]['chase']){
+                        $div.find('input[name="chase"]').prop('checked', true);
+                    }
+                }
+                $('#form1').find('input[name="all_ids"]').val(all_ids.join(','));
+                $('#form2').find('input[name="all_ids"]').val(all_ids.join(','));
+
+                $('.pages_list').html('共有' + data.objects.length + '筆資料');
+            },
+            error: function (json){
+
+            }
+        })
+    }
+
+    function export_excel(){
+        document.form1.submit();
+    }
+    function export_excel2(){
+        document.form2.submit();
+    }
+
+    function update_chase_project(){
+        var $obj = $(this);
+        var uid = $obj.closest('tr').attr('row_id');
+        if ($obj.prop('checked')){
+            var value = true;
+        } else {
+            var value = false;
+        };
+        var data = {chase: value};
+        $.ajax({
+            url: '/supervise/api/v2/pccproject/' + uid + '/',
+            type: 'PUT',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            beforeSend: function(XHR) {
+                XHR.setRequestHeader('X-CSRFToken', CSRFMIDDLEWARETOKEN);
+            },
+            success: function (json, text, xhr) {
+
+            },
+            error: function (json) {
+                Lobibox.notify('error', {
+                    title: '錯誤訊息',
+                    msg: json.responseText,
+                });
+            }
+        });
+    }
+
+    function create_case(){
+        var $obj = $(this);
+        var uid = $obj.closest('tr').attr('row_id');
+        Lobibox.prompt('text', //Any input type will be valid
+            {
+                title: '請輸入督導日期',
+                //Attributes of <input>
+                attrs: {
+                    placeholder: "督導日期(例如：2020-01-01)"
+                },
+                callback : function($this,type,ev){
+                    if (type == 'ok'){
+                        var value = $this.getValue();
+                        if (!date_check.test(value)){
+                            Lobibox.notify('warning', {
+                                title: '系統訊息',
+                                msg: '請輸入日期格式'
+                            });
+                        } else {
+                            window.location = '/supervise/creat/?date=' + value + '&uid=' + uid;
+                        }
+                    }
+                }
+            }
+        );
+    }
+
+    $(document).ready(function(){
+        $('.search_project').click(search_project); //搜尋
+        $(".input_number").inputFilter(function(value) {
+            return /^\d*$/.test(value);    // Allow digits only, using a RegExp
+        });
+        $(document).on('click', '.update_chase_project', update_chase_project); //更新重點追蹤
+        $(document).on('click', '.create_case', create_case); //新增督導案
+
+
+    });
+
+</script>
+
+
+
+{% endblock %}

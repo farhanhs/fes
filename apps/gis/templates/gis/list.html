@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <link rel="stylesheet" type="text/css" href="/media/gis/gis.css" />
+    <script src="/media/gis/jquery-1.3.2.min.js" type="text/javascript"></script>
+    <title>漁業漁港地理資訊系統</title>
+    <script>
+        $().ready(function() {
+            var searchString = $("#search_key")[0].innerHTML;
+            $.ajax({type:"GET", url:"/gis/search", data:{search:searchString}, dataType:"json", success:function(data) {
+                var boat_num = data[0]["boat_num"]?true:false;
+                var output_num = data[0]["output_num"]?true:false;
+                $("#result").html("");
+                var $r = $("#result");
+                var $table = $('<br><table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2"></table>').appendTo($r);
+                var $thead = $('<tr bgcolor="#CCFF99"></tr>').appendTo($("<thead></thead>").appendTo($table));
+                for (var i=0; i<data[1].length;i++){
+                    $('<td style=\"min-width: 100px\">'+data[1][i][1]+'</td>').appendTo($thead);
+                }
+                var $body = $("<tbody></tbody>").appendTo($table);
+                var counter = 0;
+                for(index in data[0]) {
+                    var $row = $("<tr></tr>").appendTo($body);
+                    if((counter++)%2==0) {
+                        $row.addClass("odd");
+                    }
+                    for (var i=0; i<data[1].length;i++){
+                        $("<td></td>").appendTo($row).html(data[0][index][data[1][i][0]]);
+                    }
+                }
+            }, error:function() {
+                $("#result").html("無法取回漁港資料。");
+            }});
+        });
+        
+        $().ready(function() {
+            var banner = $(".banner");
+            var content = $(".content");
+            var footer = $(".footer");
+            
+            function fixPosition() {
+                content.css('height', $(window).height() - banner.height() - footer.height());
+            }
+            
+            $(window).bind("resize", function(){
+                fixPosition();
+            })
+            fixPosition();
+
+        });
+    </script>
+    <style>
+        td.content table tr.sr {background-color: #cccccc; }
+        td.content table td {padding: 2px 6px; }
+    </style>
+</head>
+<body>
+    <div id="search_key" style="display: none;">{{search_string}}</div>
+    <div class="banner">
+        <div class="zh_TW">漁業漁港地理資訊系統</div>
+        <div class="en_US">Fishery Harbor Information System</div>
+    </div>
+    <div class="content" style="height: 90%;">
+        <div id="result" style="width: 100%; height: 100%; overflow-y: scroll;">
+            正在取得漁港資料...
+        </div>
+    </div>
+    <div class="footer">
+        <div>Copyright &copy; <a href="http://www.fa.gov.tw/chnn/" target="_blank">(行政院農業部漁業署)</div>
+<div>2009 | Designed by <a href="http://www.tfm.org.tw/" target="_blank">財團法人臺灣漁業及海洋技術顧問社</a></div>
+    </div>
+</body>

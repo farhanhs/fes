@@ -1,0 +1,231 @@
+{% load humanize %}
+<br><br>
+<h3>
+    <span class="label label-success">
+        <span class="glyphicon glyphicon-paperclip"></span>
+        漁業產量
+    </span>
+    {% if edit %}　<button class="btn btn-info btn-sm" data-toggle="modal" data-target="#create_fisheryoutput_dialog">新增</button><br>{% endif %}
+</h3>
+<table class="table table-bordered" id="fisheryoutput_table">
+    <tr class="warning" align="center">
+        <td rowspan="2">
+            年度
+        </td>
+        <td colspan="2">
+            養殖漁業            
+        </td>
+        <td colspan="2">
+            沿岸漁業
+        </td>
+        <td colspan="2">
+            近海漁業
+        </td>
+        <td colspan="2">
+            遠洋漁業
+        </td>
+        {% if edit %}
+            <td rowspan="2" width="5%">刪除</td>
+        {% endif %}
+    </tr>
+    <tr class="warning" align="center">
+        <td>數量<br>(噸數)</td>
+        <td>價值<br>(仟元)</td>
+        <td>數量<br>(噸數)</td>
+        <td>價值<br>(仟元)</td>
+        <td>數量<br>(噸數)</td>
+        <td>價值<br>(仟元)</td>
+        <td>數量<br>(噸數)</td>
+        <td>價值<br>(仟元)</td>
+    </tr>
+    {% for i in place.fisheryoutput_set.all %}
+        <tr align="center" id="tr_fisheryoutput_{{ i.id }}">
+            <td>{{ i.year }}</td>
+            <td>{{ i.aquaculture_num|intcomma }}</td>
+            <td>{{ i.aquaculture_value|intcomma }}</td>
+            <td>{{ i.coastwise_num|intcomma }}</td>
+            <td>{{ i.coastwise_value|intcomma }}</td>
+            <td>{{ i.inshore_num|intcomma }}</td>
+            <td>{{ i.inshore_value|intcomma }}</td>
+            <td>{{ i.pelagic_num|intcomma }}</td>
+            <td>{{ i.pelagic_value|intcomma }}</td>
+            {% if edit %}
+                <td>
+                    <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                        row_id="{{ i.id }}"
+                        module_name = "harbor"
+                        table_name = "fisheryoutput"
+                        remove_target = "tr_fisheryoutput_{{ i.id }}"
+                        title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+                </td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+</table>
+{% if edit %}
+    <script type="text/x-jquery-tmpl" id="HideFisheryOutputTr">
+        <tr align="center" id="tr_fisheryoutput_${id}">
+            <td>${year}</td>
+            <td>${aquaculture_num}</td>
+            <td>${aquaculture_value}</td>
+            <td>${coastwise_num}</td>
+            <td>${coastwise_value}</td>
+            <td>${inshore_num}</td>
+            <td>${inshore_value}</td>
+            <td>${pelagic_num}</td>
+            <td>${pelagic_value}</td>
+            <td>
+                <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                    row_id="${id}"
+                    module_name = "harbor"
+                    table_name = "fisheryoutput"
+                    remove_target = "tr_fisheryoutput_${id}"
+                    title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+            </td>
+        </tr>
+    </script>
+
+    <div class="modal fade" id="create_fisheryoutput_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">新增漁業產量</h4>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-border">
+                        <tr>
+                            <td width="30%">年度</td>
+                            <td width="70%">
+                                <input id="fisheryoutput_year" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>養殖漁業產量(公噸)</td>
+                            <td>
+                                <input id="fisheryoutput_aquaculture_num" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>養殖漁業價值(仟元)</td>
+                            <td>
+                                <input id="fisheryoutput_aquaculture_value" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>沿岸漁業產量(公噸)</td>
+                            <td>
+                                <input id="fisheryoutput_coastwise_num" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>沿岸漁業價值(仟元)</td>
+                            <td>
+                                <input id="fisheryoutput_coastwise_value" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>近海漁業產量(公噸)</td>
+                            <td>
+                                <input id="fisheryoutput_inshore_num" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>近海漁業價值(仟元)</td>
+                            <td>
+                                <input id="fisheryoutput_inshore_value" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>遠洋漁業產量(公噸)</td>
+                            <td>
+                                <input id="fisheryoutput_pelagic_num" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>遠洋漁業價值(仟元)</td>
+                            <td>
+                                <input id="fisheryoutput_pelagic_value" class="form-control" value="">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" id="create_fisheryoutput" class="btn btn-primary">新增</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+
+
+
+<script type="text/javascript">
+    function create_fisheryoutput() {
+        var place = $('#place').val();
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            place: place,
+        }
+        if ($('#fisheryoutput_year').val()){
+            data['year'] = $('#fisheryoutput_year').val();
+        }
+        if ($('#fisheryoutput_aquaculture_num').val()){
+            data['aquaculture_num'] =  $('#fisheryoutput_aquaculture_num').val();
+        }
+        if ($('#fisheryoutput_aquaculture_value').val()){
+            data['aquaculture_value'] =  $('#fisheryoutput_aquaculture_value').val();
+        }
+        if ($('#fisheryoutput_coastwise_num').val()){
+            data['coastwise_num'] =  $('#fisheryoutput_coastwise_num').val();
+        }
+        if ($('#fisheryoutput_coastwise_value').val()){
+            data['coastwise_value'] =  $('#fisheryoutput_coastwise_value').val();
+        }
+        if ($('#fisheryoutput_inshore_num').val()){
+            data['inshore_num'] =  $('#fisheryoutput_inshore_num').val();
+        }
+        if ($('#fisheryoutput_inshore_value').val()){
+            data['inshore_value'] =  $('#fisheryoutput_inshore_value').val();
+        }
+        if ($('#fisheryoutput_pelagic_num').val()){
+            data['pelagic_num'] =  $('#fisheryoutput_pelagic_num').val();
+        }
+        if ($('#fisheryoutput_pelagic_value').val()){
+            data['pelagic_value'] =  $('#fisheryoutput_pelagic_value').val();
+        }
+
+        $.ajax({
+            url: '/harbor/api/v2/fisheryoutput/',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                var $div = $('#HideFisheryOutputTr').tmpl(data).appendTo($('#fisheryoutput_table'));
+                $('#fisheryoutput_year').val('');
+                $('#fisheryoutput_aquaculture_num').val('');
+                $('#fisheryoutput_aquaculture_value').val('');
+                $('#fisheryoutput_coastwise_num').val('');
+                $('#fisheryoutput_coastwise_value').val('');
+                $('#fisheryoutput_inshore_num').val('');
+                $('#fisheryoutput_inshore_value').val('');
+                $('#fisheryoutput_pelagic_num').val('');
+                $('#fisheryoutput_pelagic_value').val('');
+                $('#create_fisheryoutput_dialog').modal('hide');
+                $('.deleteRow').unbind('click');
+                $('.deleteRow').click(deleteRow);
+            },
+            error: function (data) {}
+        })
+    }
+
+
+
+    $(document).ready(function(){
+        $('#create_fisheryoutput').click(create_fisheryoutput);
+    });
+
+</script>

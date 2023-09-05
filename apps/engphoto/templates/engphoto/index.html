@@ -1,0 +1,115 @@
+{% load staticfiles %}{% load utiltags %}
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>相片管理系統({{ project.name }}::{{ project.bid_no }})</title>
+    <script type="text/javascript" src="/media/jquery.ui-1.5.1/jquery-1.2.6.js"></script>
+    <script type="text/javascript" src="/media/jquery-plugins/jquery.include.js"></script>
+    <script type="text/javascript" src="/media/jquery-plugins/plugins.js"></script>
+    <script type="text/javascript" src="/media/jquery-plugins/highlightFade.js"></script>
+    <script type="text/javascript" src="/media/jquery-plugins/tree/js/jquery.simple.tree.js"></script>
+    <link type="text/css" rel="stylesheet" href="/media/jquery-plugins/tree/tree.css"/>
+
+    <script type="text/javascript" src="/media/jquery-plugins/splitter.js"></script>
+    <link type="text/css" rel="stylesheet" href="/media/jquery-plugins/splitter.css"/>
+    <script type="text/javascript" src="/media/jquery-plugins/ajaxfileupload/ajaxfileupload.js"></script>
+    <script type="text/javascript" src="/media/jquery.ui-1.5.1/ui/ui.core.js"></script>
+    <script type="text/javascript" src="/media/jquery.ui-1.5.1/ui/ui.datepicker.js"></script>
+    <script type="text/javascript" src="/media/jquery.ui-1.5.1/ui/i18n/ui.datepicker-zh-TW.js"></script>
+    <script type="text/javascript" src="/media/jquery.ui-1.5.1/ui/ui.dialog.js"></script>
+    <script type="text/javascript" src="/media/jquery.ui-1.5.1/ui/ui.draggable.js"></script>
+    <script type="text/javascript" src="/media/jquery.ui-1.5.1/ui/ui.resizable.js"></script>
+    <script type="text/javascript" src="/media/jquery.ui-1.5.1/ui/ui.tabs.js"></script>
+    <script type="text/javascript" src="/media/jquery.ui-1.5.1/ui/ui.accordion.js"></script>
+    <link rel="stylesheet" type="text/css" href="/media/jquery.ui-1.5.1/themes/flora/flora.all.css" />
+    <script type="text/javascript" src="/media/js/default.js"></script>
+    <!--
+    <script type="text/javascript" src="/media/project/js/lib.js"></script>
+    -->
+    <script type="text/javascript" src="{% static 'engphoto/js/lib.js' %}"></script>
+    <!-- // <script type="text/javascript" src="/media/fishuser/js/user_profile.js"></script> -->
+</head>
+{% load utiltags %}
+{% get_or_post_div %}
+{% csrf_token %}
+<body id="id_body" class="flora" bgcolor="#B7C5F9">
+    {% csrf_token %}
+    <span style="font-size: 40px;">{{ project.name }} ( {{ project.bid_no|default_if_none:'' }} ) 之 施工相片</span>
+    <div id="MenuBar">
+        <ul id="UserProfile"></ul>
+        <br/><br/>
+    </div>
+    <link rel="stylesheet" type="text/css" href="/media/jquery.css" />
+    <div id="checkpoint" class="flora"></div>
+    <div id="EngPhotoPlane">
+        <div id="LeftPane">
+            <div id="upload_msg">
+                <div style="margin-bottom: 5px" id="upload_photomsg" class="hidden">目前正在上傳
+                    <a href="#"><span id="upload_photonum" title="點我看明細"></span></a> 張相片
+                    <ul id="upload_photolist" class="hidden">
+                    </ul>
+                </div>
+                <div style="margin-bottom: 5px" id="upload_fieldmsg" class="hidden">目前正在更新
+                    <a href="#"><span id="upload_fieldnum" title="點我看明細"></span></a> 個欄位
+                    <ul id="upload_fieldlist" class="hidden">
+                    </ul>
+                </div>
+            </div>
+            <ul id="accordion_menu" class="ui-accordion-container">
+                <li id="bytimesort" class="acc"><a href="#">以時間排序相片</a>
+                    <div class="content"></div>
+                </li>
+                {% if showmenu.defect %}
+                <li id="bydefect" class="acc"><a href="#">待改善相簿</a>
+                    <div class="content"></div>
+                </li>
+                {% endif %}
+                {% if showmenu.trash %}
+                <li id="bytrash" class="acc"><a href="#">資源回收筒</a>
+                    <div class="content"></div>
+                </li>
+                {% endif %}
+                <li id="bycheckpoint" class="acc active selected"><a href="#">查驗點</a>
+                </li>
+            </ul>
+            <div id="content_checkpoint">
+                <div class="hidden" id="add_checkpoint_head"><button onClick="setCheckPoint({{ project.id }}, '{{ project.name }}')" title="新增/編輯相片查驗點">新增查驗點</button>
+                <a class="refresh" id="refresh" href="#" title="更新所有查驗點群組、查驗點資訊並重新合計所需相片張數">　</a></div>
+                <div><ul id="base" class="simpleTree"></ul></div>
+                <div class="hidden" id="add_checkpoint_foot"><button onClick="setCheckPoint({{ project.id }}, '{{ project.name }}')" title="新增/編輯相片查驗點">新增查驗點</button>
+                <a class="refresh" id="refresh" href="#" title="更新所有查驗點群組、查驗點資訊並重新合計所需相片張數">　</a></div>
+            </div>
+        </div>
+        <div id="RightPane">
+            <div id="photos"><p>請選擇左邊區塊中的查驗點或是頁數。</p></div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        var project_id = {{ project.id }};
+        var token = $('input[name="csrfmiddlewaretoken"]').val();
+        var menu_type = ''; //目前所在的選單(以時間排序/待改善/資源回收筒/查驗點)
+        splitPlane();
+
+        $(document).ready(function(){
+            $(window).resize(splitPlane);
+        });
+        showCheckPointView();
+        $('#upload_photonum').click(function(){
+            $('#upload_photolist').toggle();
+        });
+        $('#upload_fieldnum').click(function(){
+            $('#upload_fieldlist').toggle();
+        });
+        $('.engphoto').click(function(){
+            alert($(this).attr('width'));
+        });
+        $('.refresh').click(function(){
+            getActualCheckPoint(project_id, '#base');
+            alert('更新完成');
+        });
+        $("#accordion_menu").accordion({selectedClass: 'active', active: '.selected', clearStyle: true, navigation: true});
+        setAccordion_menu();
+    </script>
+{% insert_google_analytics %}
+</body>
+</html>

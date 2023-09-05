@@ -1,0 +1,874 @@
+{% extends 'frcm/index.html' %}
+
+{% block header %}{% endblock %}
+
+{% load utiltags %}
+{% load humanize %}
+{% block menu %}{% endblock %}
+{% block title %}
+FRCM - {{ project.name }}
+{% endblock %}
+{% block style %}
+.style1 {
+	font-size: 36px;
+	color: #CC6600;
+}
+.style2 {color: #FF0000}
+
+td {
+    padding: 2px 5px;
+    }
+
+{% endblock %}
+{% block content %}
+
+<br><br>
+<span class="style1">{{ project.name }}</span>
+{% if edit %}
+    <button id="hideNotImportantInfo" class="NotImportant">列印版面</button>
+{% endif %}
+<span id="{{ project.id }}" class="target_project" name="ProjectBase"></span>
+<br>
+
+
+
+{% include 'frcm/chase_data.html' %}
+
+
+<span style="font-size: 18px">
+
+<table class="NotImportant">
+    <tr>
+        <td>
+            工程基本資料為了維持資訊的統一及正確性<br>若需變更內容，請透過『管考系統』來修改。
+        </td>
+        <td>
+            <a href="{% url 'go_photo' project_id=project.id %}" target="_blank">
+            <img src="/media/frcm/image/engphoto.png" width="100" height="100" title="施工相片系統">
+            </a>
+        </td>
+        <td>
+            <a href="/dailyreport/engprofile/{{ project.id }}/inspector/" target="_blank">
+            <img src="/media/frcm/image/dailyreport.png" width="100" height="100" title="日報表系統">
+            </a>
+        </td>
+        <td>
+            <a href="/webcpm/" target="_blank">
+            <img src="/media/frcm/image/webcpm.png" width="100" height="100" title="WebCPM系統">
+            </a>
+        </td>
+    </tr>
+</table>
+
+<a class="NotImportant" href="/media/project/file/chase_example.zip"><button>監造提供資料範例表格下載!!</button></a>
+{% if edit %}
+{% if ask_share %}
+    <table>
+        {% for ask in ask_share %}
+        <tr id="askShare_{{ ask.id }}">
+            <td>
+                <img src="/media/frcm/image/askshare.png" title="申請資訊">
+            </td>
+            <td>
+                <span class="style2">【{{ ask.user.user_profile.rName }}】向您要求工程共管</span>
+            </td>
+            <td>
+                <a class="answerAskShare" row_id="{{ ask.id }}" value="yes">【允許】</a>
+                <a class="answerAskShare" row_id="{{ ask.id }}" value="no">【拒絕】</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+{% endif %}
+<br>
+<table class="style0" style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+    <tr>
+        <th style="min-width: 160px;" bgcolor="#D1E6E7">年度</th>
+        <td style="min-width: 200px;" align="left">{{ project.year }}</td>
+        <th style="min-width: 160px;" bgcolor="#D1E6E7">縣市</th>
+        <td style="min-width: 200px;" align="left">{{ project.place.name }}</td>
+    </tr>
+    <tr>
+        <th bgcolor="#D1E6E7">計畫名稱</th>
+        <td align="left" colspan="3">{{ project.plan.name }}</td>
+    </tr>
+    <tr>
+        <th width="150" bgcolor="#D1E6E7">工程會標案編號</th>
+        {% if edit %}
+            <td width="700" id="pcc_no" class="redaction" colspan="3" rowspan="1" bgcolor="#FFB0AF">
+                <a class="show_pcc_no">{{ project.pcc_no|default_if_none:'' }}</a>
+                <input editing="pcc_no" category="ProjectBid" class="edit_pcc_no updateRedaction" size="30" type="text" value="{{ project.pcc_no|default_if_none:'' }}" old_value="{{ project.pcc_no|default_if_none:'' }}" style="display: none;">
+                <span id="NOINFO" {% if project.pcc_no %}style="display: none;"{% else %}style="color: red;"{% endif %}>請"點我"填入工程會編號(重要)</span>
+                <br><span style="color: red;" id="error_message"></span>
+                <div id="SYNCMESSAGE" style="display: none;">
+                    <img src="/media/images/loading.gif" height="14">更新資料中...
+                </div>
+
+            </td>
+        {% else %}
+            <td colspan="3" rowspan="1">
+                {{ project.pcc_no|default_if_none:'' }}
+            </td>
+        {% endif %}
+
+    </tr>
+    <tr>
+        <th bgcolor="#D1E6E7">契約編號(署內案號)</th>
+            {% if edit %}
+                <td id="bid_no" class="editable" colspan="3" rowspan="1">
+                    <a id="bid_no" class="show_bid_no">{{ project.bid_no|default_if_none:'' }}</a>
+                    <input id="bid_no"  class="edit_bid_no update_edited" size="56" type="text" value="{{ project.bid_no|default_if_none:'' }}" old_value="{{ project.bid_no|default_if_none:'' }}" style="display: none;">
+                </td>
+            {% else %}
+                <td colspan="3" rowspan="1">
+                    {{ project.bid_no|default_if_none:'' }}
+                </td>
+            {% endif %}
+    </tr>
+    <tr>
+        <th bgcolor="#D1E6E7">採購類別<span style="font-size:12px;">(工程/勞務)</span></th>
+        <td colspan="3" rowspan="1">
+            {{ project.purchase_type.value }}
+        </td>
+    </tr>
+    <tr>
+        <th bgcolor="#D1E6E7">計畫經費</th>
+        <td align="right">{{ budget.rPlanMoney|intcomma|cutzero }} 元</td>
+        <th bgcolor="#D1E6E7">發文(核定)日期</th>
+        <td align="left">{{ chase_one_by_one.get_vouch_date|default_if_none:'' }}</td>
+    </tr>
+    <tr>
+        <th bgcolor="#D1E6E7">執行機關</th>
+        <td align="left">{{ project.unit.name }}</td>
+        <th bgcolor="#92D3B5">工期計算方式</th>
+        <td align="left">
+            {% if edit %}
+            <select class="updateFRCMProject" name="frcm_duration_type" project_id="{{ project.id }}">
+                {% for type in duration_type %}
+                <option value="{{ type.id }}" {% ifequal project.frcm_duration_type.id type.id %}selected="selected"{% endifequal %}>{{ type.value }}</option>
+                {% endfor %}
+            </select>
+            <div id="frcm_duration" {% ifequal project.frcm_duration_type.value '限期完工(日曆天每日施工)' %}style="display: none;"{% endifequal %}>
+            工期：
+            <input class="updateFRCMProject" name="frcm_duration" project_id="{{ project.id }}" type="text" maxlength="10" size="10" value="{{ project.frcm_duration }}"/>
+            天
+            </div>
+
+            <div id="frcm_duration_limit" {% ifnotequal project.frcm_duration_type.value '限期完工(日曆天每日施工)' %}style="display: none;"{% endifnotequal %}>
+            完工日期：
+            <input class="updateFRCMProject chooseDate" name="frcm_duration_limit" project_id="{{ project.id }}" type="text" maxlength="10" size="10" value="{% if project.frcm_duration_limit %}{{ project.frcm_duration_limit }}{% endif %}"/>
+            </div>
+            {% else %}
+                {{ project.frcm_inspector_type.value }}
+                {% ifnotequal project.frcm_duration_type.value '限期完工(日曆天每日施工)' %}
+                    工期：{{ project.frcm_duration }} 天
+                {% else %}
+                    完工日期：{{ project.frcm_duration_limit }}
+                {% endifnotequal %}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <th bgcolor="#D1E6E7">X座標(M)<br>TWD97</td>
+            {% if edit %}
+                <td id="x_coord" class="editable">
+                    <a id="x_coord" class="show_x_coord">{{ project.x_coord|default_if_none:'待輸入' }}</a>
+                    <input id="x_coord" class="edit_x_coord update_edited coord" 
+                           size="20" type="text" value="{{ project.x_coord|default_if_none:'' }}"
+                           old_value="{{ project.x_coord|default_if_none:'' }}" style="display: none;">
+                </td>
+            {% else %}
+                <td>
+                    {{ project.x_coord|default_if_none:'' }}
+                </td>
+            {% endif %}
+        <th bgcolor="#92D3B5">監造方式</th>
+        <td align="left">
+            {% if edit %}
+            <select class="updateFRCMProject" name="frcm_inspector_type" project_id="{{ project.id }}">
+                {% for type in inspector_type %}
+                <option value="{{ type.id }}" {% ifequal project.frcm_inspector_type.id type.id %}selected="selected"{% endifequal %}>{{ type.value }}</option>
+                {% endfor %}
+            </select>
+            {% else %}
+            {{ project.frcm_inspector_type.value }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <th bgcolor="#D1E6E7">Y座標(M)<br>TWD97</td>
+            {% if edit %}
+                <td id="y_coord" class="editable">
+                    <a id="y_coord" class="show_y_coord">{{ project.y_coord|default_if_none:'待輸入' }}</a>
+                    <input id="y_coord" class="edit_y_coord update_edited coord" 
+                           size="20" type="text" value="{{ project.y_coord|default_if_none:'' }}"
+                           old_value="{{ project.y_coord|default_if_none:'' }}" style="display: none;">
+                </td>
+            {% else %}
+                <td>
+                    {{ project.y_coord }}
+                </td>
+            {% endif %}
+        <th bgcolor="#D1E6E7">署內負責人</th>
+        <td bgcolor="#CDFEFF" align="left">{{ project.self_charge|default_if_none:'' }}</td>
+    </tr>
+    <tr>
+        <th bgcolor="#D1E6E7">主辦工程師</th>
+        <td align="left">
+            {% for u in engs %}{{ u }}<br>{% endfor %}
+        </td>
+        <th bgcolor="#D1E6E7">署內聯絡人</th>
+        <td bgcolor="#CDFEFF" align="left">{{ project.self_contacter|default_if_none:'' }}</td>
+    </tr>
+    <tr>
+        <th bgcolor="#D1E6E7">承辦方式</th>
+        <td align="left">{{ project.undertake_type }}</td>
+        <th bgcolor="#D1E6E7">署內聯絡人電話</th>
+        <td bgcolor="#CDFEFF" align="left">{{ project.self_contacter_phone }}</td>
+    </tr>
+    <tr>
+        <th bgcolor="#D1E6E7">縣市負責人</td>
+            {% if edit %}
+                <td bgcolor="#D6FFAF" id="local_charge" class="editable">
+                    <a id="local_charge" {% ifequal project.undertake_type.value '自辦' %}style="display: none;"{% endifequal %}
+                       class="show_local_charge">{{ project.local_charge|default_if_none:'待輸入' }}</a>
+                    <input id="local_charge" class="edit_local_charge update_edited" 
+                           size="20" type="text" value="{{ project.local_charge|default_if_none:'' }}"
+                           old_value="{{ project.local_charge|default_if_none:'' }}" style="display: none;">
+                </td>
+            {% else %}
+                <td bgcolor="#D6FFAF">
+                    {% ifnotequal project.undertake_type.value '自辦' %}{{ project.local_charge }}{% endifnotequal %}
+                </td>
+            {% endif %}
+        <th bgcolor="#D1E6E7">廠商負責人</td>
+            {% if edit %}
+                <td bgcolor="#FFE7CD" id="contractor_charge" class="editable">
+                    <a id="contractor_charge" class="show_contractor_charge">{{ project.contractor_charge|default_if_none:'待輸入' }}</a>
+                    <input id="contractor_charge" class="edit_contractor_charge update_edited" 
+                           size="20" type="text" value="{{ project.contractor_charge|default_if_none:'' }}"
+                           old_value="{{ project.contractor_charge|default_if_none:'' }}" style="display: none;">
+                </td>
+            {% else %}
+                <td bgcolor="#FFE7CD">
+                    {{ project.contractor_charge }}
+                </td>
+            {% endif %}
+    </tr>
+
+    <tr>
+        <th bgcolor="#D1E6E7">縣市聯絡人</td>
+            {% if edit %}
+                <td bgcolor="#D6FFAF" id="local_contacter" class="editable">
+                    <a id="local_contacter" {% ifequal project.undertake_type.value '自辦' %}style="display: none;"{% endifequal %}
+                       class="show_local_contacter">{{ project.local_contacter|default_if_none:'待輸入' }}</a>
+                    <input id="local_contacter" class="edit_local_contacter update_edited" 
+                           size="20" type="text" value="{{ project.local_contacter|default_if_none:'' }}"
+                           old_value="{{ project.local_contacter|default_if_none:'' }}" style="display: none;">
+                </td>
+            {% else %}
+                <td bgcolor="#D6FFAF">
+                    {% ifnotequal project.undertake_type.value '自辦' %}{{ project.local_contacter }}{% endifnotequal %}
+                </td>
+            {% endif %}
+        <th bgcolor="#D1E6E7">廠商聯絡人</td>
+            {% if edit %}
+                <td bgcolor="#FFE7CD" id="contractor_contacter" class="editable">
+                    <a id="contractor_contacter" class="show_contractor_contacter">{{ project.contractor_contacter|default_if_none:'待輸入' }}</a>
+                    <input id="contractor_contacter" class="edit_contractor_contacter update_edited" 
+                           size="20" type="text" value="{{ project.contractor_contacter|default_if_none:'' }}"
+                           old_value="{{ project.contractor_contacter|default_if_none:'' }}" style="display: none;">
+                </td>
+            {% else %}
+                <td bgcolor="#FFE7CD">
+                    {{ project.contractor_contacter }}
+                </td>
+            {% endif %}
+    </tr>
+
+    <tr>
+        <th bgcolor="#D1E6E7">縣市聯絡人電話</td>
+            {% if edit %}
+                <td bgcolor="#D6FFAF" id="local_contacter_phone" class="editable">
+                    <a id="local_contacter_phone" {% ifequal project.undertake_type.value '自辦' %}style="display: none;"{% endifequal %}
+                       class="show_local_contacter_phone">{{ project.local_contacter_phone|default_if_none:'待輸入' }}</a>
+                    <input id="local_contacter_phone" class="edit_local_contacter_phone update_edited" 
+                           size="20" type="text" value="{{ project.local_contacter_phone|default_if_none:'' }}"
+                           old_value="{{ project.local_contacter_phone|default_if_none:'' }}" style="display: none;">
+                </td>
+            {% else %}
+                <td bgcolor="#D6FFAF">
+                    {% ifnotequal project.undertake_type.value '自辦' %}{{ project.local_contacter_phone }}{% endifnotequal %}
+                </td>
+            {% endif %}
+        <th bgcolor="#D1E6E7">廠商聯絡人電話</td>
+            {% if edit %}
+                <td bgcolor="#FFE7CD" id="contractor_contacter_phone" class="editable">
+                    <a id="contractor_contacter_phone" class="show_contractor_contacter_phone">{{ project.contractor_contacter_phone|default_if_none:'待輸入' }}</a>
+                    <input id="contractor_contacter_phone" class="edit_contractor_contacter_phone update_edited" 
+                           size="20" type="text" value="{{ project.contractor_contacter_phone|default_if_none:'' }}"
+                           old_value="{{ project.contractor_contacter_phone|default_if_none:'' }}" style="display: none;">
+                </td>
+            {% else %}
+                <td bgcolor="#FFE7CD">
+                    {{ project.contractor_contacter_phone }}
+                </td>
+            {% endif %}
+    </tr>
+    <tr>
+        <th bgcolor="#D1E6E7">監造廠商</th>
+        <td align="left">{% if project.inspector %}{{ project.inspector.name }}({{ project.inspector.no }}){% else %}尚未登錄{% endif %}</td>
+        <th bgcolor="#D1E6E7">營造廠商</th>
+        <td align="left">{% if project.contractor %}{{ project.contractor.name }}({{ project.contractor.no }}){% else %}尚未登錄{% endif %}</td>
+    </tr>
+    <tr>
+        <th bgcolor="#D1E6E7">監造認領密碼</th>
+        <td align="left">
+            {% if user.is_staff %}
+                {{ project.inspector_code }}
+            {% else %}
+                {% ifequal project.identity '負責主辦工程師' %}
+                    {{ project.inspector_code }}
+                {% endifequal %}
+                {% ifequal project.identity '協同主辦工程師' %}
+                    {{ project.inspector_code }}
+                {% endifequal %}
+                {% ifequal project.identity '自辦主辦工程師' %}
+                    {{ project.inspector_code }}
+                {% endifequal %}
+                {% ifequal project.identity '監造廠商' %}
+                    {{ project.inspector_code }}
+                {% endifequal %}
+            {% endif %}
+        </td>
+        <th bgcolor="#D1E6E7">營造認領密碼</th>
+        <td align="left">
+            {% if user.is_staff %}
+                {{ project.contractor_code }}
+            {% else %}
+                {% ifequal project.identity '負責主辦工程師' %}
+                    {{ project.contractor_code }}
+                {% endifequal %}
+                {% ifequal project.identity '協同主辦工程師' %}
+                    {{ project.contractor_code }}
+                {% endifequal %}
+                {% ifequal project.identity '自辦主辦工程師' %}
+                    {{ project.contractor_code }}
+                {% endifequal %}
+                {% ifequal project.identity '營造廠商' %}
+                    {{ project.contractor_code }}
+                {% endifequal %}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <th bgcolor="#D1E6E7">監造帳號列表</th>
+        <td align="left">{% for u in inspectors %}{{ u.user_profile.rName }}({{ u.username }})<br>{% endfor %}</td>
+        <th bgcolor="#D1E6E7">營造帳號列表</th>
+        <td align="left">{% for u in contractors %}{{ u.user_profile.rName }}({{ u.username }})<br>{% endfor %}</td>
+    </tr>
+    <tr>
+        <th bgcolor="#92D3B5">監造帳號是否啟用</th>
+        <td align="left">
+            {% if edit %}
+            <select id="inspector_open" class="updateFRCMProject" name="inspector_open" project_id="{{ project.id }}">
+                <option value="open" {% if project.inspector_open %}selected="selected"{% endif %}>啟用</option>
+                <option value="close" {% if not project.inspector_open %}selected="selected"{% endif %}>關閉</option>
+            </select>
+            {% else %}
+            {% if project.inspector_open %}啟用中{% else %}關閉中{% endif %}
+            {% endif %}
+        </td>
+        <th bgcolor="#92D3B5">營造廠商是否啟用</th>
+        <td align="left">
+            {% if edit %}
+            <select id="contractor_open" class="updateFRCMProject" name="contractor_open" project_id="{{ project.id }}">
+                <option value="open" {% if project.contractor_open %}selected="selected"{% endif %}>啟用</option>
+                <option value="close" {% if not project.contractor_open %}selected="selected"{% endif %}>關閉</option>
+            </select>
+            {% else %}
+            {% if project.contractor_open %}啟用中{% else %}關閉中{% endif %}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <th bgcolor="#D1E6E7" colspan="4" align="center">備註</th>
+    </tr>
+    <tr>
+        <td align="left" colspan="4">
+            {{ project.project_memo|linebreaks }}
+        </td>
+    </tr>
+</table>
+</span>
+
+<br><hr width="800" style="color:orange"><hr width="800" style="color:orange"><br>
+<div><a name="BidInfo"></a></div>
+<span style="font-size: 18px">
+    <span style="font-size: 26px">標案資訊</span><span style="font-size: 12px">(請點擊欄位輸入)</span>
+    <table  style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+    <tbody align="left">
+        <tr>
+            <td bgcolor="#D1E6E7" style="min-width: 150px;">投標廠商</td>
+                {% if edit %}
+                    <td id="bid_on" class="editable" colspan="3" rowspan="1" height="60" width="600">
+                        <a id="bid_on" class="show_bid_on">{{ project.bid_on|default_if_none:''|linebreaks }}</a>
+                        <textarea id="bid_on" class="edit_bid_on update_edited" cols="60" rows="2" size="56" type="text" value="{{ project.bid_on|default_if_none:'' }}" old_value="{{ project.bid_on|default_if_none:'' }}" style="display: none;">{{ project.bid_on|default_if_none:'' }}</textarea>
+                    </td>
+                {% else %}
+                    <td colspan="3" rowspan="1">
+                        {{ project.bid_on|default_if_none:''|linebreaks }}
+                    </td>
+                {% endif %}
+        </tr>
+        <tr>
+            <td bgcolor="#D1E6E7">決標廠商</td>
+                {% if edit %}
+                    <td id="bid_final" class="editable" colspan="3" rowspan="1" height="50">
+                        <a id="bid_final" class="show_bid_final">{{ project.bid_final|default_if_none:''|linebreaks }}</a>
+                        <textarea id="bid_final" class="edit_bid_final update_edited" cols="60" rows="1" size="56" type="text" value="{{ project.bid_final|default_if_none:'' }}" old_value="{{ project.bid_final|default_if_none:'' }}" style="display: none;">{{ project.bid_final|default_if_none:'' }}</textarea>
+                    </td>
+                {% else %}
+                    <td colspan="3" rowspan="1">
+                        {{ project.bid_final|default_if_none:'' }}
+                    </td>
+                {% endif %}
+        </tr>
+        <tr>
+            <td bgcolor="#D1E6E7">招標方式</td>
+                {% if edit %}
+                    <td style="min-width: 225px;" id="bid_type" class="editable">
+                        <a id="bid_type" class="show_bid_type">{% if project.bid_type %}{{ project.bid_type }}{% else %}待輸入{% endif %}</a>
+                        <select id="bid_type" class="edit_bid_type update_edited" value="{{ project.bid_type.id }}" old_value="{{ project.bid_type.id }}" style="display: none;">
+                            <option value=""></option>
+                            {% for bid_type in option.bid_type %}
+                                    <option value="{{ bid_type.id }}" {% ifequal project.bid_type.id bid_type.id %}selected{% endifequal %}>{{ bid_type.value }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                {% else %}
+                    <td style="min-width: 225px;">
+                        {% if project.bid_type %}{{ project.bid_type }}{% else %}待輸入{% endif %}
+                    </td>
+                {% endif %}
+            <td bgcolor="#D1E6E7" style="min-width: 150px;">發包方式</td>
+                {% if edit %}
+                    <td style="min-width: 225px;" id="contract_type" class="editable" width="180">
+                        <a id="contract_type" class="show_contract_type">{% if project.contract_type %}{{ project.contract_type }}{% else %}待輸入{% endif %}</a>
+                        <select id="contract_type" class="edit_contract_type update_edited" value="{{ project.contract_type.id }}" old_value="{{ project.contract_type.id }}" style="display: none;">
+                            <option value=""></option>
+                            {% for contract_type in option.contract_type %}
+                                    <option value="{{ contract_type.id }}" {% ifequal project.contract_type.id contract_type.id %}selected{% endifequal %}>{{ contract_type.value }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                {% else %}
+                    <td style="min-width: 225px;">
+                        {% if project.contract_type %}{{ project.contract_type }}{% else %}待輸入{% endif %}
+                    </td>
+                {% endif %}
+        </tr>
+        <tr>
+            <td bgcolor="#D1E6E7">決標折數</td>
+                {% if edit %}
+                    <td id="bid_discount" class="editable" align="left">
+                        <a id="bid_discount" class="show_bid_discount">{% if project.bid_discount %}{{ project.bid_discount }}{% else %}待輸入{% endif %}</a>
+                        <input id="bid_discount" class="edit_bid_discount update_edited" size="22" type="text" value="{% if project.bid_discount %}{{ project.bid_discount }}{% else %}{% endif %}" old_value="{% if project.bid_discount %}{{ project.bid_discount }}{% else %}{% endif %}" style="display: none;">
+                    </td>
+                {% else %}
+                    <td align="left">
+                        {{ project.bid_discount }}
+                    </td>
+                {% endif %}
+            <td colspan="2"></td>
+        </tr>
+
+        <tr>
+            <td colspan="4" style="padding:0px;">
+                <table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2" frame="below">
+                    <tr align="center">
+                        <td bgcolor="#D1E6E7" width="150" style="color: red;">(單位：元)</td>
+                        <td bgcolor="#D1E6E7" width="150">契約金額</td>
+                        <td bgcolor="#D1E6E7" width="150">結算金額</td>
+                        <td bgcolor="#D1E6E7" width="300">備註</td>
+                    </tr>
+
+                    <tr class="bid_info">
+                        <td bgcolor="#D1E6E7">規劃費</td>
+                        {% if edit %}
+                        <td id="planning_fee" class="redaction" align="right">
+                            <a class="show_planning_fee" align="right">{{ project.planning_fee|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="planning_fee" category="ProjectBid" class="edit_planning_fee updateRedaction float" size="12" type="text" value="{{ project.planning_fee|default_if_none:''|cutzero }}" old_value="{{ project.planning_fee|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                        {% else %}
+                        <td align="right">{{ project.planning_fee|default_if_none:''|intcomma|cutzero }}</td>
+                        {% endif %}
+                        {% if edit %}
+                        <td id="settlement_planning_fee" class="redaction" align="right">
+                            <a class="show_settlement_planning_fee" align="right">{{ project.settlement_planning_fee|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="settlement_planning_fee" category="ProjectBid" class="edit_settlement_planning_fee updateRedaction float" size="12" type="text" value="{{ project.settlement_planning_fee|default_if_none:''|cutzero }}" old_value="{{ project.settlement_planning_fee|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                        {% else %}
+                        <td align="right">{{ project.settlement_planning_fee|default_if_none:''|intcomma|cutzero }}</td>
+                        {% endif %}
+                        {% if edit %}
+                        <td id="planning_fee_memo" class="redaction" colspan="3">
+                            <a class="show_planning_fee_memo">{{ project.planning_fee_memo|default_if_none:''|linebreaks }}</a>
+                            <textarea editing="planning_fee_memo" category="ProjectBid" class="edit_planning_fee_memo updateRedaction" cols="15" rows="1" size="56" type="text" value="{{ project.planning_fee_memo|default_if_none:'' }}" old_value="{{ project.planning_fee_memo|default_if_none:'' }}" style="display: none;">{{ project.planning_fee_memo|default_if_none:'' }}</textarea>
+                        </td>
+                        {% else %}
+                        <td colspan="3">{{ project.planning_fee_memo|default_if_none:''|linebreaks }}</td>
+                        {% endif %}
+                    </tr>
+                    <tr class="bid_info">
+                        <td bgcolor="#D1E6E7">委託研究</td>
+                        {% if edit %}
+                        <td id="commissioned_research" class="redaction" align="right">
+                            <a class="show_commissioned_research" align="right">{{ project.commissioned_research|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="commissioned_research" category="ProjectBid" class="edit_commissioned_research updateRedaction float" size="12" type="text" value="{{ project.commissioned_research|default_if_none:''|cutzero }}" old_value="{{ project.commissioned_research|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                        {% else %}
+                        <td align="right">{{ project.commissioned_research|default_if_none:''|intcomma|cutzero }}</td>
+                        {% endif %}
+                        {% if edit %}
+                        <td id="settlement_commissioned_research" class="redaction" align="right">
+                            <a class="show_settlement_commissioned_research" align="right">{{ project.settlement_commissioned_research|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="settlement_commissioned_research" category="ProjectBid" class="edit_settlement_commissioned_research updateRedaction float" size="12" type="text" value="{{ project.settlement_commissioned_research|default_if_none:''|cutzero }}" old_value="{{ project.settlement_commissioned_research|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                        {% else %}
+                        <td align="right">{{ project.settlement_commissioned_research|default_if_none:''|intcomma|cutzero }}</td>
+                        {% endif %}
+                        {% if edit %}
+                        <td id="commissioned_research_memo" class="redaction" colspan="3">
+                            <a class="show_commissioned_research_memo">{{ project.commissioned_research_memo|default_if_none:''|linebreaks }}</a>
+                            <textarea editing="commissioned_research_memo" category="ProjectBid" class="edit_commissioned_research_memo updateRedaction" cols="15" rows="1" size="56" type="text" value="{{ project.commissioned_research_memo|default_if_none:'' }}" old_value="{{ project.commissioned_research_memo|default_if_none:'' }}" style="display: none;">{{ project.commissioned_research_memo|default_if_none:'' }}</textarea>
+                        </td>
+                        {% else %}
+                        <td colspan="3">{{ project.commissioned_research_memo|default_if_none:''|linebreaks }}</td>
+                        {% endif %}
+                    </tr>
+                    <tr class="bid_info">
+                        <td bgcolor="#D1E6E7">設計決標金額</td>
+                        {% if edit %}
+                        <td id="design_bid" class="redaction" align="right">
+                            <a class="show_design_bid" align="right">{{ project.design_bid|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="design_bid" category="ProjectBid" class="edit_design_bid updateRedaction float" size="12" type="text" value="{{ project.design_bid|default_if_none:''|cutzero }}" old_value="{{ project.design_bid|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                        {% else %}
+                        <td align="right">{{ project.design_bid|default_if_none:''|intcomma|cutzero }}</td>
+                        {% endif %}
+                        {% if edit %}
+                        <td id="settlement_design_bid" class="redaction" align="right">
+                            <a class="show_settlement_design_bid" align="right">{{ project.settlement_design_bid|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="settlement_design_bid" category="ProjectBid" class="edit_settlement_design_bid updateRedaction float" size="12" type="text" value="{{ project.settlement_design_bid|default_if_none:''|cutzero }}" old_value="{{ project.settlement_design_bid|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                        {% else %}
+                        <td align="right">{{ project.settlement_design_bid|default_if_none:''|intcomma|cutzero }}</td>
+                        {% endif %}
+                        {% if edit %}
+                        <td id="design_bid_memo" class="redaction" colspan="3">
+                            <a class="show_design_bid_memo">{{ project.design_bid_memo|default_if_none:''|linebreaks }}</a>
+                            <textarea editing="design_bid_memo" category="ProjectBid" class="edit_design_bid_memo updateRedaction" cols="15" rows="1" size="56" type="text" value="{{ project.design_bid_memo|default_if_none:'' }}" old_value="{{ project.design_bid_memo|default_if_none:'' }}" style="display: none;">{{ project.design_bid_memo|default_if_none:'' }}</textarea>
+                        </td>
+                        {% else %}
+                        <td colspan="3">{{ project.design_bid_memo|default_if_none:''|linebreaks }}</td>
+                        {% endif %}
+                    </tr>
+                    <tr class="bid_info">
+                        <td bgcolor="#D1E6E7">監造決標金額</td>
+                        {% if edit %}
+                        <td id="inspect_bid" class="redaction" align="right">
+                            <a class="show_inspect_bid" align="right">{{ project.inspect_bid|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="inspect_bid" category="ProjectBid" class="edit_inspect_bid updateRedaction float" size="12" type="text" value="{{ project.inspect_bid|default_if_none:''|cutzero }}" old_value="{{ project.inspect_bid|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                        {% else %}
+                        <td align="right">{{ project.inspect_bid|default_if_none:''|intcomma|cutzero }}</td>
+                        {% endif %}
+                        {% if edit %}
+                        <td id="settlement_inspect_bid" class="redaction" align="right">
+                            <a class="show_settlement_inspect_bid" align="right">{{ project.settlement_inspect_bid|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="settlement_inspect_bid" category="ProjectBid" class="edit_settlement_inspect_bid updateRedaction float" size="12" type="text" value="{{ project.settlement_inspect_bid|default_if_none:''|cutzero }}" old_value="{{ project.settlement_inspect_bid|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                        {% else %}
+                        <td align="right">{{ project.settlement_inspect_bid|default_if_none:''|intcomma|cutzero }}</td>
+                        {% endif %}
+                        {% if edit %}
+                        <td id="inspect_bid_memo" class="redaction" colspan="3">
+                            <a class="show_inspect_bid_memo">{{ project.inspect_bid_memo|default_if_none:''|linebreaks }}</a>
+                            <textarea editing="inspect_bid_memo" category="ProjectBid" class="edit_inspect_bid_memo updateRedaction" cols="15" rows="1" size="56" type="text" value="{{ project.inspect_bid_memo|default_if_none:'' }}" old_value="{{ project.inspect_bid_memo|default_if_none:'' }}" style="display: none;">{{ project.inspect_bid_memo|default_if_none:'' }}</textarea>
+                        </td>
+                        {% else %}
+                        <td colspan="3">{{ project.inspect_bid_memo|default_if_none:''|linebreaks }}</td>
+                        {% endif %}
+                    </tr>
+                    <tr class="bid_info">
+                        <td bgcolor="#D1E6E7">工程決標金額</td>
+                        {% if edit %}
+                        <td id="construction_bid" class="redaction" align="right">
+                            <a class="show_construction_bid">{{ project.construction_bid|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="construction_bid" category="ProjectBid" class="edit_construction_bid updateRedaction float" size="12" type="text" value="{{ project.construction_bid|default_if_none:''|cutzero }}" old_value="{{ project.construction_bid|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                        {% else %}
+                        <td align="right">{{ project.construction_bid|default_if_none:''|intcomma|cutzero }}</td>
+                        {% endif %}
+                        {% if edit %}
+                        <td id="settlement_construction_bid" class="redaction" align="right">
+                            <a class="show_settlement_construction_bid" align="right">{{ project.settlement_construction_bid|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="settlement_construction_bid" category="ProjectBid" class="edit_settlement_construction_bid updateRedaction float" size="12" type="text" value="{{ project.settlement_construction_bid|default_if_none:''|cutzero }}" old_value="{{ project.settlement_construction_bid|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                        {% else %}
+                        <td align="right">{{ project.settlement_construction_bid|default_if_none:''|intcomma|cutzero }}</td>
+                        {% endif %}
+                        {% if edit %}
+                        <td id="construction_bid_memo" class="redaction" colspan="3">
+                            <a class="show_construction_bid_memo">{{ project.construction_bid_memo|default_if_none:''|linebreaks }}</a>
+                            <textarea editing="construction_bid_memo" category="ProjectBid" class="edit_construction_bid_memo updateRedaction" cols="15" rows="1" size="56" type="text" value="{{ project.construction_bid_memo|default_if_none:'' }}" old_value="{{ project.construction_bid_memo|default_if_none:'' }}" style="display: none;">{{ project.construction_bid_memo|default_if_none:'' }}</textarea>
+                        </td>
+                        {% else %}
+                        <td colspan="3">{{ project.construction_bid_memo|default_if_none:''|linebreaks }}</td>
+                        {% endif %}
+                    </tr>
+                    <tr class="bid_info">
+                        <td bgcolor="#D1E6E7">空污費</td>
+                        {% if edit %}
+                        <td id="pollution" class="redaction" align="right">
+                            <a class="show_pollution">{{ project.pollution|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="pollution" category="ProjectBid" class="edit_pollution updateRedaction float" size="12" type="text" value="{{ project.pollution|default_if_none:''|cutzero }}" old_value="{{ project.pollution|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                        {% else %}
+                        <td align="right">{{ project.pollution|default_if_none:''|intcomma|cutzero }}</td>
+                        {% endif %}
+                        {% if edit %}
+                        <td id="settlement_pollution" class="redaction" align="right">
+                            <a class="show_settlement_pollution" align="right">{{ project.settlement_pollution|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="settlement_pollution" category="ProjectBid" class="edit_settlement_pollution updateRedaction float" size="12" type="text" value="{{ project.settlement_pollution|default_if_none:''|cutzero }}" old_value="{{ project.settlement_pollution|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                        {% else %}
+                        <td align="right">{{ project.settlement_pollution|default_if_none:''|intcomma|cutzero }}</td>
+                        {% endif %}
+                        {% if edit %}
+                        <td id="pollution_memo" class="redaction" colspan="3">
+                            <a class="show_pollution_memo">{{ project.pollution_memo|default_if_none:''|linebreaks }}</a>
+                            <textarea editing="pollution_memo" category="ProjectBid" class="edit_pollution_memo updateRedaction" cols="15" rows="1" size="56" type="text" value="{{ project.pollution_memo|default_if_none:'' }}" old_value="{{ project.pollution_memo|default_if_none:'' }}" style="display: none;">{{ project.pollution_memo|default_if_none:'' }}</textarea>
+                        </td>
+                        {% else %}
+                        <td colspan="3">{{ project.pollution_memo|default_if_none:''|linebreaks }}</td>
+                        {% endif %}
+                    </tr>
+                    <tr class="bid_info">
+                        <td bgcolor="#D1E6E7">工程管理費</td>
+                        {% if edit %}
+                        <td id="manage" class="redaction" align="right">
+                            <a class="show_manage">{{ project.manage|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="manage" category="ProjectBid" class="edit_manage updateRedaction float" size="12" type="text" value="{{ project.manage|default_if_none:''|cutzero }}" old_value="{{ project.manage|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                        {% else %}
+                        <td align="right">{{ project.manage|default_if_none:''|intcomma|cutzero }}</td>
+                        {% endif %}
+                        {% if edit %}
+                        <td id="settlement_manage" class="redaction" align="right">
+                            <a class="show_settlement_manage" align="right">{{ project.settlement_manage|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="settlement_manage" category="ProjectBid" class="edit_settlement_manage updateRedaction float" size="12" type="text" value="{{ project.settlement_manage|default_if_none:''|cutzero }}" old_value="{{ project.settlement_manage|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                        {% else %}
+                        <td align="right">{{ project.settlement_manage|default_if_none:''|intcomma|cutzero }}</td>
+                        {% endif %}
+                        {% if edit %}
+                        <td id="manage_memo" class="redaction" colspan="3">
+                            <a class="show_manage_memo">{{ project.manage_memo|default_if_none:''|linebreaks }}</a>
+                            <textarea editing="manage_memo" category="ProjectBid" class="edit_manage_memo updateRedaction" cols="15" rows="1" size="56" type="text" value="{{ project.manage_memo|default_if_none:'' }}" old_value="{{ project.manage_memo|default_if_none:'' }}" style="display: none;">{{ project.manage_memo|default_if_none:'' }}</textarea>
+                        </td>
+                        {% else %}
+                        <td colspan="3" rowspan="1">{{ project.manage_memo|default_if_none:''|linebreaks }}</td>
+                        {% endif %}
+                    </tr>
+                    <tr class="bid_info">
+                        <td bgcolor="#D1E6E7">外水電補助</td>
+                        {% if edit %}
+                        <td id="subsidy" class="redaction" align="right">
+                            <a class="show_subsidy" align="right">{{ project.subsidy|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="subsidy" category="ProjectBid" class="edit_subsidy updateRedaction float" size="12" type="text" value="{{ project.subsidy|default_if_none:''|cutzero }}" old_value="{{ project.subsidy|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                        {% else %}
+                        <td align="right">{{ project.subsidy|default_if_none:''|intcomma|cutzero }}</td>
+                        {% endif %}
+                        {% if edit %}
+                        <td id="settlement_subsidy" class="redaction" align="right">
+                            <a class="show_settlement_subsidy" align="right">{{ project.settlement_subsidy|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="settlement_subsidy" category="ProjectBid" class="edit_settlement_subsidy updateRedaction float" size="12" type="text" value="{{ project.settlement_subsidy|default_if_none:''|cutzero }}" old_value="{{ project.settlement_subsidy|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                        {% else %}
+                        <td align="right">{{ project.settlement_subsidy|default_if_none:''|intcomma|cutzero }}</td>
+                        {% endif %}
+                        {% if edit %}
+                        <td id="subsidy_memo" class="redaction" colspan="3">
+                            <a class="show_subsidy_memo">{{ project.subsidy_memo|default_if_none:''|linebreaks }}</a>
+                            <textarea editing="subsidy_memo" category="ProjectBid" class="edit_subsidy_memo updateRedaction" cols="15" rows="1" size="56" type="text" value="{{ project.subsidy_memo|default_if_none:'' }}" old_value="{{ project.subsidy_memo|default_if_none:'' }}" style="display: none;">{{ project.subsidy_memo|default_if_none:'' }}</textarea>
+                        </td>
+                        {% else %}
+                        <td colspan="3">{{ project.subsidy_memo|default_if_none:''|linebreaks }}</td>
+                        {% endif %}
+                    </tr>
+                    <tr class="bid_info">
+                        <td bgcolor="#D1E6E7">其他費用</td>
+                        {% if edit %}
+                        <td id="other_defray" class="redaction" align="right">
+                            <a class="show_other_defray">{{ project.other_defray|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="other_defray" category="ProjectBid" class="edit_other_defray updateRedaction float" size="12" type="text" value="{{ project.other_defray|default_if_none:''|cutzero }}" old_value="{{ project.other_defray|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                        {% else %}
+                        <td align="right">{{ project.other_defray|default_if_none:''|intcomma|cutzero }}</td>
+                        {% endif %}
+                        {% if edit %}
+                        <td id="settlement_other_defray" class="redaction" align="right">
+                            <a class="show_settlement_other_defray" align="right">{{ project.settlement_other_defray|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="settlement_other_defray" category="ProjectBid" class="edit_settlement_other_defray updateRedaction float" size="12" type="text" value="{{ project.settlement_other_defray|default_if_none:''|cutzero }}" old_value="{{ project.settlement_other_defray|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                        {% else %}
+                        <td align="right">{{ project.settlement_other_defray|default_if_none:''|intcomma|cutzero }}</td>
+                        {% endif %}
+                        {% if edit %}
+                        <td id="other_defray_memo" class="redaction" colspan="3">
+                            <a class="show_other_defray_memo">{{ project.other_defray_memo|default_if_none:''|linebreaks }}</a>
+                            <textarea editing="other_defray_memo" category="ProjectBid" class="edit_other_defray_memo updateRedaction" cols="15" rows="1" size="56" type="text" value="{{ project.other_defray_memo|default_if_none:'' }}" old_value="{{ project.other_defray_memo|default_if_none:'' }}" style="display: none;">{{ project.other_defray_memo|default_if_none:'' }}</textarea>
+                        </td>
+                        {% else %}
+                        <td colspan="3">{{ project.other_defray_memo|default_if_none:''|linebreaks }}</td>
+                        {% endif %}
+                    </tr>
+                    <tr class="bid_info">
+                        <td bgcolor="#D1E6E7" rowspan="2">發包及其他費用</td>
+                        {% if edit %}
+                        <td id="total_money" class="redaction" align="right">
+                            <a class="show_total_money">{{ project.total_money|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="total_money" category="ProjectBid" class="edit_total_money updateRedaction float" size="12" type="text" value="{{ project.total_money|default_if_none:''|cutzero}}" old_value="{{ project.total_money|default_if_none:''|cutzero}}" style="display: none; text-align:right;">
+                        </td>
+                        {% else %}
+                        <td align="right">{{ project.total_money|default_if_none:''|intcomma|cutzero }}</td>
+                        {% endif %}
+                        {% if edit %}
+                        <td id="settlement_total_money" class="redaction" align="right">
+                            <a class="show_settlement_total_money" align="right">{{ project.settlement_total_money|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="settlement_total_money" category="ProjectBid" class="edit_settlement_total_money updateRedaction float" size="12" type="text" value="{{ project.settlement_total_money|default_if_none:''|cutzero }}" old_value="{{ project.settlement_total_money|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                        {% else %}
+                        <td align="right">{{ project.settlement_total_money|default_if_none:''|intcomma|cutzero }}</td>
+                        {% endif %}
+                        <td bgcolor="#D1E6E7">
+                            <span id="intor" style="font-size: 12px;">總額：若上述欄位資訊不足，可於此欄直接數入。</span>
+                        </td>
+                    </tr>
+                    <tr class="bid_info">
+                        <td align="right" class="">
+                            <span id="total_cost_contract" value="{{ contract_total }}">{{ contract_total|default_if_none:''|intcomma|cutzero }}</span>
+                        </td>
+                        <td align="right" class="">
+                            <span id="total_cost_settlement" value="{{ settlement_total }}">{{ settlement_total|default_if_none:''|intcomma|cutzero }}</span>
+                        </td>
+                        <td bgcolor="#D1E6E7">
+                            <span id="intor" style="font-size: 12px;">採用總額：若有總額則直接採用，否則以其他欄位加總。</span>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+     </tbody>
+    </table>
+    <br>
+    <span class="notice" id="message">{{ message }}</span>
+</span>
+
+<br><hr width="800" style="color:orange"><hr width="800" style="color:orange"><br>
+<div><a name="MileSton"></a></div>
+<span style="font-size: 18px">
+    <span style="font-size: 26px">里程碑資訊</span><span style="font-size: 12px">(請點擊欄位輸入)</span>
+
+    <br>
+    <table border="1" style="border-collapse: collapse" align="center" valign="middle">
+        <tr bgcolor="#AFFFD8" align="center" valign="middle">
+            <td width="150">[ {{ project.purchase_type.value }} ]類</td>
+            <td width="150">預計日期</td>
+            <td width="150">實際日期</td>
+            <td width="300">文號/備註</td>
+        </tr>
+        {% ifequal project.purchase_type.value '一般勞務' %}
+            {% include 'frcm/mileston_ser.html' %}
+        {% else %}
+            {% include 'frcm/mileston_eng.html' %}
+        {% endifequal %}
+    </table>
+
+    <br>
+        <span class="notice" id="message">{{ message }}</span>
+</span>
+
+<br><hr width="800" style="color:orange"><hr width="800" style="color:orange"><br>
+
+<br><br>
+
+<table border="1" cellpadding="2" cellspacing="2" style="border-collapse: collapse; font-size: 12px;">
+    <thead>
+        <tr>
+            <th colspan="15" align="center" class="title_bar pointer" style="background-color: #D6FFAF;font-size:18px;">分配數資訊</th>
+        </tr>
+		<tr align=center bgcolor="#EEEEEE">
+			<th style="min-width: 100px;">日期</th>
+                        <th style="min-width: 150px;">分配數(元)</th>
+			<th style="min-width: 200px;">備註</th>
+			{% if edit %}<th style="min-width: 60px;">刪除記錄</th>{% endif %}
+		</tr>
+	</thead>
+	<tbody>
+        {% for a in allocation %}
+            {% include 'project/allocation_unit.html' %}
+        {% endfor %}
+        <tr id="insertAllocation" style="display: none;">
+            <td></td>
+        </tr>
+        <tr>
+            <td colspan="4" align="right" style="font-size: 20px;">
+                總分配數：{{ fund.rTotalAllocation|default_if_none:''|intcomma|cutzero }} (元)
+            </td>
+        </tr>
+		{% if edit %}
+        <tr>
+            <td colspan="4" align="right">
+                <button class="addAllocation" title="新增紀錄" project_id="{{ project.id }}">新增分配數紀錄</button>
+            </td>
+        </tr>
+		{% endif %}
+	</tbody>
+</table>
+<br>
+<span class="NotImportant">
+{% if transfer_button %}
+    <a class="transferEngineer" active="get_list" project_id="{{ project.id }}"><img border="2" src="/media/frcm/image/transfer.png" height="100" width="166" title="轉移負責主辦工程師"></a>
+{% endif %}
+{% if send_back_button %}
+    <a class="sendBackProject" project_id="{{ project.id }}"><img border="2" src="/media/frcm/image/sendback.png" height="100" width="166" title="退還工程案"></a>
+{% endif %}
+{% if user.is_staff %}
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    偷偷來 不要跟別人講<br>
+    {% for u in all_users %}
+        <input class="updateStuffToUser" username="{{ u.user.username }}" user_fullname="{{ u.user.user_profile.rName }}" type="button" value="轉換帳戶">帳號：{{ u.user.username }}　　　　姓名：{{ u.user.user_profile.rName }}　　　　身分群組：{{ u.group.name }}<br>
+    {% endfor %}
+{% endif %}
+</span>
+
+
+{% if edit %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        var pcc_no = $('a[class=show_pcc_no]').html();
+        if (!pcc_no){
+            alert('請優先填寫『工程會標案編號』欄位，此為重要同步欄位。');
+        }
+    });
+</script>
+{% endif %}
+
+
+
+{% endblock %}

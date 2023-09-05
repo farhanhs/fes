@@ -1,0 +1,42 @@
+{% load i18n %}
+{% load humanize %}
+{% load utiltags %}
+{% load guardian_tags %}
+
+<tr id="error_tr_{{ error.id }}">
+    <td>
+        <button class="btn btn-xs btn-danger deleteRow" type="button" title="刪除此缺失"
+            module_name="supervise"
+            table_name="error"
+            row_id="{{ error.id }}"
+            message="確定要刪除這個項目嗎？ 注意：缺失改善紀錄將會一併刪除。" 
+            remove_target="error_tr_{{ error.id }}">X</button>
+    </td>
+    <td title="{{ error.ec.introduction }}"><span class="blue_font_style ec_no">{{ error.ec.no }}</span></td>
+    <td>
+        <select
+            class="BlurUpdateInfo form-control"
+            field_type="str" style="font-size: 12px;"
+            is_select="true"
+            row_id="{{ error.id }}"
+            field_name="level"
+            table_name="error"
+            module_name='supervise'
+            old_value="/supervise/api/v2/errorlevel/{{ error.level.id }}">
+            {% for el in error_levels %}
+                <option value="/supervise/api/v2/errorlevel/{{ el.id }}/" {% ifequal el.id error.level.id %}selected{% endifequal %}>{{ el.name }}</option>
+            {% endfor %}
+        </select>
+    </td>
+    <td>
+        <textarea
+            type="text" class="BlurUpdateInfo form-control"
+            field_type="str" style="font-size: 12px;"
+            row_id="{{ error.id }}"
+            field_name="context"
+            table_name="error"
+            module_name='supervise'
+            placeholder="待輸入"
+            old_value="{{ error.context|default_if_none:'' }}">{{ error.context|default_if_none:'' }}</textarea>
+    </td>
+</tr>

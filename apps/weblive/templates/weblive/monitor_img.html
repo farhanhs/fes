@@ -1,0 +1,32 @@
+<!--<script language="javascript" src="http://webnvr.nchu-cm.com/js.php?devid={{ cam.channel }}&L={{ cam.viewer_key }}&{imagesize=[{{ imagesize }}]}&{fps=[{{ fps }}]}">
+</script>-->
+
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta http-equiv="content-script-type" content="text/javascript">
+        <title>Monitor Images Page</title>
+        <link rel=stylesheet type="text/css" href="/media/weblive/weblive.css">
+    </head>
+    <body{% ifequal browser "msie" %} onLoad="onLive();"{% endifequal %}>
+    {%  csrf_token %}
+    {% if cam %}
+        <div id="film_area">
+        {% ifequal browser 'msie' %}
+            <applet code="com.charliemouse.cambozola.Viewer" archive="/media/weblive/cambozola.jar" width="640" height="480">
+                <param name="url" value="/weblive/screen/{{ cam.id }}/"/>
+                <param name="accessories" value="none"/>
+            </applet>
+        {% else %}
+            <img src="/weblive/screen/{{ cam.id }}/" width="640" height="480">
+        {% endifequal %}
+        </div>
+    {% else %}
+        <div id="init_field">
+            <br><br><br>
+            <font color="#E1F0F0" size="20">~Welcome to Use~</font><br>
+            <img src="/media/weblive/image/marvin_r2.png" alt="">
+        </div>
+    {% endif %}
+    </body>
+</html>

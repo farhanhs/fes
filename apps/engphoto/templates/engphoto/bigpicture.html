@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+        <title></title>
+        <script type="text/javascript" src="/media/jquery.ui-1.5.1/jquery-1.2.6.js"></script>
+        <script type="text/javascript" src="/media/jquery-plugins/jquery.include.js"></script>
+        <script type="text/javascript" src="/media/jquery.ui-1.5.1/ui/ui.core.js"></script>
+        <script type="text/javascript" src="/media/jquery.ui-1.5.1/ui/ui.draggable.js"></script>
+        <script type="text/javascript" src="/media/jquery-plugins/mousewheel.js"></script>
+        <!--[if IE]><script type="text/javascript" src="excanvas.js"></script><![endif]-->
+        <link rel="stylesheet" type="text/css" href="/media/jquery.css" />
+        <link rel="stylesheet" type="text/css" href="/media/engphoto/style.css" />
+        <script type="text/javascript">
+            // page globe variables:
+            var project_id = {{ project.id }};           //工程案id
+            var defectList = [{{ defectList }}];         //以時間排序的待改善相片id
+            var trashList = [{{ trashList }}];           //以時間排序的資源回收筒相片id
+            var timeList = [{{ timeList }}];             //以時間排序的相片id
+            var checkpointList = [{{ checkpointList }}]; //以查驗點排序的相片id
+            var orderList = {{ orderList }};                      //相片在查驗點的序位
+            var photoList = [];                          //以相片id為key的資料明細
+            var type = '{{ type }}';                              //排序方式
+            var angle = 0;                                        //旋轉角度，預設為 0
+            var nowPhoto_id = {{ photo_id }};                     //秀出的相片，其id
+            var maxScale = 400;                                   //可放大之最大倍數(%)
+            var intOverallDelta = 0;                              //倍數
+            var margin = 5;                                       //圖片欄與 window 畫面的間隙
+            var scale_margin = 8;                                 //放大縮小圖之間的間隙
+        </script>
+        <script type="text/javascript" src="/media/engphoto/js/lib.js"></script>
+        <script type="text/javascript">
+            $(document).ready(function(){
+                $('#typeTime').click(function(){
+                    type = 'time';
+                    getPhotoById(nowPhoto_id, type);
+                });
+                $('#typeCheckPoint').click(function(){
+                    type = 'checkpoint';
+                    getPhotoById(nowPhoto_id, type);
+                });
+
+                $('#leftone').click(function(){
+                    $('#picture').attr('src','').css({
+                        'background-image': 'url(/media/images/uploading.gif)',
+                        'background-repeat': 'no-repeat'
+                    });
+                    nowPhoto_id = $(this).attr('value');
+                    angle = 0;
+                    rotate($('#rotate'), 0);
+                    intOverallDelta = 0;
+                    setCHHeight();
+                });
+                $('#rightone').click(function(){
+                    $('#picture').attr('src','').css({
+                        'background-image': 'url(/media/images/uploading.gif)',
+                        'background-repeat': 'no-repeat'
+                    });
+                    nowPhoto_id = $(this).attr('value');
+                    angle = 0;
+                    rotate($('#rotate'), 0);
+                    intOverallDelta = 0;
+                    setCHHeight();
+                });
+                $("#picture").draggable().click(alignTogether);
+                $("#coordinate").draggable().click(alignTogether);
+                $('#small').click(smallPic);
+                $('#big').click(bigPic);
+                $(".divScroll").mousewheel(function(objEvent, intDelta){
+                    if ( angle != 0 ){ return false; }
+                    if (intDelta > 0){
+                        bigPic();
+                    } else if (intDelta <= 0){
+                        smallPic();
+                    }
+                });
+                // page init
+
+                $(window).resize(setSize);
+                $('#coordinate').toggle();
+                setSize();
+                getPhotoById(nowPhoto_id, type);
+            });
+        </script>
+    </head>
+    <body>
+        <div id="container">
+            <div class="divScroll" id="picture-container">
+                <canvas id="picCanvas" style="left:0;top:0;"></canvas>
+                <div id="ie-rotator" style="position:absolute;width:100%;height:100%"><img id="picture" onMouseover="this.style.cursor='move'"/></div>
+                <img id="coordinate" src="/media/engphoto/images/coordinate.gif"
+                onMouseover="this.style.cursor='move'"/>
+                <img id="left-picture"/>
+                <img id="right-picture"/>
+                <div id="leftone" onMouseover="this.style.cursor='pointer'"></div>
+                <div id="rightone" onMouseover="this.style.cursor='pointer'"></div>
+                <div id="scale">
+                    <div id="big" onMouseover="this.style.cursor='pointer'"></div>
+                    <div id="small" onMouseover="this.style.cursor='pointer'"></div>
+                    <div id="level" onMouseover="this.style.cursor='pointer'"></div>
+                    <div id="CH" onMouseover="this.style.cursor='pointer'"></div>
+                </div>
+            </div>
+            <div id="menu-container">
+                <div class="menu">相片次序： <span id="serialnumber"></span> / <span id="allphotos"></span></div>
+                <div class="menu">椿號位置：<span id="name"></span></div>
+                <div class="menu">顯示座標：<input type="checkbox" onClick="OnOffCoordinate()"></div>
+
+                {% ifequal type "checkpoint" %}
+                <div class="menu">切換查驗點：<select id="checkpoints" onChange="changeCheckPoint()">
+                    {% for checkpoint in checkpoints %}
+                    <option value="{{ checkpoint.first }}" {{ checkpoint.isselected }}
+                    >{{ checkpoint.uplevel.rName }}/{{ checkpoint.rName }}</option>
+                    {% endfor %}
+                </select></div>
+                <div class="menu">相片排序方式：<ul>
+                    <li><input type="radio" id="typeCheckPoint" name="xx" checked>查驗點順序排列</li>
+                    <li><input type="radio" id="typeTime" name="xx">上傳時間倒序排列<br/>　(由新到舊)</li>
+                </ul></div>
+                {% endifequal %}
+
+                {% ifequal type "time" %}
+                <div class="menu">切換查驗點：<select id="checkpoints" onChange="changeCheckPoint()">
+                    {% for checkpoint in checkpoints %}
+                    <option value="{{ checkpoint.first }}" {{ checkpoint.isselected }}
+                    >{{ checkpoint.uplevel.rName }}/{{ checkpoint.rName }}</option>
+                    {% endfor %}
+                </select></div>
+                <div class="menu">相片排序方式：<ul>
+                    <li><input type="radio" id="typeCheckPoint" name="xx" checked>查驗點順序排列</li>
+                    <li><input type="radio" id="typeTime" name="xx">上傳時間倒序排列<br/>　(由新到舊)</li>
+                </ul></div>
+                {% endifequal %}
+
+                <div class="menu" title="(在旋轉狀態下，相片不能放大縮小也不能拖拉)">
+                    <input type="button" value="順時針旋90°" id="rotate" onClick="rotate(this, 90);">
+                </div>
+                <div id="comment" class="menu">
+                    相片詳細資訊：
+                    <ul>
+                        <li>監工人員已檢視：<span id="inspector_check"></span></li>
+                        <li>營造廠商說明：<span id="note_con"></span></li>
+                        <li>監造廠商意見：<span id="note_ins"></span></li>
+                        <li>主辦工程師意見：<span id="note_eng"></span></li>
+                        <li>專家意見：<span id="note_exp"></span></li>
+                        <li>拍照日期：<span id="photodate"></span></li>
+                        <li>檔案大小：<span id="size"></span></li>
+                        <li>最後更新時間：<span id="updatetime"></span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

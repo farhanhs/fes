@@ -1,0 +1,541 @@
+{% extends "project/zh-tw/chase.html" %}
+{% load i18n %}
+{% load humanize %}
+{% load utiltags %}
+{% load guardian_tags %}
+{% block script %}
+    <script type="text/javascript" src="/media/project/v2/plugin/Chart.js/moment.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/project/v2/plugin/Chart.js/Chart2.4.bundle.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/project/v2/plugin/Chart.js/utils.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/project/v2/plugin/Chart.js/FileSaver.min.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/project/v2/plugin/Chart.js/Chart.PieceLabel.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/project/v2/js/make_chart.js{{ settings.SV_ }}"></script>
+    <script>
+        var chase_time_id = '{{ chase_time.id }}';
+    </script>
+{% endblock %}
+
+{% block content %}
+<table class="table" id="search_table">
+    <caption>請輸入搜尋條件，以下僅搜尋列入追蹤之工程</caption>
+    <td width="10%" class="warning" align="right">
+            年度
+        </td>
+        <td width="80%" colspan="3" rowspan="1">
+            <select name="year" class="form-control input-sm">
+                <option value="">全部</option>
+                {% for y in years %}
+                    <option value="{{ y }}" {% if y == this_year %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </td>
+    <tr>
+        <td class="warning" align="right">
+            條件 
+            <br><button class="btn btn-info btn-xs" onclick="$('.condition').prop('checked', true)">勾選全部</button>
+            <button class="btn btn-warning btn-xs" onclick="$('.condition').prop('checked', false)">取消全部</button>
+        </td>
+        <td colspan="3" rowspan="1">
+            <input type="checkbox" class="from-control condition" name="progress_delay"> 進度落後 
+            <input type="number" value="15" style="width:80px" class="condition" name="progress_delay_rate">
+            %<br>
+            <input type="checkbox" class="from-control condition" name="progress_freeze"> 填報完畢，進度停滯<br>
+            <input type="checkbox" class="from-control condition" name="have_give_up"> 流標
+            <input type="number" value="1" style="width:80px" class="condition" name="give_up_times">
+            次以上 <br>
+            <!-- <input type="checkbox" class="from-control condition" name="milestone_delay"> 里程碑進度逾期 <br> -->
+            <input type="checkbox" class="from-control condition" name="not_finish"> 已匯入，尚未填報完畢 <br>
+            <input type="checkbox" class="from-control condition" name="no_owner"> 無人認領工程 <br>
+            <!-- <input type="checkbox" class="from-control condition" name="repeat_report"> 填報完畢，數據與上期填報重複 <br> -->
+            <input type="checkbox" class="from-control condition" name="key_word"> 關鍵字搜尋
+            <input type="text" value="" style="width:400px" class="condition" name="key_word_info" placeholder="可用空白隔開">
+            <br>常用關鍵字：
+            <button class="btn btn-info btn-xs add_key_word">停工</button>
+            <button class="btn btn-info btn-xs add_key_word">抗議</button>
+            <button class="btn btn-info btn-xs add_key_word">用地</button>
+            <button class="btn btn-info btn-xs add_key_word">陳情</button>
+            <button class="btn btn-info btn-xs add_key_word">變設</button>
+            <button class="btn btn-info btn-xs add_key_word">變更設計</button>
+            <button class="btn btn-info btn-xs add_key_word">協調</button>
+            <script>
+                $('.add_key_word').click(function(){
+                    var $obj = $(this);
+                    var key = $obj.html();
+                    var input = $('.condition[name="key_word_info"]');
+                    if (input.val().indexOf(key) == -1){
+                        input.val(input.val() + ' ' + key);
+                        $obj.removeClass('btn-info');
+                        $obj.addClass('btn-warning');
+                    } else {
+                        input.val(input.val().replace(' ' + key, ''));
+                        $obj.addClass('btn-info');
+                        $obj.removeClass('btn-warning');
+                    }
+                    if (input.val()){
+                        $('.condition[name="key_word"]').prop('checked', true);
+                    } else {
+                        $('.condition[name="key_word"]').prop('checked', false);
+                    }
+                });
+            </script>
+        </td>
+        <td width="10%" rowspan="9">
+            <button id="search_project" class="btn btn-info btn-lg" style="width:150px" page=1 type="button">搜尋工程</button>
+            <input type="hidden" value="" id="search_result_ids">
+            <br><br>
+            <form action="/project/chase_make_excel/" method="post" id="form1" name="form1" style='display:none'>
+                <input type="text" name="ids" value="">
+                {% csrf_token %}
+            </form>
+            <button class="btn btn-warning btn-lg" id="make_chase_excel" type="button" style="width:150px">結果匯出報表</button>
+            <br><br>
+            <button type="button" class="btn btn-lg btn-primary" id="show_make_chart_dialog" style="width:150px">統計圖表</button>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning" align="right">
+            經費來源計畫
+        </td>
+        <td colspan="3" rowspan="1">
+            <div class="row">
+                <div class="col-xs-8">
+                    <select name="plan" class="form-control input-sm">
+                        <option value="" selected>－ 全部 －</option>
+                        {% for plan in plans %}
+                        <option value="{{ plan.id }}">{{ plan.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-xs-4">
+                    <select name="sub_plan" class="form-control input-sm">
+                        <option value="true" selected>包含下層計畫</option>
+                        <option value="false">不包含下層計畫</option>
+                    </select>
+                </div>
+            </div>
+            
+        </td>
+    </tr>
+    <tr>
+        <td class="warning" align="right">
+            工程名稱
+        </td>
+        <td colspan="3" rowspan="1">
+            <input name="name" size="56" type="text" class="form-control input-sm"></td>
+    </tr>
+    <tr>
+        <td class="warning" align="right">標案編號</td>
+        <td colspan="3" rowspan="1">
+            <input name="bid_no" size="40" type="text" class="form-control input-sm"></td>
+    </tr>
+    <tr>
+        <td class="warning" align="right" width="10%">
+            執行機關
+        </td>
+        <td width="25%">
+            <select name="unit" class="form-control input-sm">
+                {% if perms.fishuser.view_all_project_in_management_system %}
+                    <option value="">－ 全部 －</option>
+                {% endif %}
+                {% for unit in units %}
+                    <option value="{{ unit.id }}" {% ifequal user.user_profile.unit.id unit.id %}selected{% endifequal %}>－ {{ unit.name }} －</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td class="warning" align="right" width="10%">
+            經費種類
+        </td>
+        <td width="25%">
+            <div class="row">
+                <div class="col-xs-7">
+                    <select name="budget_sub_type" class="form-control input-sm">
+                        <option value="" selected>－ 全部 －</option>
+                        {% for budget_sub_type in option.budget_sub_type %}
+                        <option value="{{ budget_sub_type.id }}">{{ budget_sub_type.value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-xs-5" style="font-size: 12px;">
+                    (經常/資本)
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning" align="right">
+            縣市
+        </td>
+        <td>
+            <select name="place" class="RenewLocationList form-control input-sm">
+                <option value="">－ 全部 －</option>
+                {% for place in places %}
+                    <option value="/fishuser/api/v2/place/{{ place.id }}/">－ {{ place.name }} －</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td class="warning" align="right" width="10%">
+            採購類別
+        </td>
+        <td>
+            <div class="row">
+                <div class="col-xs-7">
+                    <select name="purchase_type" class="form-control input-sm">
+                        <option value="" selected>－ 全部 －</option>
+                        {% for purchase_type in option.purchase_type %}
+                        <option value="{{ purchase_type.id }}">{{ purchase_type.value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-xs-5" style="font-size: 12px;">
+                    (勞務/工程)
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
+
+
+<ul class="pagination pages_list"></ul> <span class="total_count"></span>
+<br>
+<table id="SearchResultTable" class="sortable table table-bordered" style="text-align: center; display: none; font-size: 14px;">
+    <thead>
+        <tr class="success">
+            <th width="3%" style="text-align: center;">序<br>號</th>
+            <th width="35%">經費來源計畫<br>年度-工程名稱</th>
+            <th width="8%" style="text-align: center;">縣市</th>
+            <th width="13%" style="text-align: center;">漁港<br>養殖區</th>
+            <th width="6%" style="text-align: center;">採購<br>類別</th>
+            <th width="6%" style="text-align: center;">承辦<br>方式</th>
+            <th width="12%" style="text-align: center;">署連絡人</th>
+            <th width="10%" style="text-align: center;">負責主辦</th>
+            <th width="10%" style="text-align: center;">遠端系統</th>
+            <th width="10%" style="text-align: center;">歷程記錄</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<br>
+<ul class="pagination pages_list"></ul> <span class="total_count"></span>
+
+
+<script type="text/x-jquery-tmpl" id="HideSearchTr">
+    <tr style="text-align: center;" row_id="${id}" class="${class_name}">
+        <td class="active">${sort}</td>
+        <td align="left" title="標案編號：『${project__bid_no}』">
+            <span name="project__plan__name">${project__plan__name__list}</span><br>
+            <a id="project_name_${id}" href="/project/project_profile/${project__id}/">
+                <span name="project__name">${project__year}年 - ${project__name}</span>
+            </a>
+        </td>
+        <td>${project__place__name}</td>
+        <td>
+            ${project__fishing_port_and_aquaculture_list}
+        </td>   
+        <td>
+            ${project__purchase_type__value}
+        </td>
+        <td>
+            ${project__undertake_type__value}
+        </td>
+        <td>${project__self_contacter}</td>
+        <td>${project__importer}</td>
+        <td>
+            <a href="/frcm/project_profile/${project__id}/" title="點我到遠端管理系統">
+                <span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span>
+            </a>
+        </td>
+        <td>
+            <a class="search_project_chase_history" title="點我觀看歷史紀錄" data-toggle="modal" data-target="#project_chase_history" row_id="${project__id}">
+                <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
+            </a>
+        </td>
+    </tr>
+</script>
+
+
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="project_chase_history" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document" style="width:1024px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>
+                <h4 class="modal-title" id="myModalLabel">追蹤歷史紀錄</h4> </div>
+            <div class="modal-body" style="text-align: left;">
+                <h3>
+                    計畫：<span name="project__plan__name"></span>
+                    <br>名稱：<span name="project__name"></span>
+                </h3>
+                <table id="SearchResultChaseTable" class="sortable table table-bordered" style="text-align: center; font-size: 14px;">
+                    <thead>
+                        <tr class="success">
+                            <th style="text-align: center;">日期</th>
+                            <th style="text-align: center;">填寫<br>完成</th>
+                            <th style="text-align: center;">預計進度<br>(%)</th>
+                            <th style="text-align: center;">實際進度<br>(%)</th>
+                            <th style="text-align: center;">至年底進度<br>(%)</th>
+                            <th style="text-align: center;">實支數<br>(元)</th>
+                            <th style="text-align: center;">應付未付數<br>(元)</th>
+                            <th style="text-align: center;">結餘數<br>(元)</th>
+                            <th style="text-align: center;">目前辦理情形</th>
+                            <th style="text-align: center;">落後對策</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="make_chart_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="myModalLabel">選擇統計圖表</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-2"></div>
+                    <div class="col-md-6">
+                        <select class="form-control" id="chart_year">
+                            <option value="">全部年度</option>
+                            {% for y in years %}
+                            <option value="{{ y }}">{{ y }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <ol style="font-size:20px; margin-left: 50px;margin-top: 20px;text-align: left">
+                    <li><a href="#" class="make_chart" type="start_date">匯出 開工月份統計 (年度)</a></li>
+                    <li><a href="#" class="make_chart" type="project_status">匯出 工程狀態統計 (年度)</a></li>
+                    <li><a href="#" class="make_chart" type="project_num">匯出 各單位工程件數比例 (年度)</a></li>
+                    <li><a href="#" class="make_chart" type="project_photo">匯出 工程相片數量件數統計 (年度)</a></li>
+                </ol>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="div_s_curve" style="display:none;position:fixed; top:15px; right:0px;width:100%; height: 100%; z-index:9999; text-align: center">
+    <div align="center">
+        <div style="width:1200px;background-color: white;border-radius: 5px;box-shadow: 0px 2px 10px #333333">
+            <button class="btn btn-danger" onclick="$('#div_s_curve').hide();$('#div_s_curve_background').hide();" style="float: right">關閉顯示</button>
+            <button class="btn btn-primary" id="save-image-btn" style="float: right">另存圖片</button>
+            <div id="div_canvas"></div>
+        </div>
+    </div>
+</div>
+
+<script type="text/x-jquery-tmpl" id="HideSearchChaseTr">
+    <tr style="text-align: right;" row_id="${id}" class="${class_name}">
+        <td style="text-align: center;">${countychasetime__chase_date}</td>
+        <td style="text-align: center;">${complete}</td>
+        <td>${schedul_progress_percent}</td>   
+        <td>${actual_progress_percent}</td>
+        <td>${expected_to_end_percent}</td>
+        <td style="text-align: left;">
+            本署：${self_payout}<br>
+            地方：${local_payout}
+        </td>
+        <td style="text-align: left;">
+            本署：${self_unpay}<br>
+            地方：${local_unpay}
+        </td>
+        <td>${surplus}</td>
+        <td style="text-align: left;">${memo}</td>
+        <td style="text-align: left;">${behind_memo}</td>
+    </tr>
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+
+    function search_project(){
+        var $obj = $(this);
+        var per_page = 25;
+        var string = 'limit=' + per_page + '&chase_time_id=' + chase_time_id;;
+        var condition = '';
+        $.each($('#search_table').find('input, select'), function(){
+            var $obj = $(this);
+            var name = $obj.attr('name');
+            if ($obj.attr('type') == 'checkbox'){
+                string += '&' + name + '=' + $obj.prop('checked');
+                if ($obj.prop('checked')){
+                    condition = true;
+                }
+            } else {
+                string += '&' + name + '=' + $obj.val();
+            }
+        })
+        string += '&condition=' + condition;
+        // var string = 'year=' + $('#year').val();
+        // string += '&condition=' + $('#condition').val();
+        // string += '&plan=' + $('#plan').val();
+        // string += '&sub_plan=' + $('#sub_plan').val();
+        // string += '&name=' + $('#name').val();
+        // string += '&bid_no=' + $('#bid_no').val();
+        // string += '&unit=' + $('#unit').val();
+        // string += '&place=' + $('#place').val();
+        // string += '&budget_sub_type=' + $('#budget_sub_type').val();
+        // string += '&purchase_type=' + $('#purchase_type').val();
+        // string += '&chase_time_id=' + chase_time_id;
+        // string += '&condition_progress_delay=' + $('.condition[name="progress_delay"]').prop('checked');
+        // string += '&condition_milestone_delay=' + $('.condition[name="milestone_delay"]').prop('checked');
+        // string += '&condition_not_finish=' + $('.condition[name="not_finish"]').prop('checked');
+        // string += '&condition_no_owner=' + $('.condition[name="no_owner"]').prop('checked');
+        // string += '&condition_repeat_report=' + $('.condition[name="repeat_report"]').prop('checked');
+        // if ($('.condition[name="progress_delay"]').prop('checked') || $('.condition[name="milestone_delay"]').prop('checked') || $('.condition[name="not_finish"]').prop('checked') || $('.condition[name="no_owner"]').prop('checked') || $('.condition[name="repeat_report"]').prop('checked')){
+        //     string += '&condition=true';
+        // } else {
+        //     string += '&condition=';
+        // }
+        
+        var page = parseInt($obj.attr('page'));
+        per_page = parseInt(per_page);
+        string += '&offset=' + ((page-1) * per_page);
+        url = '/fishuser/api/v2/countychaseprojectonetomany/search/?' + string;
+
+        $.ajax({
+            url: url,
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                $('.resultTr').remove();
+                $('#SearchResultTable').show();
+                
+                for (var i=0; i<data.objects.length; i++){
+                    data.objects[i]['class_name'] = 'resultTr';
+                    data.objects[i]['sort'] = i+1+(page-1)*per_page;
+                    if (!data.objects[i]['project__bid_no']){
+                        data.objects[i]['project__bid_no'] = '';
+                    }
+                    var $div = $('#HideSearchTr').tmpl(data.objects[i]).appendTo($('#SearchResultTable > tbody:last'));
+                    $div.find('.search_project_chase_history').click(search_project_chase_history);
+                }
+                $('#search_result_ids').val(data['all_ids']);
+
+                //製造分頁
+                if (data.meta.total_count){
+                    if ($('.pagination').html()) {
+                        $('.pagination').twbsPagination('destroy');
+                    }
+                    $('.pagination').twbsPagination({
+                        totalPages: Math.ceil(data.meta.total_count/per_page),
+                        startPage: page,
+                        visiblePages: Math.min(Math.ceil(data.meta.total_count/per_page), 10),
+                        onPageClick: function (event, page) {
+                            renew_search(page);
+                        }
+                    });
+                } else {
+                    if ($('.pagination').html()) {
+                        $('.pagination').twbsPagination('destroy');
+                    }
+                }
+                $('.total_count').html('共有' + Math.ceil(data.meta.total_count/per_page) + '頁，' + data.meta.total_count + '筆資料');
+            },
+            error: REST_ERROR
+        })
+    }
+
+    function renew_search(page){
+        $('#search_project').attr('page', page);
+        $('#search_project').click();
+        $('#search_project').attr('page', '1');
+    }
+
+    function search_project_chase_history(){
+        $('.resultChaseTr').remove();
+        var $obj = $(this);
+        var project__plan__name = $obj.closest('tr').find('[name="project__plan__name"]').html();
+        var project__name = $obj.closest('tr').find('[name="project__name"]').html();
+        $('#project_chase_history').find('[name="project__plan__name"]').html(project__plan__name);
+        $('#project_chase_history').find('[name="project__name"]').html(project__name);
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+        }
+        $.ajax({
+            url: '/fishuser/api/v2/countychaseprojectonetomany/?limit=10000&order_by=-id&project=' + $obj.attr('row_id'),
+            type: 'GET',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (json, text, xhr) {
+                for (var i=0; i<json.objects.length; i++){
+                    json.objects[i]['class_name'] = 'resultChaseTr';
+                    json.objects[i]['schedul_progress_percent'] = parseFloat(json.objects[i]['schedul_progress_percent']||0);
+                    json.objects[i]['actual_progress_percent'] = parseFloat(json.objects[i]['actual_progress_percent']||0);
+                    json.objects[i]['expected_to_end_percent'] = parseFloat(json.objects[i]['expected_to_end_percent']||0);
+                    json.objects[i]['self_payout'] = parseFloat(json.objects[i]['self_payout']||0);
+                    json.objects[i]['local_payout'] = parseFloat(json.objects[i]['local_payout']||0);
+                    json.objects[i]['self_unpay'] = parseFloat(json.objects[i]['self_unpay']||0);
+                    json.objects[i]['local_unpay'] = parseFloat(json.objects[i]['local_unpay']||0);
+                    json.objects[i]['surplus'] = parseFloat(json.objects[i]['surplus']||0);
+                    if (json.objects[i]['complete']){
+                        json.objects[i]['complete'] = 'Ｏ';
+                    } else {
+                        json.objects[i]['complete'] = 'Ｘ';
+                    }
+                    var $div = $('#HideSearchChaseTr').tmpl(json.objects[i]).appendTo($('#SearchResultChaseTable > tbody:last'));
+                }
+            },
+            error: function (data) {
+                if (data.responseText){
+                    alert(data.responseText);
+                } else {
+                    alert('操作失敗，可能系統忙碌中，請稍候重試一次。');
+                }
+            },
+        })
+    }
+
+    function make_chase_excel(){
+        var search_result_ids = $('#search_result_ids').val();
+        if (search_result_ids){
+            $('#loading').show();
+            $('#form1').find('[name="ids"]').val(search_result_ids);
+            document.form1.submit();
+            $('#loading').fadeOut(10000);
+        } else {
+            alert('操作失敗，您沒有搜尋結果。');
+        }
+    }
+
+    $(document).ready(function(){
+        $('#search_project').click(search_project); //搜尋
+        $('#make_chase_excel').click(make_chase_excel);
+    });
+
+</script>
+
+
+{% endblock %}

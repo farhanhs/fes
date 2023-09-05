@@ -1,0 +1,372 @@
+{% extends 'harbor/vport.html' %}
+
+{% block scriptlib %}
+    <script type="text/javascript" src="/media/harbor/js/lib.js"></script>
+{% endblock %}
+{% block menu %}
+    <ul id="menu" value ="/harbor/view"></ul>
+{% endblock %}
+{% block portinfocontent %}
+<table width="800">
+    <tr>
+        <td colspan="2" height="60" align="left">
+            <span class="HarborTitle">潮汐</span>
+        </td>
+    </tr>
+    <tr>
+        <td width="30"></td>
+        <td align="left">
+            <h2>
+            {% if tide %}
+            <table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+                <tr bgcolor="#FFFF99" align="center">
+                    <td rowspan="2" width="90">
+                        平均潮位
+                    </td>
+                    <td rowspan="2" width="90">
+                        最高潮位
+                    </td>
+                    <td rowspan="2" width="90">
+                        最低潮位
+                    </td>
+                    <td colspan="2">
+                        大潮
+                    </td>
+                    <td colspan="2">
+                        小潮
+                    </td>
+                    <td rowspan="2" width="120">
+                        築港高程零點
+                    </td>
+                </tr>
+                <tr bgcolor="#FFFF99" align="center">
+                    <td width="90">
+                        <h5>平均高潮位</h5>
+                    </td>
+                    <td width="90">
+                        <h5>平均低潮位</h5>
+                    </td>
+                    <td width="90">
+                        <h5>平均高潮位</h5>
+                    </td>
+                    <td width="90">
+                        <h5>平均低潮位</h5>
+                    </td>
+                </tr>
+                {% for year in tide%}
+                <tr  align="center" class="{% cycle "odd" "even" %}">
+                    <td>
+                        {% if year.tide_avg %}{{ year.tide_avg }}{% else %}暫無資料{% endif %}
+                    </td>
+                    <td>
+                        {% if year.max_tide %}{{ year.max_tide }}{% else %}暫無資料{% endif %}
+                    </td>
+                    <td>
+                        {% if year.min_tide %}{{ year.min_tide }}{% else %}暫無資料{% endif %}
+                    </td>
+                    <td>
+                        {% if year.big_tide_hign_avg %}{{ year.big_tide_hign_avg }}{% else %}暫無資料{% endif %}
+                    </td>
+                    <td>
+                        {% if year.big_tide_down_avg %}{{ year.big_tide_down_avg }}{% else %}暫無資料{% endif %}
+                    </td>
+                    <td>
+                        {% if year.small_tide_hign_avg %}{{ year.small_tide_hign_avg }}{% else %}暫無資料{% endif %}
+                    </td>
+                    <td>
+                        {% if year.small_tide_down_avg %}{{ year.small_tide_down_avg }}{% else %}暫無資料{% endif %}
+                    </td>
+                    <td>
+                        {% if year.zero_elevation %}{{ year.zero_elevation }}{% else %}暫無資料{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% else %}
+            <h2>暫無資料</h2>
+            {% endif %}
+            <br><br>
+            </h2>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" height="60" align="left">
+            <span class="HarborTitle">波浪</span>
+        </td>
+    </tr>
+    <tr>
+        <td></td>
+        <td align="left">
+            <h2>
+            {% if waves_list %}
+            <table>
+                {% for wave in waves_list %}
+                <tr>
+                    {% for type in wave %}
+                    <td width="340" valign="top">
+                        <table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+                            <tr bgcolor="#FFFF99" align="center">
+                                <td rowspan="{{ type.1 }}">
+                                    {{ type.0 }}
+                                </td>
+                                <td width="80">
+                                    波向
+                                </td>
+                                <td width="80">
+                                    波高(M)
+                                </td>
+                                <td width="80">
+                                    週期
+                                </td>
+                            </tr>
+                            {% for wave in type.2 %}
+                            <tr class="{% cycle "odd" "even" %}" align="center">
+                                <td>
+                                    {{ wave.angle }}
+                                </td>
+                                <td>
+                                    {{ wave.high }}
+                                </td>
+                                <td>
+                                    {{ wave.cycle }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </table>
+            {% else %}
+            暫無資料
+            {% endif%}
+            <br><br>
+            </h2>
+        </td>
+    </tr>
+    {% if obva %}
+    <tr>
+        <td colspan="2">
+            <hr width="800" color="#ff8000" noshade title="這不是分隔線">
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" align="center">
+            <br><h3>
+            <table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+                <tr bgcolor="#E1F0F0">
+                    <td colspan="3" align="center">
+                        <h2>觀測站資訊</h2>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="100">引用測站</td>
+                    <td width="260">{{ obva.name }}觀測站</td>
+                    <td rowspan="3" align="center">
+                        <a href="/{{ obva.rUrl }}" target="_blank"><img src="/{{ obva.rUrl }}" title="{{ obva.name }}測站風花圖(點擊觀看大圖)" width="260"></a>
+                        <p>{{ obva.name }}測站風花圖
+                    </td>
+                </tr>
+                <tr>
+                    <td>風花圖說明</td>
+                    <td>{{ obva.wind_memo }}</td>
+                </tr>
+                <tr>
+                    <td>月平均降雨日數說明</td>
+                    <td>{{ obva.rainday_memo }}</td>
+                </tr>
+            </table>
+            </h3>
+            <br>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" height="60" align="left">
+            <span class="HarborTitle">氣溫</span>
+        </td>
+    </tr>
+    <tr>
+        <td></td>
+        <td align="left">
+            <h2>
+            {% if avgtemp %}
+            <table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+                <tr bgcolor="#FFFF99" align="center">
+                    <!--
+                    <td>
+                        月份
+                    </td>
+                    -->
+                    <td width="150">
+                        平均氣溫
+                    </td>
+                    <td width="150">
+                        最高氣溫
+                    </td>
+                    <td width="150">
+                        最低氣溫
+                    </td>
+                    <td width="100">
+                        備註
+                    </td>
+                </tr>
+                {% for data in avgtemp_list %}
+                <tr class="{% cycle "odd" "even" %}" align="center">
+                    <!--
+                    <td>
+                        {{ data.month }}
+                    </td>
+                    -->
+                    <td>
+                        {{ data.average }}
+                    </td>
+                    <td>
+                        {{ data.max }}
+                    </td>
+                    <td>
+                        {{ data.min }}
+                    </td>
+                    <td bgcolor="#E1F0F0">
+                        <div class="infomemo" type="avgtemp" dn="{{ data.id }}" title="均溫資訊說明">資訊說明</div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            <br>
+            {% else %}
+            暫無資料
+            {% endif %}
+            <br><br>
+            </h2>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" height="60" align="left">
+            <span class="HarborTitle">降雨</span>
+        </td>
+    </tr>
+    <tr>
+        <td></td>
+        <td align="left">
+            <h2>
+            {% if avgrain %}
+            <table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+                <tr bgcolor="#FFFF99" align="center">
+                    <!--
+                    <td>
+                        月份
+                    </td>
+                    -->
+                    <td width="150">
+                        平均降雨量
+                    </td>
+                    <td width="100">
+                        備註
+                    </td>
+                    <td width="150">
+                        平均降雨日數
+                    </td>
+                    <td width="100">
+                        備註
+                    </td>
+                </tr>
+                {% for data in avgrain_list %}
+                <tr class="{% cycle "odd" "even" %}" align="center">
+                    <!--
+                    <td>
+                        {{ data.month }}
+                    </td>
+                    -->
+                    <td>
+                        {{ data.rain_average }}
+                    </td>
+                    <td bgcolor="#E1F0F0">
+                        <div class="infomemo" type="avgrain" dn="{{ data.id }}" title="平均雨量說明">資訊說明</div>
+                    </td>
+                    <td>
+                        {{ data.day_average }}
+                    </td>
+                    <td bgcolor="#E1F0F0">
+                        <div class="infomemo" type="avgrainday" dn="{{ data.id }}" title="平均降雨日數說明">資訊說明</div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            <br>
+            {% else %}
+            暫無資料
+            {% endif %}
+            <br><br>
+            </h2>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" height="60" align="left">
+            <span class="HarborTitle">氣壓</span>
+        </td>
+    </tr>
+    <tr>
+        <td></td>
+        <td align="left">
+            <h2>
+            {% if avgpres %}
+            <table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+                <tr bgcolor="#FFFF99" align="center">
+                    <!--
+                    <td>
+                        月份
+                    </td>
+                    -->
+                    <td width="150">
+                        平均氣壓
+                    </td>
+                    <td width="150">
+                        海平面平均氣壓
+                    </td>
+                    <td width="150">
+                        最高氣壓
+                    </td>
+                    <td width="150">
+                        最低氣壓
+                    </td>
+                    <td width="100">
+                        備註
+                    </td>
+                </tr>
+                {% for data in avgpres_list %}
+                <tr class="{% cycle "odd" "even" %}" align="center">
+                    <!--
+                    <td>
+                        {{ data.month }}
+                    </td>
+                    -->
+                    <td>
+                        {{ data.average }}
+                    </td>
+                    <td>
+                        {{ data.sea_average }}
+                    </td>
+                    <td>
+                        {{ data.max }}
+                    </td>
+                    <td>
+                        {{ data.min }}
+                    </td>
+                    <td bgcolor="#E1F0F0">
+                        <div class="infomemo" type="avgpres" dn="{{ data.id }}" title="平均氣壓說明">資訊說明</div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            <br>
+            {% else %}
+            <h2>暫無資料</h2>
+            {% endif %}
+            </h2>
+        </td>
+    </tr>
+    {% endif %}
+</table>
+
+{% endblock %}

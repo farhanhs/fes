@@ -1,0 +1,271 @@
+{% extends 'dailyreport/zh-tw/base.html' %}
+{% load humanize %}
+{% load dailyreport_tags %}
+{% load guardian_tags %}
+{% load i18n %}
+
+{% block js_in_compress %}
+    <script src="/media/dailyreport/plupload/jquery.plupload.queue/jquery.plupload.queue.js{{ settings.SV_ }}"></script>
+    <script src="/media/dailyreport/plupload/js/plupload.full.js{{ settings.SV_ }}"></script>
+{% endblock %}
+
+{% block body %}
+    {% include 'dailyreport/zh-tw/menu.html' %}
+
+    <h3>
+        {% if version.read_pre_version %}
+            <a href="/dailyreport/scheduleitem_/{{ report_type }}/{{ version.read_pre_version.id }}/" role="button" class="btn btn-info" data-toggle="modal"><i class="icon-backward"></i> 到上一個變更版本</a>
+        {% endif %}
+        編輯工項：此版本包含期間為{{ version.start_date }} ~ 
+        {% if version.read_next_version %}{{ version.read_next_version.start_date }}
+            <a href="/dailyreport/scheduleitem_/{{ report_type }}/{{ version.read_next_version.id }}/" role="button" class="btn btn-info" data-toggle="modal">到下一個變更版本 <i class="icon-forward"></i></a>
+        {% else %}
+            至今
+        {% endif %}
+    </h3>
+    <h4>工程基本資料設定之總施工天數為：
+        {{ engprofile.date_type.value }} ： 
+        {% ifequal engprofile.date_type.value '限期完工(日曆天每日施工)' %}
+            {{ engprofile.deadline }}
+        {% else %}
+            <span name="duration">{{ engprofile.duration }}</span> 天
+            {% if engprofile.readExtensionDay %}
+                + 展延 <span name="extension_day">{{ engprofile.readExtensionDay }}</span> 天，共 <span name="total_day"></span> 天
+                <script>
+                    $('span[name="total_day"]').html(parseFloat($('span[name="duration"]').html()) + parseFloat($('span[name="extension_day"]').html()));
+                </script>
+            {% endif %}
+        {% endifequal %}
+    </h4>
+    <h4>此版本的契約項目總價為：{{ version.read_engs_price|floatformat:1|intcomma|cutzero }} 元</h4>
+    <input id="round_type" value="{{ engprofile.round_type.value }}" type="hidden">
+    <input id="engprofile_id" value="{{ engprofile.id }}" type="hidden">
+    <input id="project_id" value="{{ engprofile.project.id }}" type="hidden">
+    <input id="report_type" value="{{ report_type }}" type="hidden">
+    
+    {% if edit %}
+    <div align="left">
+        <a href="#addItem_Explanation" role="button" class="btn btn-warning" data-toggle="modal" style="color: black;"><i class="icon-info-sign"></i>教學：新增項目</a>
+        <a href="#upordown_Explanation" role="button" class="btn btn-warning" data-toggle="modal" style="color: black;"><i class="icon-info-sign"></i>教學：移動上下排序</a>
+        <a href="#outtendorintent_Explanation" role="button" class="btn btn-warning" data-toggle="modal" style="color: black;"><i class="icon-info-sign"></i>教學：切換前後階層</a>
+        <a href="#delete_Explanation" role="button" class="btn btn-warning" data-toggle="modal" style="color: black;"><i class="icon-info-sign"></i>教學：刪除說明</a>
+        <br><br>
+        <span style="font-size: 16px; color: blue;">請使用滑鼠右鍵進行編輯<img src="/media/dailyreport/images/right_click.png"></span>
+    </div>
+    {% else %}
+        <div align="left">
+            <div class="alert alert-error">
+                <h4>您目前沒有編輯權限! 若您為施工廠商，可能為監造鎖定編輯，請通知監造開放編輯權限</h4>
+            </div>
+        </div>
+    {% endif %}
+
+    <table class="table table-bordered" align="center">
+        <col width="5%">
+        <col width="60%">
+        <col width="10%">
+        <col width="10%">
+        <col width="15%">
+        <tr class="info">
+            <td style="text-align: center;">項次
+                <a class="pointer" onclick="window.location.reload();" title="按一下可重新整理項次">
+                    <img src="/media/dailyreport/images/renew.png">
+                <a>
+            </td>
+            <td style="text-align: center;">工項名稱</td>
+            <td style="text-align: center;">預定開始</td>
+            <td style="text-align: center;">預定結束</td>
+            <td style="text-align: center;">花費價格</td>
+        </tr>
+        {% for item in items %}
+            {% include 'dailyreport/zh-tw/tr_schedule_item.html' %}
+        {% endfor %}
+        </tbody>
+    </table>
+    <br><br>
+
+    <div class="alert alert-success" style="text-align:left;">
+        所有版本列表：
+        <br>
+        <ol>
+            {% for ver in engprofile.read_version_in_list %}
+                <li>
+                    <a href="/dailyreport/scheduleitem_/{{ report_type }}/{{ ver.id }}/" role="button" class="btn btn-info" data-toggle="modal">{{ ver.start_date }}</a>
+                </li>
+            {% endfor %}
+        </ol>
+    </div>
+    
+    <br><br><br><br><br><br>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    {% if edit %}
+        <!-- 右鍵選單內容 -->
+        <div class="contextMenu" id="reset_right_menu" row_id="" table_name="scheduleitem" kind="">
+            <ul>
+                <li id="create_same_dir" style="text-align: left;" title="可以新增一個與我同一階層的資料夾">
+                    <img src="/media/dailyreport/images/dir_add.png" width="25">
+                    新增『同層』資料夾
+                </li>
+                <li id="create_sub_dir" style="text-align: left;" title="可以新增一個在我之下的資料夾">
+                    <img src="/media/dailyreport/images/dir_add_sub.png" width="25">
+                    新增『下層』資料夾
+                </li>
+                <li id="create_item" style="text-align: left;" title="可以新增一個工作項目">
+                    <img src="/media/dailyreport/images/item_add.png" width="25">
+                    新增工項
+                </li>
+                <li id="update_priority_up" style="text-align: left;" title="序位向上調整，若為資料夾則會連動所有項目">
+                    <img src="/media/dailyreport/images/up.png" width="25">
+                    向上移動
+                </li>
+                <li id="update_priority_down" style="text-align: left;" title="序位向下調整，若為資料夾則會連動所有項目">
+                    <img src="/media/dailyreport/images/down.png" width="25">
+                    向下移動
+                </li>
+                <li id="update_priority_outdent" style="text-align: left;" title="向前凸排，若為資料夾則會連動所有項目">
+                    <img src="/media/dailyreport/images/outdent.png" width="25">
+                    到前一層(向前凸排)
+                </li>
+                <li id="update_priority_indent" style="text-align: left;" title="向後縮排，若為資料夾則會連動所有項目">
+                    <img src="/media/dailyreport/images/indent.png" width="25">
+                    到後一層(向後縮排)
+                </li>
+                <li id="delete_item" style="text-align: left;" title="刪除這個項目，若為資料夾，則所屬項目會一併刪除">
+                    <img src="/media/dailyreport/images/delete.png" width="25">
+                    刪除此項目
+                </li>
+            </ul>
+        </div>
+        
+        {% include 'dailyreport/zh-tw/explanation.html' %}
+        
+    {% endif %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- JavaScript -->
+    <script type="text/javascript">
+        var float_check = /^[+|-]?\d*\.?\d*$/;
+
+        function recount_price(){
+            //用來更新 變更後的目錄類型總價
+            var round_type = $('#round_type').val();
+            var $obj = $(this);
+            var row_id = $obj.attr('row_id');
+            var price = $('#edit_part_unit_price_' + row_id).val();
+            var old_price = $('#edit_part_unit_price_' + row_id).attr('old_value');
+            var A = old_price;
+            var B = price;
+            var dulta = FloatSubtraction(B, A);
+
+            if (!float_check.test(dulta)){
+                return false;
+            }
+            var dir_list = $('#tr_item_' + row_id).attr('top_dir').split('.');
+
+            if (round_type=='目錄四捨五入'){
+                for (i=0;i<dir_list.length;i++){
+                    var dir_price = parseFloat($('#td_item_unit_price_' + dir_list[i]).attr('real_price'));
+                    $('#td_item_unit_price_' + dir_list[i]).html(TransformThousands(Math.round(FloatAdd(dir_price, dulta))));
+                    $('#td_item_unit_price_' + dir_list[i]).attr('real_price', Math.round(FloatAdd(dir_price, dulta)));
+                }
+            } else if (round_type=='總價四捨五入'){
+                for (i=0;i<dir_list.length-1;i++){
+                    var dir_price = parseFloat($('#td_item_unit_price_' + dir_list[i]).attr('real_price'));
+                    var money = Math.round(FloatAdd(dir_price, dulta) * 1000) / 1000;
+                    $('#td_item_unit_price_' + dir_list[i]).html(TransformThousands(money));
+                    $('#td_item_unit_price_' + dir_list[i]).attr('real_price', money);
+                }
+                var dir_price = parseFloat($('#td_item_unit_price_' + dir_list[dir_list.length-1]).attr('real_price'));
+                var money = Math.round(FloatAdd(dir_price, dulta));
+                $('#td_item_unit_price_' + dir_list[dir_list.length-1]).html(TransformThousands(money));
+                $('#td_item_unit_price_' + dir_list[dir_list.length-1]).attr('real_price', FloatAdd(dir_price, dulta));
+            } else if (round_type=='項目四捨五入'){
+                for (i=0;i<dir_list.length;i++){
+                    var dir_price = parseFloat($('#td_item_unit_price_' + dir_list[i]).attr('real_price'));
+                    var money = Math.round(FloatAdd(dir_price, dulta));
+                    $('#td_item_unit_price_' + dir_list[i]).html(TransformThousands(money));
+                    $('#td_item_unit_price_' + dir_list[i]).attr('real_price', FloatAdd(dir_price, dulta));
+                }
+            }
+        }
+
+
+        $(document).ready(function(){
+
+            $('.right_click_menu').contextMenu('reset_right_menu', {
+                onContextMenu: function(e) {
+                    return true;
+                },
+                onShowMenu: function(e, menu) {
+                    var row_id = $(e.target).attr('row_id');
+                    var need_right_click = $('#tr_item_' + row_id).attr('need_right_click');
+                    var uplevel_id = $('#tr_item_' + row_id).attr('uplevel_id');
+                    var kind = $('#tr_item_' + row_id).attr('kind');
+                    $('#reset_right_menu').attr('row_id', row_id);
+                    $('#reset_right_menu').attr('kind', kind);
+                    if (!need_right_click){
+                        $('#create_same_dir, #create_sub_dir, #create_item, #update_priority_up, #update_priority_down, #update_priority_outdent, #update_priority_indent, #delete_item', menu).remove();
+                    } else if (!uplevel_id) {
+                        $('#create_same_dir, #update_priority_up, #update_priority_down, #update_priority_outdent, #update_priority_indent, #delete_item', menu).remove();
+                    } else if (kind != '目錄'){
+                        $('#create_same_dir, #create_sub_dir', menu).remove();
+                    }
+
+                return menu;
+                }
+            });
+            $('td').on('contextmenu', 'input', function(e){e.stopPropagation()});
+            $('.recount_price').change(recount_price);
+            $('.recount_day').change(recount_day);
+
+
+            $(".uploader").each(function(){
+                var $obj = $(this);
+                var project_id = $obj.attr("project_id");
+                createItemByPCCES($obj, project_id);
+            });
+        });
+    </script>
+{% endblock body %}
+
+
+
+FloatAdd
+FloatSubtraction
+FloatMul
+FloatDiv

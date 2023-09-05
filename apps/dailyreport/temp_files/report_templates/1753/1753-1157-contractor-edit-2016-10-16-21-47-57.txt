@@ -1,0 +1,5478 @@
+
+
+
+<h2 id="date_off_message" style="display:none;"></h2>
+
+<input type="hidden" id="all_item_ids" value="">
+
+<button class="btn btn-danger" type="button" id="delete_report_record" style="display:none;">刪除今日填寫紀錄</button>
+<button class="btn" id="lock_report" is_lock="" type="button" style="display:none;"></button>
+<br>
+<h3 id="lock_report_msg" style="color: red; display:none;">目前日報表被監造方鎖定中，無法進行填報及修改，解鎖請聯絡"監造方"人員</h3>
+
+<a id="online_print_blank" onclick="$(this).attr('href', $(this).attr('href_set') + String(window.location).split('#')[1] + '/' + String(window.location).split('#')[1] + '/');"
+    href_set="/dailyreport/online_print_range/1753/contractor/blank/" target="print_page">
+    <button class="btn btn-info" type="button">
+        線上 列印『空白』報表
+    </button>
+</a><!-- 全形空白　 -->
+<a id="online_print_write" onclick="$(this).attr('href', $(this).attr('href_set') + String(window.location).split('#')[1] + '/' + String(window.location).split('#')[1] + '/');"
+    href_set="/dailyreport/online_print_range/1753/contractor/write/" target="print_page">
+    <button class="btn btn-info" type="button">
+        線上 列印『已填寫工項』報表
+    </button>
+</a><!-- 全形空白　 -->
+<a id="online_print_all" onclick="$(this).attr('href', $(this).attr('href_set') + String(window.location).split('#')[1] + '/' + String(window.location).split('#')[1] + '/');"
+    href_set="/dailyreport/online_print_range/1753/contractor/all/" target="print_page">
+    <button class="btn btn-info" type="button">
+        線上 列印『完整工項』報表
+    </button>
+</a>
+<br><br>
+<a id="excel_print_blank" onclick="$(this).attr('href', $(this).attr('href_set') + String(window.location).split('#')[1] + '/' + String(window.location).split('#')[1] + '/');"
+    href_set="/dailyreport/make_excel_range/1753/contractor/blank/">
+    <button class="btn btn-success" type="button">
+        輸出<span style="color: blue;">Excel</span>『空白』報表
+    </button>
+</a><!-- 全形空白　 -->
+<a id="excel_print_write" onclick="$(this).attr('href', $(this).attr('href_set') + String(window.location).split('#')[1] + '/' + String(window.location).split('#')[1] + '/');"
+    href_set="/dailyreport/make_excel_range/1753/contractor/write/">
+    <button class="btn btn-success" type="button">
+        輸出<span style="color: blue;">Excel</span>『已填寫工項』報表
+    </button>
+</a><!-- 全形空白　 -->
+<a id="excel_print_all" onclick="$(this).attr('href', $(this).attr('href_set') + String(window.location).split('#')[1] + '/' + String(window.location).split('#')[1] + '/');"
+    href_set="/dailyreport/make_excel_range/1753/contractor/all/">
+    <button class="btn btn-success" type="button">
+        輸出<span style="color: blue;">Excel</span>『完整工項』報表
+    </button>
+</a>
+<br><br>
+
+<table class="table table-bordered" align="center" style="background-color:white;">
+	<col width="10%">
+    <col width="20%">
+    <col width="10%">
+    <col width="20%">
+    <col width="10%">
+    <col width="20%">
+    <tr>
+        <td style="text-align: center;" bgcolor="#CFD0A2">本日天氣</td>
+        <td>
+            上午： 
+            
+	            <select id="morning_weather">
+	            	
+	            		<option value="22">多雲</option>
+	            	
+	            		<option value="20">晴天</option>
+	            	
+	            		<option value="24">豪雨</option>
+	            	
+	            		<option value="25">超大豪雨</option>
+	            	
+	            		<option value="21">陰天</option>
+	            	
+	            		<option value="23">雨天</option>
+	            	
+	            </select>
+	        
+            <br>
+            下午： 
+            
+	            <select id="afternoon_weather">
+	            	
+	            		<option value="22">多雲</option>
+	            	
+	            		<option value="20">晴天</option>
+	            	
+	            		<option value="24">豪雨</option>
+	            	
+	            		<option value="25">超大豪雨</option>
+	            	
+	            		<option value="21">陰天</option>
+	            	
+	            		<option value="23">雨天</option>
+	            	
+	            </select>
+	        
+        </td>
+        <td style="text-align: center;" bgcolor="#CFD0A2">填報日期</td>
+        <td>
+        	<span class="span_report_date" style="font-size: 26px;">
+	        </span>
+	    </td>
+        <td title="契約項目的總價" style="text-align: center;" bgcolor="#CFD0A2">契約金額</td>
+        <td title="契約項目的總價" style="text-align: right;">
+	        <span id="engs_price"></span> 元
+        </td>
+    </tr>
+    <tr>
+        <td style="text-align: center;" bgcolor="#CFD0A2">工程名稱</td>
+        <td colspan="5">105年度臺東縣漁業觀光環境暨漁業設施振興計畫-臺東縣伽藍(富岡)漁港曳船道整建工程</td>
+
+    </tr>
+    <tr>
+        <td style="text-align: center;" bgcolor="#CFD0A2">契約工期(天)</td>
+        <td id="duration"></td>
+        <td style="text-align: center;" bgcolor="#CFD0A2">累計工期(天)</td>
+        <td><span id="used_duration"></span> 天</td>
+        <td style="text-align: center;" bgcolor="#CFD0A2">剩餘工期(天)</td>
+        <td><span id="unused_duration"></span> 天</td>
+    </tr>
+    <tr id="tr_special_dates" style="display: none;">
+        <td style="text-align: center;" bgcolor="#FFD8AF">工期調整狀況</td>
+        <td colspan="5">
+            以上顯示資訊，如契約工期等資訊受到如下停工/強制開工/展延之設定影響，有所調整：<br>
+            <ol id="ol_special_dates"></ol>
+        </td>
+    </tr>
+    <tr>
+        <td style="text-align: center;" bgcolor="#CFD0A2">本日完成</td>
+        <td align="right">
+            <span id="act_percent"><img src="/media/dailyreport/images/loading.gif">即時計算中</span> %
+            (<span id="act_money"><img src="/media/dailyreport/images/loading.gif">即時計算中</span> 元)
+        </td>
+        <td style="text-align: center;" bgcolor="#CFD0A2">累計完成</td>
+        <td align="right">
+            <span id="sum_act_percent"><img src="/media/dailyreport/images/loading.gif">即時計算中</span> %
+            (<span id="sum_act_money"><img src="/media/dailyreport/images/loading.gif">即時計算中</span> 元)
+        </td>
+        <td style="text-align: center;" bgcolor="#CFD0A2">預定累計完成</td>
+        <td align="right">
+            <span id="design_percent"><img src="/media/dailyreport/images/loading.gif">即時計算中</span> %
+            (<span id="design_money"><img src="/media/dailyreport/images/loading.gif">即時計算中</span> 元)
+        </td>
+
+    </tr>
+</table>
+
+<div align="right" style="margin-right: 100px;">
+    <span class="label label-success" style="font-size: 20px;">填報數量時，可用上下鍵快速切換輸入框</span>
+</div>
+<table class="table table-bordered" id="report_items" align="center" style="background-color:white;">
+    <thead>
+    	<col width="5%">
+	    <col width="35%">
+	    <col width="5%">
+	    <col width="9%">
+        <col width="9%">
+	    <col width="9%">
+	    <col width="9%">
+	    <col width="9%">
+	    <col width="9%">
+        <tr bgcolor="#895117">
+            <td colspan="9" align="left" style="color: white;">
+                <h4>依施工計畫書執行按圖施工概況(含約定之重要契約項目及完成數量等)：</h4>
+            </td>
+        </tr>
+        <tr bgcolor="#CFD0A2">
+            <td style="text-align: center;">項次</td>
+            <td style="text-align: center;">契約項目</td>
+            <td style="text-align: center;">單位</td>
+            <td style="text-align: center;">單價</td>
+            <td style="text-align: center;">契約數量</td>
+            <td style="text-align: center;">
+            	本日完成數量<br>
+            	
+            </td>
+            <td style="text-align: center;">
+                
+                    
+                        
+                            『監造』填報<br>數量
+                        
+                    
+                
+            </td>
+            <td style="text-align: center;">
+                累計完成數量<br>
+                <button class="show_all_item_sum">全部顯示</button>
+            </td>
+            <td style="text-align: center;">備註</td>
+        </tr>
+    </thead>
+    <tbody>
+        
+			
+
+<tr top_dir="" id="tr_item_31946" class="yellow tr_hover" uplevel_id="" kind="目錄">
+    <td id="td_item_symbol_31946" row_id="31946">
+        <span></span>
+    </td>
+    <td class="padding_0 ClickShowInfo" row_id="31946" field_name="name" title="前版本名稱：無前版本">
+        
+        
+            <img src="/media/dailyreport/images/dir.png" width="20">
+        
+        <span>105年度臺東縣漁業觀光環境暨漁業設施振興計畫-臺東縣伽藍(富岡)漁港曳船道整建工程</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="31946" field_name="unit_name">
+        
+            式
+        
+    </td>
+    <td id="td_item_unit_price_31946" style="text-align: right;" class="ClickShowInfo" row_id="31946" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            <span></span>
+        
+    </td>
+    <td id="td_item_unit_num_31946" style="text-align: right;" class="ClickShowInfo" row_id="31946" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td colspan="4"><span></span></td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".31946" id="tr_item_32123" class="yellow tr_hover" uplevel_id="31946" kind="目錄">
+    <td id="td_item_symbol_32123" row_id="32123">
+        <span>1</span>
+    </td>
+    <td class="padding_1 ClickShowInfo" row_id="32123" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/dir.png" width="20">
+        
+        <span>假設工程</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32123" field_name="unit_name">
+        
+            式
+        
+    </td>
+    <td id="td_item_unit_price_32123" style="text-align: right;" class="ClickShowInfo" row_id="32123" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            <span></span>
+        
+    </td>
+    <td id="td_item_unit_num_32123" style="text-align: right;" class="ClickShowInfo" row_id="32123" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td colspan="4"><span></span></td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32123.31946" id="tr_item_32124" class="white tr_hover" uplevel_id="32123" kind="工項">
+    <td id="td_item_symbol_32124" row_id="32124">
+        <span>1.1</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32124" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>測量放樣及水平標示</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32124" field_name="unit_name">
+        
+            <span>式</span>
+        
+    </td>
+    <td id="td_item_unit_price_32124" style="text-align: right;" class="ClickShowInfo" row_id="32124" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            32,279
+        
+    </td>
+    <td id="td_item_unit_num_32124" style="text-align: right;" class="ClickShowInfo" row_id="32124" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32124" item_id="32124" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="31" value="">
+            
+        </td>
+        <td id="item_another_num_32124" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32124"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32124" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32124" class="get_item_sum" item_id="32124">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32124" type="text" value="" tabindex='32' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32123.31946" id="tr_item_32125" class="white tr_hover" uplevel_id="32123" kind="工項">
+    <td id="td_item_symbol_32125" row_id="32125">
+        <span>1.2</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32125" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>臨時施工圍籬(附警示燈及接地處理)</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32125" field_name="unit_name">
+        
+            <span>M</span>
+        
+    </td>
+    <td id="td_item_unit_price_32125" style="text-align: right;" class="ClickShowInfo" row_id="32125" field_name="unit_price" value=30.000 title="前版本設計單價：無前版本">
+        
+            1,383
+        
+    </td>
+    <td id="td_item_unit_num_32125" style="text-align: right;" class="ClickShowInfo" row_id="32125" field_name="unit_num" value=30.000 title="前版本設計數量：無前版本">
+        
+            30
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32125" item_id="32125" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="41" value="">
+            
+        </td>
+        <td id="item_another_num_32125" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32125"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32125" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32125" class="get_item_sum" item_id="32125">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32125" type="text" value="" tabindex='42' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32123.31946" id="tr_item_32126" class="white tr_hover" uplevel_id="32123" kind="工項">
+    <td id="td_item_symbol_32126" row_id="32126">
+        <span>1.3</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32126" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>施工機具動復原費 </span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32126" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32126" style="text-align: right;" class="ClickShowInfo" row_id="32126" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            69,166
+        
+    </td>
+    <td id="td_item_unit_num_32126" style="text-align: right;" class="ClickShowInfo" row_id="32126" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32126" item_id="32126" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="51" value="">
+            
+        </td>
+        <td id="item_another_num_32126" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32126"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32126" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32126" class="get_item_sum" item_id="32126">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32126" type="text" value="" tabindex='52' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32123.31946" id="tr_item_32127" class="white tr_hover" uplevel_id="32123" kind="工項">
+    <td id="td_item_symbol_32127" row_id="32127">
+        <span>1.4</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32127" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>一般廢棄物處理運棄</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32127" field_name="unit_name">
+        
+            <span>M3 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32127" style="text-align: right;" class="ClickShowInfo" row_id="32127" field_name="unit_price" value=30.000 title="前版本設計單價：無前版本">
+        
+            894
+        
+    </td>
+    <td id="td_item_unit_num_32127" style="text-align: right;" class="ClickShowInfo" row_id="32127" field_name="unit_num" value=30.000 title="前版本設計數量：無前版本">
+        
+            30
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32127" item_id="32127" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="61" value="">
+            
+        </td>
+        <td id="item_another_num_32127" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32127"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32127" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32127" class="get_item_sum" item_id="32127">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32127" type="text" value="" tabindex='62' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32123.31946" id="tr_item_32128" class="white tr_hover" uplevel_id="32123" kind="工項">
+    <td id="td_item_symbol_32128" row_id="32128">
+        <span>1.5</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32128" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>施工告示牌</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32128" field_name="unit_name">
+        
+            <span>面 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32128" style="text-align: right;" class="ClickShowInfo" row_id="32128" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            4,610
+        
+    </td>
+    <td id="td_item_unit_num_32128" style="text-align: right;" class="ClickShowInfo" row_id="32128" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32128" item_id="32128" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="71" value="">
+            
+        </td>
+        <td id="item_another_num_32128" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32128"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32128" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32128" class="get_item_sum" item_id="32128">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32128" type="text" value="" tabindex='72' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".31946" id="tr_item_32129" class="yellow tr_hover" uplevel_id="31946" kind="目錄">
+    <td id="td_item_symbol_32129" row_id="32129">
+        <span>2</span>
+    </td>
+    <td class="padding_1 ClickShowInfo" row_id="32129" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/dir.png" width="20">
+        
+        <span>曳船道及船台工程</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32129" field_name="unit_name">
+        
+            式
+        
+    </td>
+    <td id="td_item_unit_price_32129" style="text-align: right;" class="ClickShowInfo" row_id="32129" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            <span></span>
+        
+    </td>
+    <td id="td_item_unit_num_32129" style="text-align: right;" class="ClickShowInfo" row_id="32129" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td colspan="4"><span></span></td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32130" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32130" row_id="32130">
+        <span>2.1</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32130" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>軌道更新工程</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32130" field_name="unit_name">
+        
+            <span>式</span>
+        
+    </td>
+    <td id="td_item_unit_price_32130" style="text-align: right;" class="ClickShowInfo" row_id="32130" field_name="unit_price" value=0.000 title="前版本設計單價：無前版本">
+        
+            0
+        
+    </td>
+    <td id="td_item_unit_num_32130" style="text-align: right;" class="ClickShowInfo" row_id="32130" field_name="unit_num" value=0.000 title="前版本設計數量：無前版本">
+        
+            0
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32130" item_id="32130" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="91" value="">
+            
+        </td>
+        <td id="item_another_num_32130" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32130"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32130" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32130" class="get_item_sum" item_id="32130">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32130" type="text" value="" tabindex='92' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32131" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32131" row_id="32131">
+        <span>2.2</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32131" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>舊有軌道拆除運棄含折抵</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32131" field_name="unit_name">
+        
+            <span>kg</span>
+        
+    </td>
+    <td id="td_item_unit_price_32131" style="text-align: right;" class="ClickShowInfo" row_id="32131" field_name="unit_price" value=18315.000 title="前版本設計單價：無前版本">
+        
+            28
+        
+    </td>
+    <td id="td_item_unit_num_32131" style="text-align: right;" class="ClickShowInfo" row_id="32131" field_name="unit_num" value=18315.000 title="前版本設計數量：無前版本">
+        
+            18,315
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32131" item_id="32131" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="101" value="">
+            
+        </td>
+        <td id="item_another_num_32131" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32131"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32131" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32131" class="get_item_sum" item_id="32131">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32131" type="text" value="" tabindex='102' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32132" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32132" row_id="32132">
+        <span>2.3</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32132" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>既有損壞枕木拆除及更新20cm*15cm*5.1m</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32132" field_name="unit_name">
+        
+            <span>個</span>
+        
+    </td>
+    <td id="td_item_unit_price_32132" style="text-align: right;" class="ClickShowInfo" row_id="32132" field_name="unit_price" value=25.000 title="前版本設計單價：無前版本">
+        
+            12,910
+        
+    </td>
+    <td id="td_item_unit_num_32132" style="text-align: right;" class="ClickShowInfo" row_id="32132" field_name="unit_num" value=25.000 title="前版本設計數量：無前版本">
+        
+            25
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32132" item_id="32132" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="111" value="">
+            
+        </td>
+        <td id="item_another_num_32132" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32132"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32132" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32132" class="get_item_sum" item_id="32132">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32132" type="text" value="" tabindex='112' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32133" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32133" row_id="32133">
+        <span>2.4</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32133" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>37kg/m鋼軌(新品)及安裝</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32133" field_name="unit_name">
+        
+            <span>M</span>
+        
+    </td>
+    <td id="td_item_unit_price_32133" style="text-align: right;" class="ClickShowInfo" row_id="32133" field_name="unit_price" value=333.000 title="前版本設計單價：無前版本">
+        
+            1,844
+        
+    </td>
+    <td id="td_item_unit_num_32133" style="text-align: right;" class="ClickShowInfo" row_id="32133" field_name="unit_num" value=333.000 title="前版本設計數量：無前版本">
+        
+            333
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32133" item_id="32133" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="121" value="">
+            
+        </td>
+        <td id="item_another_num_32133" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32133"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32133" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32133" class="get_item_sum" item_id="32133">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32133" type="text" value="" tabindex='122' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32134" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32134" row_id="32134">
+        <span>2.5</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32134" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>魚尾鈑(37kg/m鋼軌用)含螺栓配件</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32134" field_name="unit_name">
+        
+            <span>片</span>
+        
+    </td>
+    <td id="td_item_unit_price_32134" style="text-align: right;" class="ClickShowInfo" row_id="32134" field_name="unit_price" value=60.000 title="前版本設計單價：無前版本">
+        
+            1,843
+        
+    </td>
+    <td id="td_item_unit_num_32134" style="text-align: right;" class="ClickShowInfo" row_id="32134" field_name="unit_num" value=60.000 title="前版本設計數量：無前版本">
+        
+            60
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32134" item_id="32134" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="131" value="">
+            
+        </td>
+        <td id="item_another_num_32134" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32134"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32134" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32134" class="get_item_sum" item_id="32134">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32134" type="text" value="" tabindex='132' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32135" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32135" row_id="32135">
+        <span>2.6</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32135" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>鈎頭道釘(1.6*1.6,L=14cm)及錨碇</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32135" field_name="unit_name">
+        
+            <span>枚</span>
+        
+    </td>
+    <td id="td_item_unit_price_32135" style="text-align: right;" class="ClickShowInfo" row_id="32135" field_name="unit_price" value=660.000 title="前版本設計單價：無前版本">
+        
+            230
+        
+    </td>
+    <td id="td_item_unit_num_32135" style="text-align: right;" class="ClickShowInfo" row_id="32135" field_name="unit_num" value=660.000 title="前版本設計數量：無前版本">
+        
+            660
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32135" item_id="32135" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="141" value="">
+            
+        </td>
+        <td id="item_another_num_32135" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32135"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32135" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32135" class="get_item_sum" item_id="32135">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32135" type="text" value="" tabindex='142' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32136" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32136" row_id="32136">
+        <span>2.7</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32136" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>鍍鋅鋼索(含加工)</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32136" field_name="unit_name">
+        
+            <span>M</span>
+        
+    </td>
+    <td id="td_item_unit_price_32136" style="text-align: right;" class="ClickShowInfo" row_id="32136" field_name="unit_price" value=250.000 title="前版本設計單價：無前版本">
+        
+            332
+        
+    </td>
+    <td id="td_item_unit_num_32136" style="text-align: right;" class="ClickShowInfo" row_id="32136" field_name="unit_num" value=250.000 title="前版本設計數量：無前版本">
+        
+            250
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32136" item_id="32136" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="151" value="">
+            
+        </td>
+        <td id="item_another_num_32136" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32136"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32136" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32136" class="get_item_sum" item_id="32136">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32136" type="text" value="" tabindex='152' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32137" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32137" row_id="32137">
+        <span>2.8</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32137" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>潛水伕組</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32137" field_name="unit_name">
+        
+            <span>工</span>
+        
+    </td>
+    <td id="td_item_unit_price_32137" style="text-align: right;" class="ClickShowInfo" row_id="32137" field_name="unit_price" value=16.000 title="前版本設計單價：無前版本">
+        
+            6,454
+        
+    </td>
+    <td id="td_item_unit_num_32137" style="text-align: right;" class="ClickShowInfo" row_id="32137" field_name="unit_num" value=16.000 title="前版本設計數量：無前版本">
+        
+            16
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32137" item_id="32137" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="161" value="">
+            
+        </td>
+        <td id="item_another_num_32137" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32137"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32137" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32137" class="get_item_sum" item_id="32137">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32137" type="text" value="" tabindex='162' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32138" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32138" row_id="32138">
+        <span>2.9</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32138" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>新製捲揚機及安裝</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32138" field_name="unit_name">
+        
+            <span>式</span>
+        
+    </td>
+    <td id="td_item_unit_price_32138" style="text-align: right;" class="ClickShowInfo" row_id="32138" field_name="unit_price" value=0.000 title="前版本設計單價：無前版本">
+        
+            0
+        
+    </td>
+    <td id="td_item_unit_num_32138" style="text-align: right;" class="ClickShowInfo" row_id="32138" field_name="unit_num" value=0.000 title="前版本設計數量：無前版本">
+        
+            0
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32138" item_id="32138" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="171" value="">
+            
+        </td>
+        <td id="item_another_num_32138" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32138"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32138" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32138" class="get_item_sum" item_id="32138">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32138" type="text" value="" tabindex='172' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32139" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32139" row_id="32139">
+        <span>2.10</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32139" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>動力設備</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32139" field_name="unit_name">
+        
+            <span>組</span>
+        
+    </td>
+    <td id="td_item_unit_price_32139" style="text-align: right;" class="ClickShowInfo" row_id="32139" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            110,664
+        
+    </td>
+    <td id="td_item_unit_num_32139" style="text-align: right;" class="ClickShowInfo" row_id="32139" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32139" item_id="32139" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="181" value="">
+            
+        </td>
+        <td id="item_another_num_32139" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32139"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32139" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32139" class="get_item_sum" item_id="32139">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32139" type="text" value="" tabindex='182' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32140" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32140" row_id="32140">
+        <span>2.11</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32140" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>捲揚機基座</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32140" field_name="unit_name">
+        
+            <span>組</span>
+        
+    </td>
+    <td id="td_item_unit_price_32140" style="text-align: right;" class="ClickShowInfo" row_id="32140" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            138,328
+        
+    </td>
+    <td id="td_item_unit_num_32140" style="text-align: right;" class="ClickShowInfo" row_id="32140" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32140" item_id="32140" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="191" value="">
+            
+        </td>
+        <td id="item_another_num_32140" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32140"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32140" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32140" class="get_item_sum" item_id="32140">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32140" type="text" value="" tabindex='192' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32141" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32141" row_id="32141">
+        <span>2.12</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32141" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>油壓馬達傳動機構</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32141" field_name="unit_name">
+        
+            <span>組</span>
+        
+    </td>
+    <td id="td_item_unit_price_32141" style="text-align: right;" class="ClickShowInfo" row_id="32141" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            147,551
+        
+    </td>
+    <td id="td_item_unit_num_32141" style="text-align: right;" class="ClickShowInfo" row_id="32141" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32141" item_id="32141" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="201" value="">
+            
+        </td>
+        <td id="item_another_num_32141" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32141"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32141" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32141" class="get_item_sum" item_id="32141">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32141" type="text" value="" tabindex='202' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32142" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32142" row_id="32142">
+        <span>2.13</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32142" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>捲胴設備</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32142" field_name="unit_name">
+        
+            <span>組</span>
+        
+    </td>
+    <td id="td_item_unit_price_32142" style="text-align: right;" class="ClickShowInfo" row_id="32142" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            170,607
+        
+    </td>
+    <td id="td_item_unit_num_32142" style="text-align: right;" class="ClickShowInfo" row_id="32142" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32142" item_id="32142" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="211" value="">
+            
+        </td>
+        <td id="item_another_num_32142" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32142"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32142" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32142" class="get_item_sum" item_id="32142">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32142" type="text" value="" tabindex='212' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32143" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32143" row_id="32143">
+        <span>2.14</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32143" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>二段煞車裝置</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32143" field_name="unit_name">
+        
+            <span>組</span>
+        
+    </td>
+    <td id="td_item_unit_price_32143" style="text-align: right;" class="ClickShowInfo" row_id="32143" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            115,276
+        
+    </td>
+    <td id="td_item_unit_num_32143" style="text-align: right;" class="ClickShowInfo" row_id="32143" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32143" item_id="32143" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="221" value="">
+            
+        </td>
+        <td id="item_another_num_32143" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32143"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32143" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32143" class="get_item_sum" item_id="32143">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32143" type="text" value="" tabindex='222' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32144" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32144" row_id="32144">
+        <span>2.15</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32144" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>液壓組件及操作迴路系統</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32144" field_name="unit_name">
+        
+            <span>組</span>
+        
+    </td>
+    <td id="td_item_unit_price_32144" style="text-align: right;" class="ClickShowInfo" row_id="32144" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            299,714
+        
+    </td>
+    <td id="td_item_unit_num_32144" style="text-align: right;" class="ClickShowInfo" row_id="32144" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32144" item_id="32144" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="231" value="">
+            
+        </td>
+        <td id="item_another_num_32144" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32144"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32144" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32144" class="get_item_sum" item_id="32144">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32144" type="text" value="" tabindex='232' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32145" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32145" row_id="32145">
+        <span>2.16</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32145" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>液壓油</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32145" field_name="unit_name">
+        
+            <span>L</span>
+        
+    </td>
+    <td id="td_item_unit_price_32145" style="text-align: right;" class="ClickShowInfo" row_id="32145" field_name="unit_price" value=300.000 title="前版本設計單價：無前版本">
+        
+            69
+        
+    </td>
+    <td id="td_item_unit_num_32145" style="text-align: right;" class="ClickShowInfo" row_id="32145" field_name="unit_num" value=300.000 title="前版本設計數量：無前版本">
+        
+            300
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32145" item_id="32145" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="241" value="">
+            
+        </td>
+        <td id="item_another_num_32145" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32145"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32145" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32145" class="get_item_sum" item_id="32145">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32145" type="text" value="" tabindex='242' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32146" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32146" row_id="32146">
+        <span>2.17</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32146" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>電控系統</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32146" field_name="unit_name">
+        
+            <span>組</span>
+        
+    </td>
+    <td id="td_item_unit_price_32146" style="text-align: right;" class="ClickShowInfo" row_id="32146" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            170,607
+        
+    </td>
+    <td id="td_item_unit_num_32146" style="text-align: right;" class="ClickShowInfo" row_id="32146" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32146" item_id="32146" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="251" value="">
+            
+        </td>
+        <td id="item_another_num_32146" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32146"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32146" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32146" class="get_item_sum" item_id="32146">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32146" type="text" value="" tabindex='252' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32147" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32147" row_id="32147">
+        <span>2.18</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32147" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>設備組裝及試運轉</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32147" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32147" style="text-align: right;" class="ClickShowInfo" row_id="32147" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            69,166
+        
+    </td>
+    <td id="td_item_unit_num_32147" style="text-align: right;" class="ClickShowInfo" row_id="32147" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32147" item_id="32147" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="261" value="">
+            
+        </td>
+        <td id="item_another_num_32147" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32147"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32147" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32147" class="get_item_sum" item_id="32147">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32147" type="text" value="" tabindex='262' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32148" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32148" row_id="32148">
+        <span>2.19</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32148" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>噴漆塗裝(一底二度)</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32148" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32148" style="text-align: right;" class="ClickShowInfo" row_id="32148" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            36,890
+        
+    </td>
+    <td id="td_item_unit_num_32148" style="text-align: right;" class="ClickShowInfo" row_id="32148" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32148" item_id="32148" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="271" value="">
+            
+        </td>
+        <td id="item_another_num_32148" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32148"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32148" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32148" class="get_item_sum" item_id="32148">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32148" type="text" value="" tabindex='272' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32149" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32149" row_id="32149">
+        <span>2.20</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32149" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>吊運費</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32149" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32149" style="text-align: right;" class="ClickShowInfo" row_id="32149" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            32,279
+        
+    </td>
+    <td id="td_item_unit_num_32149" style="text-align: right;" class="ClickShowInfo" row_id="32149" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32149" item_id="32149" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="281" value="">
+            
+        </td>
+        <td id="item_another_num_32149" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32149"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32149" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32149" class="get_item_sum" item_id="32149">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32149" type="text" value="" tabindex='282' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32150" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32150" row_id="32150">
+        <span>2.21</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32150" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>8.8T-M24化學錨碇螺栓施作</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32150" field_name="unit_name">
+        
+            <span>支</span>
+        
+    </td>
+    <td id="td_item_unit_price_32150" style="text-align: right;" class="ClickShowInfo" row_id="32150" field_name="unit_price" value=8.000 title="前版本設計單價：無前版本">
+        
+            1,383
+        
+    </td>
+    <td id="td_item_unit_num_32150" style="text-align: right;" class="ClickShowInfo" row_id="32150" field_name="unit_num" value=8.000 title="前版本設計數量：無前版本">
+        
+            8
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32150" item_id="32150" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="291" value="">
+            
+        </td>
+        <td id="item_another_num_32150" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32150"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32150" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32150" class="get_item_sum" item_id="32150">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32150" type="text" value="" tabindex='292' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32151" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32151" row_id="32151">
+        <span>2.22</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32151" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>現場安裝機具設備及鋼索纏繞</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32151" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32151" style="text-align: right;" class="ClickShowInfo" row_id="32151" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            46,109
+        
+    </td>
+    <td id="td_item_unit_num_32151" style="text-align: right;" class="ClickShowInfo" row_id="32151" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32151" item_id="32151" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="301" value="">
+            
+        </td>
+        <td id="item_another_num_32151" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32151"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32151" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32151" class="get_item_sum" item_id="32151">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32151" type="text" value="" tabindex='302' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32152" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32152" row_id="32152">
+        <span>2.23</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32152" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>水泥前檔墩座</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32152" field_name="unit_name">
+        
+            <span>座</span>
+        
+    </td>
+    <td id="td_item_unit_price_32152" style="text-align: right;" class="ClickShowInfo" row_id="32152" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            2,766
+        
+    </td>
+    <td id="td_item_unit_num_32152" style="text-align: right;" class="ClickShowInfo" row_id="32152" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32152" item_id="32152" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="311" value="">
+            
+        </td>
+        <td id="item_another_num_32152" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32152"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32152" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32152" class="get_item_sum" item_id="32152">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32152" type="text" value="" tabindex='312' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32153" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32153" row_id="32153">
+        <span>2.24</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32153" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>試車及教育訓練 4HR</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32153" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32153" style="text-align: right;" class="ClickShowInfo" row_id="32153" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            13,832
+        
+    </td>
+    <td id="td_item_unit_num_32153" style="text-align: right;" class="ClickShowInfo" row_id="32153" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32153" item_id="32153" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="321" value="">
+            
+        </td>
+        <td id="item_another_num_32153" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32153"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32153" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32153" class="get_item_sum" item_id="32153">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32153" type="text" value="" tabindex='322' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32154" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32154" row_id="32154">
+        <span>2.25</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32154" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>操作手冊、維護保養手冊，保固書各3分</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32154" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32154" style="text-align: right;" class="ClickShowInfo" row_id="32154" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            13,832
+        
+    </td>
+    <td id="td_item_unit_num_32154" style="text-align: right;" class="ClickShowInfo" row_id="32154" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32154" item_id="32154" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="331" value="">
+            
+        </td>
+        <td id="item_another_num_32154" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32154"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32154" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32154" class="get_item_sum" item_id="32154">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32154" type="text" value="" tabindex='332' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32155" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32155" row_id="32155">
+        <span>2.26</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32155" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>工具、損耗、五金配件</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32155" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32155" style="text-align: right;" class="ClickShowInfo" row_id="32155" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            11,066
+        
+    </td>
+    <td id="td_item_unit_num_32155" style="text-align: right;" class="ClickShowInfo" row_id="32155" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32155" item_id="32155" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="341" value="">
+            
+        </td>
+        <td id="item_another_num_32155" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32155"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32155" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32155" class="get_item_sum" item_id="32155">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32155" type="text" value="" tabindex='342' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32156" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32156" row_id="32156">
+        <span>2.27</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32156" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>舊有設備拆除運棄含折抵</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32156" field_name="unit_name">
+        
+            <span>台</span>
+        
+    </td>
+    <td id="td_item_unit_price_32156" style="text-align: right;" class="ClickShowInfo" row_id="32156" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            27,666
+        
+    </td>
+    <td id="td_item_unit_num_32156" style="text-align: right;" class="ClickShowInfo" row_id="32156" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32156" item_id="32156" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="351" value="">
+            
+        </td>
+        <td id="item_another_num_32156" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32156"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32156" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32156" class="get_item_sum" item_id="32156">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32156" type="text" value="" tabindex='352' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32157" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32157" row_id="32157">
+        <span>2.28</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32157" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>新製3部曳船台車</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32157" field_name="unit_name">
+        
+            <span>式</span>
+        
+    </td>
+    <td id="td_item_unit_price_32157" style="text-align: right;" class="ClickShowInfo" row_id="32157" field_name="unit_price" value=0.000 title="前版本設計單價：無前版本">
+        
+            0
+        
+    </td>
+    <td id="td_item_unit_num_32157" style="text-align: right;" class="ClickShowInfo" row_id="32157" field_name="unit_num" value=0.000 title="前版本設計數量：無前版本">
+        
+            0
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32157" item_id="32157" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="361" value="">
+            
+        </td>
+        <td id="item_another_num_32157" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32157"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32157" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32157" class="get_item_sum" item_id="32157">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32157" type="text" value="" tabindex='362' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32158" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32158" row_id="32158">
+        <span>2.29</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32158" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>舊南洋櫸木 （Slangan Batu）、金檀木（Tatajuba）、紅櫸木（Michelia .spp）或同等品30cmX30cm X4M（含橫樑加工費）</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32158" field_name="unit_name">
+        
+            <span>才</span>
+        
+    </td>
+    <td id="td_item_unit_price_32158" style="text-align: right;" class="ClickShowInfo" row_id="32158" field_name="unit_price" value=2800.000 title="前版本設計單價：無前版本">
+        
+            184
+        
+    </td>
+    <td id="td_item_unit_num_32158" style="text-align: right;" class="ClickShowInfo" row_id="32158" field_name="unit_num" value=2800.000 title="前版本設計數量：無前版本">
+        
+            2,800
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32158" item_id="32158" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="371" value="">
+            
+        </td>
+        <td id="item_another_num_32158" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32158"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32158" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32158" class="get_item_sum" item_id="32158">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32158" type="text" value="" tabindex='372' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32159" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32159" row_id="32159">
+        <span>2.30</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32159" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>舊南洋櫸木 （Slangan Batu）、金檀木（Tatajuba）、紅櫸木（Michelia .spp）或同等品30cmX30cm X4M（含連接樑加工費）</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32159" field_name="unit_name">
+        
+            <span>才</span>
+        
+    </td>
+    <td id="td_item_unit_price_32159" style="text-align: right;" class="ClickShowInfo" row_id="32159" field_name="unit_price" value=667.000 title="前版本設計單價：無前版本">
+        
+            184
+        
+    </td>
+    <td id="td_item_unit_num_32159" style="text-align: right;" class="ClickShowInfo" row_id="32159" field_name="unit_num" value=667.000 title="前版本設計數量：無前版本">
+        
+            667
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32159" item_id="32159" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="381" value="">
+            
+        </td>
+        <td id="item_another_num_32159" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32159"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32159" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32159" class="get_item_sum" item_id="32159">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32159" type="text" value="" tabindex='382' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32160" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32160" row_id="32160">
+        <span>2.31</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32160" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>木材ACQ防腐處理</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32160" field_name="unit_name">
+        
+            <span>才</span>
+        
+    </td>
+    <td id="td_item_unit_price_32160" style="text-align: right;" class="ClickShowInfo" row_id="32160" field_name="unit_price" value=3467.000 title="前版本設計單價：無前版本">
+        
+            23
+        
+    </td>
+    <td id="td_item_unit_num_32160" style="text-align: right;" class="ClickShowInfo" row_id="32160" field_name="unit_num" value=3467.000 title="前版本設計數量：無前版本">
+        
+            3,467
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32160" item_id="32160" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="391" value="">
+            
+        </td>
+        <td id="item_another_num_32160" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32160"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32160" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32160" class="get_item_sum" item_id="32160">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32160" type="text" value="" tabindex='392' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32161" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32161" row_id="32161">
+        <span>2.32</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32161" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>台車車輪（含加工）</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32161" field_name="unit_name">
+        
+            <span>個</span>
+        
+    </td>
+    <td id="td_item_unit_price_32161" style="text-align: right;" class="ClickShowInfo" row_id="32161" field_name="unit_price" value=42.000 title="前版本設計單價：無前版本">
+        
+            9,083
+        
+    </td>
+    <td id="td_item_unit_num_32161" style="text-align: right;" class="ClickShowInfo" row_id="32161" field_name="unit_num" value=42.000 title="前版本設計數量：無前版本">
+        
+            42
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32161" item_id="32161" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="401" value="">
+            
+        </td>
+        <td id="item_another_num_32161" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32161"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32161" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32161" class="get_item_sum" item_id="32161">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32161" type="text" value="" tabindex='402' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32162" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32162" row_id="32162">
+        <span>2.33</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32162" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>台車車輪座（含加工）</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32162" field_name="unit_name">
+        
+            <span>個</span>
+        
+    </td>
+    <td id="td_item_unit_price_32162" style="text-align: right;" class="ClickShowInfo" row_id="32162" field_name="unit_price" value=42.000 title="前版本設計單價：無前版本">
+        
+            11,618
+        
+    </td>
+    <td id="td_item_unit_num_32162" style="text-align: right;" class="ClickShowInfo" row_id="32162" field_name="unit_num" value=42.000 title="前版本設計數量：無前版本">
+        
+            42
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32162" item_id="32162" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="411" value="">
+            
+        </td>
+        <td id="item_another_num_32162" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32162"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32162" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32162" class="get_item_sum" item_id="32162">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32162" type="text" value="" tabindex='412' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32163" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32163" row_id="32163">
+        <span>2.34</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32163" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>SUS316   M20XL400X牙長80 車輪座螺絲 (含平華司t=3mm,S華司,螺帽2只)</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32163" field_name="unit_name">
+        
+            <span>組</span>
+        
+    </td>
+    <td id="td_item_unit_price_32163" style="text-align: right;" class="ClickShowInfo" row_id="32163" field_name="unit_price" value=168.000 title="前版本設計單價：無前版本">
+        
+            479
+        
+    </td>
+    <td id="td_item_unit_num_32163" style="text-align: right;" class="ClickShowInfo" row_id="32163" field_name="unit_num" value=168.000 title="前版本設計數量：無前版本">
+        
+            168
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32163" item_id="32163" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="421" value="">
+            
+        </td>
+        <td id="item_another_num_32163" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32163"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32163" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32163" class="get_item_sum" item_id="32163">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32163" type="text" value="" tabindex='422' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32164" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32164" row_id="32164">
+        <span>2.35</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32164" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>SUS316  M20XL430X牙長80連接樑螺絲 (含平華司t=3mm,S華司,螺帽2只)</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32164" field_name="unit_name">
+        
+            <span>組</span>
+        
+    </td>
+    <td id="td_item_unit_price_32164" style="text-align: right;" class="ClickShowInfo" row_id="32164" field_name="unit_price" value=84.000 title="前版本設計單價：無前版本">
+        
+            535
+        
+    </td>
+    <td id="td_item_unit_num_32164" style="text-align: right;" class="ClickShowInfo" row_id="32164" field_name="unit_num" value=84.000 title="前版本設計數量：無前版本">
+        
+            84
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32164" item_id="32164" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="431" value="">
+            
+        </td>
+        <td id="item_another_num_32164" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32164"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32164" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32164" class="get_item_sum" item_id="32164">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32164" type="text" value="" tabindex='432' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32165" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32165" row_id="32165">
+        <span>2.36</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32165" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>L型不銹鋼螺絲 SUS316  M10、螺帽2只</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32165" field_name="unit_name">
+        
+            <span>組</span>
+        
+    </td>
+    <td id="td_item_unit_price_32165" style="text-align: right;" class="ClickShowInfo" row_id="32165" field_name="unit_price" value=84.000 title="前版本設計單價：無前版本">
+        
+            212
+        
+    </td>
+    <td id="td_item_unit_num_32165" style="text-align: right;" class="ClickShowInfo" row_id="32165" field_name="unit_num" value=84.000 title="前版本設計數量：無前版本">
+        
+            84
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32165" item_id="32165" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="441" value="">
+            
+        </td>
+        <td id="item_another_num_32165" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32165"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32165" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32165" class="get_item_sum" item_id="32165">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32165" type="text" value="" tabindex='442' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32166" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32166" row_id="32166">
+        <span>2.37</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32166" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>連接板（鋅粉底漆、面漆）</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32166" field_name="unit_name">
+        
+            <span>kg</span>
+        
+    </td>
+    <td id="td_item_unit_price_32166" style="text-align: right;" class="ClickShowInfo" row_id="32166" field_name="unit_price" value=1350.000 title="前版本設計單價：無前版本">
+        
+            37
+        
+    </td>
+    <td id="td_item_unit_num_32166" style="text-align: right;" class="ClickShowInfo" row_id="32166" field_name="unit_num" value=1350.000 title="前版本設計數量：無前版本">
+        
+            1,350
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32166" item_id="32166" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="451" value="">
+            
+        </td>
+        <td id="item_another_num_32166" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32166"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32166" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32166" class="get_item_sum" item_id="32166">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32166" type="text" value="" tabindex='452' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32167" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32167" row_id="32167">
+        <span>2.38</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32167" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>支承板（鋅粉底漆、面漆）</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32167" field_name="unit_name">
+        
+            <span>kg</span>
+        
+    </td>
+    <td id="td_item_unit_price_32167" style="text-align: right;" class="ClickShowInfo" row_id="32167" field_name="unit_price" value=1380.000 title="前版本設計單價：無前版本">
+        
+            37
+        
+    </td>
+    <td id="td_item_unit_num_32167" style="text-align: right;" class="ClickShowInfo" row_id="32167" field_name="unit_num" value=1380.000 title="前版本設計數量：無前版本">
+        
+            1,380
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32167" item_id="32167" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="461" value="">
+            
+        </td>
+        <td id="item_another_num_32167" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32167"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32167" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32167" class="get_item_sum" item_id="32167">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32167" type="text" value="" tabindex='462' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32168" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32168" row_id="32168">
+        <span>2.39</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32168" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>加勁板（鋅粉底漆、面漆）</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32168" field_name="unit_name">
+        
+            <span>kg</span>
+        
+    </td>
+    <td id="td_item_unit_price_32168" style="text-align: right;" class="ClickShowInfo" row_id="32168" field_name="unit_price" value=420.000 title="前版本設計單價：無前版本">
+        
+            37
+        
+    </td>
+    <td id="td_item_unit_num_32168" style="text-align: right;" class="ClickShowInfo" row_id="32168" field_name="unit_num" value=420.000 title="前版本設計數量：無前版本">
+        
+            420
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32168" item_id="32168" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="471" value="">
+            
+        </td>
+        <td id="item_another_num_32168" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32168"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32168" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32168" class="get_item_sum" item_id="32168">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32168" type="text" value="" tabindex='472' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32169" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32169" row_id="32169">
+        <span>2.40</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32169" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>熱浸鍍鋅（含運費）</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32169" field_name="unit_name">
+        
+            <span>kg</span>
+        
+    </td>
+    <td id="td_item_unit_price_32169" style="text-align: right;" class="ClickShowInfo" row_id="32169" field_name="unit_price" value=3150.000 title="前版本設計單價：無前版本">
+        
+            18
+        
+    </td>
+    <td id="td_item_unit_num_32169" style="text-align: right;" class="ClickShowInfo" row_id="32169" field_name="unit_num" value=3150.000 title="前版本設計數量：無前版本">
+        
+            3,150
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32169" item_id="32169" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="481" value="">
+            
+        </td>
+        <td id="item_another_num_32169" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32169"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32169" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32169" class="get_item_sum" item_id="32169">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32169" type="text" value="" tabindex='482' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32170" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32170" row_id="32170">
+        <span>2.41</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32170" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>12&quot;龜殼式單滑輪 SWL 5T（含1 1/4&quot;合金下古）</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32170" field_name="unit_name">
+        
+            <span>組</span>
+        
+    </td>
+    <td id="td_item_unit_price_32170" style="text-align: right;" class="ClickShowInfo" row_id="32170" field_name="unit_price" value=6.000 title="前版本設計單價：無前版本">
+        
+            13,369
+        
+    </td>
+    <td id="td_item_unit_num_32170" style="text-align: right;" class="ClickShowInfo" row_id="32170" field_name="unit_num" value=6.000 title="前版本設計數量：無前版本">
+        
+            6
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32170" item_id="32170" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="491" value="">
+            
+        </td>
+        <td id="item_another_num_32170" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32170"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32170" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32170" class="get_item_sum" item_id="32170">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32170" type="text" value="" tabindex='492' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32171" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32171" row_id="32171">
+        <span>2.42</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32171" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>台車車輪&amp;車輪座噴漆（鋅粉底漆、面漆）</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32171" field_name="unit_name">
+        
+            <span>台</span>
+        
+    </td>
+    <td id="td_item_unit_price_32171" style="text-align: right;" class="ClickShowInfo" row_id="32171" field_name="unit_price" value=3.000 title="前版本設計單價：無前版本">
+        
+            20,286
+        
+    </td>
+    <td id="td_item_unit_num_32171" style="text-align: right;" class="ClickShowInfo" row_id="32171" field_name="unit_num" value=3.000 title="前版本設計數量：無前版本">
+        
+            3
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32171" item_id="32171" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="501" value="">
+            
+        </td>
+        <td id="item_another_num_32171" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32171"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32171" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32171" class="get_item_sum" item_id="32171">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32171" type="text" value="" tabindex='502' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32172" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32172" row_id="32172">
+        <span>2.43</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32172" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>台車組立及焊接費用</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32172" field_name="unit_name">
+        
+            <span>台</span>
+        
+    </td>
+    <td id="td_item_unit_price_32172" style="text-align: right;" class="ClickShowInfo" row_id="32172" field_name="unit_price" value=3.000 title="前版本設計單價：無前版本">
+        
+            82,998
+        
+    </td>
+    <td id="td_item_unit_num_32172" style="text-align: right;" class="ClickShowInfo" row_id="32172" field_name="unit_num" value=3.000 title="前版本設計數量：無前版本">
+        
+            3
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32172" item_id="32172" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="511" value="">
+            
+        </td>
+        <td id="item_another_num_32172" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32172"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32172" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32172" class="get_item_sum" item_id="32172">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32172" type="text" value="" tabindex='512' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32173" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32173" row_id="32173">
+        <span>2.44</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32173" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>舊有台車拆除運棄含折抵</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32173" field_name="unit_name">
+        
+            <span>台</span>
+        
+    </td>
+    <td id="td_item_unit_price_32173" style="text-align: right;" class="ClickShowInfo" row_id="32173" field_name="unit_price" value=3.000 title="前版本設計單價：無前版本">
+        
+            13,832
+        
+    </td>
+    <td id="td_item_unit_num_32173" style="text-align: right;" class="ClickShowInfo" row_id="32173" field_name="unit_num" value=3.000 title="前版本設計數量：無前版本">
+        
+            3
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32173" item_id="32173" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="521" value="">
+            
+        </td>
+        <td id="item_another_num_32173" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32173"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32173" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32173" class="get_item_sum" item_id="32173">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32173" type="text" value="" tabindex='522' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32174" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32174" row_id="32174">
+        <span>2.45</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32174" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>運搬費及雜項</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32174" field_name="unit_name">
+        
+            <span>台</span>
+        
+    </td>
+    <td id="td_item_unit_price_32174" style="text-align: right;" class="ClickShowInfo" row_id="32174" field_name="unit_price" value=3.000 title="前版本設計單價：無前版本">
+        
+            18,444
+        
+    </td>
+    <td id="td_item_unit_num_32174" style="text-align: right;" class="ClickShowInfo" row_id="32174" field_name="unit_num" value=3.000 title="前版本設計數量：無前版本">
+        
+            3
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32174" item_id="32174" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="531" value="">
+            
+        </td>
+        <td id="item_another_num_32174" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32174"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32174" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32174" class="get_item_sum" item_id="32174">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32174" type="text" value="" tabindex='532' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32175" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32175" row_id="32175">
+        <span>2.46</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32175" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>固定水平轉向滑輪及鋼基座</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32175" field_name="unit_name">
+        
+            <span>式</span>
+        
+    </td>
+    <td id="td_item_unit_price_32175" style="text-align: right;" class="ClickShowInfo" row_id="32175" field_name="unit_price" value=0.000 title="前版本設計單價：無前版本">
+        
+            0
+        
+    </td>
+    <td id="td_item_unit_num_32175" style="text-align: right;" class="ClickShowInfo" row_id="32175" field_name="unit_num" value=0.000 title="前版本設計數量：無前版本">
+        
+            0
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32175" item_id="32175" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="541" value="">
+            
+        </td>
+        <td id="item_another_num_32175" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32175"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32175" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32175" class="get_item_sum" item_id="32175">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32175" type="text" value="" tabindex='542' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32176" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32176" row_id="32176">
+        <span>2.47</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32176" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>滑輪組</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32176" field_name="unit_name">
+        
+            <span>組</span>
+        
+    </td>
+    <td id="td_item_unit_price_32176" style="text-align: right;" class="ClickShowInfo" row_id="32176" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            33,201
+        
+    </td>
+    <td id="td_item_unit_num_32176" style="text-align: right;" class="ClickShowInfo" row_id="32176" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32176" item_id="32176" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="551" value="">
+            
+        </td>
+        <td id="item_another_num_32176" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32176"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32176" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32176" class="get_item_sum" item_id="32176">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32176" type="text" value="" tabindex='552' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32177" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32177" row_id="32177">
+        <span>2.48</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32177" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>鋼構基座</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32177" field_name="unit_name">
+        
+            <span>組</span>
+        
+    </td>
+    <td id="td_item_unit_price_32177" style="text-align: right;" class="ClickShowInfo" row_id="32177" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            17,059
+        
+    </td>
+    <td id="td_item_unit_num_32177" style="text-align: right;" class="ClickShowInfo" row_id="32177" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32177" item_id="32177" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="561" value="">
+            
+        </td>
+        <td id="item_another_num_32177" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32177"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32177" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32177" class="get_item_sum" item_id="32177">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32177" type="text" value="" tabindex='562' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32178" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32178" row_id="32178">
+        <span>2.49</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32178" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>組立費用</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32178" field_name="unit_name">
+        
+            <span>組</span>
+        
+    </td>
+    <td id="td_item_unit_price_32178" style="text-align: right;" class="ClickShowInfo" row_id="32178" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            9,221
+        
+    </td>
+    <td id="td_item_unit_num_32178" style="text-align: right;" class="ClickShowInfo" row_id="32178" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32178" item_id="32178" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="571" value="">
+            
+        </td>
+        <td id="item_another_num_32178" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32178"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32178" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32178" class="get_item_sum" item_id="32178">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32178" type="text" value="" tabindex='572' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32179" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32179" row_id="32179">
+        <span>2.50</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32179" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>滑輪運搬費</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32179" field_name="unit_name">
+        
+            <span>組</span>
+        
+    </td>
+    <td id="td_item_unit_price_32179" style="text-align: right;" class="ClickShowInfo" row_id="32179" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            6,454
+        
+    </td>
+    <td id="td_item_unit_num_32179" style="text-align: right;" class="ClickShowInfo" row_id="32179" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32179" item_id="32179" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="581" value="">
+            
+        </td>
+        <td id="item_another_num_32179" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32179"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32179" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32179" class="get_item_sum" item_id="32179">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32179" type="text" value="" tabindex='582' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32180" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32180" row_id="32180">
+        <span>2.51</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32180" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>滑輪鋼構基座土木基礎施作</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32180" field_name="unit_name">
+        
+            <span>式</span>
+        
+    </td>
+    <td id="td_item_unit_price_32180" style="text-align: right;" class="ClickShowInfo" row_id="32180" field_name="unit_price" value=0.000 title="前版本設計單價：無前版本">
+        
+            0
+        
+    </td>
+    <td id="td_item_unit_num_32180" style="text-align: right;" class="ClickShowInfo" row_id="32180" field_name="unit_num" value=0.000 title="前版本設計數量：無前版本">
+        
+            0
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32180" item_id="32180" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="591" value="">
+            
+        </td>
+        <td id="item_another_num_32180" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32180"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32180" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32180" class="get_item_sum" item_id="32180">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32180" type="text" value="" tabindex='592' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32181" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32181" row_id="32181">
+        <span>2.52</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32181" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>舊有基座打除運棄含折抵</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32181" field_name="unit_name">
+        
+            <span>座</span>
+        
+    </td>
+    <td id="td_item_unit_price_32181" style="text-align: right;" class="ClickShowInfo" row_id="32181" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            7,378
+        
+    </td>
+    <td id="td_item_unit_num_32181" style="text-align: right;" class="ClickShowInfo" row_id="32181" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32181" item_id="32181" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="601" value="">
+            
+        </td>
+        <td id="item_another_num_32181" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32181"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32181" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32181" class="get_item_sum" item_id="32181">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32181" type="text" value="" tabindex='602' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32182" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32182" row_id="32182">
+        <span>2.53</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32182" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>機械挖土方</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32182" field_name="unit_name">
+        
+            <span>M3 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32182" style="text-align: right;" class="ClickShowInfo" row_id="32182" field_name="unit_price" value=5.000 title="前版本設計單價：無前版本">
+        
+            461
+        
+    </td>
+    <td id="td_item_unit_num_32182" style="text-align: right;" class="ClickShowInfo" row_id="32182" field_name="unit_num" value=5.000 title="前版本設計數量：無前版本">
+        
+            5
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32182" item_id="32182" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="611" value="">
+            
+        </td>
+        <td id="item_another_num_32182" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32182"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32182" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32182" class="get_item_sum" item_id="32182">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32182" type="text" value="" tabindex='612' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32183" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32183" row_id="32183">
+        <span>2.54</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32183" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>鋼筋加工組立(含鋼筋)</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32183" field_name="unit_name">
+        
+            <span>kg</span>
+        
+    </td>
+    <td id="td_item_unit_price_32183" style="text-align: right;" class="ClickShowInfo" row_id="32183" field_name="unit_price" value=166.000 title="前版本設計單價：無前版本">
+        
+            21
+        
+    </td>
+    <td id="td_item_unit_num_32183" style="text-align: right;" class="ClickShowInfo" row_id="32183" field_name="unit_num" value=166.000 title="前版本設計數量：無前版本">
+        
+            166
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32183" item_id="32183" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="621" value="">
+            
+        </td>
+        <td id="item_another_num_32183" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32183"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32183" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32183" class="get_item_sum" item_id="32183">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32183" type="text" value="" tabindex='622' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32184" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32184" row_id="32184">
+        <span>2.55</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32184" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>模板及組立</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32184" field_name="unit_name">
+        
+            <span>M2</span>
+        
+    </td>
+    <td id="td_item_unit_price_32184" style="text-align: right;" class="ClickShowInfo" row_id="32184" field_name="unit_price" value=11.000 title="前版本設計單價：無前版本">
+        
+            461
+        
+    </td>
+    <td id="td_item_unit_num_32184" style="text-align: right;" class="ClickShowInfo" row_id="32184" field_name="unit_num" value=11.000 title="前版本設計數量：無前版本">
+        
+            11
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32184" item_id="32184" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="631" value="">
+            
+        </td>
+        <td id="item_another_num_32184" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32184"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32184" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32184" class="get_item_sum" item_id="32184">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32184" type="text" value="" tabindex='632' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32185" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32185" row_id="32185">
+        <span>2.56</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32185" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>210kg/cm2預拌混凝土</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32185" field_name="unit_name">
+        
+            <span>M3 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32185" style="text-align: right;" class="ClickShowInfo" row_id="32185" field_name="unit_price" value=5.000 title="前版本設計單價：無前版本">
+        
+            2,121
+        
+    </td>
+    <td id="td_item_unit_num_32185" style="text-align: right;" class="ClickShowInfo" row_id="32185" field_name="unit_num" value=5.000 title="前版本設計數量：無前版本">
+        
+            5
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32185" item_id="32185" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="641" value="">
+            
+        </td>
+        <td id="item_another_num_32185" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32185"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32185" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32185" class="get_item_sum" item_id="32185">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32185" type="text" value="" tabindex='642' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32186" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32186" row_id="32186">
+        <span>2.57</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32186" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>滑輪鋼構基座安裝</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32186" field_name="unit_name">
+        
+            <span>座</span>
+        
+    </td>
+    <td id="td_item_unit_price_32186" style="text-align: right;" class="ClickShowInfo" row_id="32186" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            32,279
+        
+    </td>
+    <td id="td_item_unit_num_32186" style="text-align: right;" class="ClickShowInfo" row_id="32186" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32186" item_id="32186" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="651" value="">
+            
+        </td>
+        <td id="item_another_num_32186" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32186"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32186" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32186" class="get_item_sum" item_id="32186">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32186" type="text" value="" tabindex='652' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32129.31946" id="tr_item_32187" class="white tr_hover" uplevel_id="32129" kind="工項">
+    <td id="td_item_symbol_32187" row_id="32187">
+        <span>2.58</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32187" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>星工料及機具損耗</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32187" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32187" style="text-align: right;" class="ClickShowInfo" row_id="32187" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            11,066
+        
+    </td>
+    <td id="td_item_unit_num_32187" style="text-align: right;" class="ClickShowInfo" row_id="32187" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32187" item_id="32187" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="661" value="">
+            
+        </td>
+        <td id="item_another_num_32187" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32187"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32187" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32187" class="get_item_sum" item_id="32187">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32187" type="text" value="" tabindex='662' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".31946" id="tr_item_32188" class="yellow tr_hover" uplevel_id="31946" kind="目錄">
+    <td id="td_item_symbol_32188" row_id="32188">
+        <span>3</span>
+    </td>
+    <td class="padding_1 ClickShowInfo" row_id="32188" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/dir.png" width="20">
+        
+        <span>電氣設備工程</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32188" field_name="unit_name">
+        
+            式
+        
+    </td>
+    <td id="td_item_unit_price_32188" style="text-align: right;" class="ClickShowInfo" row_id="32188" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            <span></span>
+        
+    </td>
+    <td id="td_item_unit_num_32188" style="text-align: right;" class="ClickShowInfo" row_id="32188" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td colspan="4"><span></span></td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32188.31946" id="tr_item_32189" class="white tr_hover" uplevel_id="32188" kind="工項">
+    <td id="td_item_symbol_32189" row_id="32189">
+        <span>3.1</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32189" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>&quot;MP&quot;PANEL</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32189" field_name="unit_name">
+        
+            <span>式</span>
+        
+    </td>
+    <td id="td_item_unit_price_32189" style="text-align: right;" class="ClickShowInfo" row_id="32189" field_name="unit_price" value=0.000 title="前版本設計單價：無前版本">
+        
+            0
+        
+    </td>
+    <td id="td_item_unit_num_32189" style="text-align: right;" class="ClickShowInfo" row_id="32189" field_name="unit_num" value=0.000 title="前版本設計數量：無前版本">
+        
+            0
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32189" item_id="32189" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="681" value="">
+            
+        </td>
+        <td id="item_another_num_32189" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32189"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32189" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32189" class="get_item_sum" item_id="32189">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32189" type="text" value="" tabindex='682' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32188.31946" id="tr_item_32190" class="white tr_hover" uplevel_id="32188" kind="工項">
+    <td id="td_item_symbol_32190" row_id="32190">
+        <span>3.2</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32190" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>開關箱(壁掛防水型不銹鋼板製)</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32190" field_name="unit_name">
+        
+            <span>只</span>
+        
+    </td>
+    <td id="td_item_unit_price_32190" style="text-align: right;" class="ClickShowInfo" row_id="32190" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            14,754
+        
+    </td>
+    <td id="td_item_unit_num_32190" style="text-align: right;" class="ClickShowInfo" row_id="32190" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32190" item_id="32190" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="691" value="">
+            
+        </td>
+        <td id="item_another_num_32190" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32190"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32190" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32190" class="get_item_sum" item_id="32190">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32190" type="text" value="" tabindex='692' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32188.31946" id="tr_item_32191" class="white tr_hover" uplevel_id="32188" kind="工項">
+    <td id="td_item_symbol_32191" row_id="32191">
+        <span>3.3</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32191" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>NFB 3P-225AF-200AT 25KA)</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32191" field_name="unit_name">
+        
+            <span>只</span>
+        
+    </td>
+    <td id="td_item_unit_price_32191" style="text-align: right;" class="ClickShowInfo" row_id="32191" field_name="unit_price" value=2.000 title="前版本設計單價：無前版本">
+        
+            3,319
+        
+    </td>
+    <td id="td_item_unit_num_32191" style="text-align: right;" class="ClickShowInfo" row_id="32191" field_name="unit_num" value=2.000 title="前版本設計數量：無前版本">
+        
+            2
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32191" item_id="32191" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="701" value="">
+            
+        </td>
+        <td id="item_another_num_32191" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32191"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32191" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32191" class="get_item_sum" item_id="32191">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32191" type="text" value="" tabindex='702' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32188.31946" id="tr_item_32192" class="white tr_hover" uplevel_id="32188" kind="工項">
+    <td id="td_item_symbol_32192" row_id="32192">
+        <span>3.4</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32192" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>結線另料</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32192" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32192" style="text-align: right;" class="ClickShowInfo" row_id="32192" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            2,766
+        
+    </td>
+    <td id="td_item_unit_num_32192" style="text-align: right;" class="ClickShowInfo" row_id="32192" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32192" item_id="32192" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="711" value="">
+            
+        </td>
+        <td id="item_another_num_32192" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32192"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32192" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32192" class="get_item_sum" item_id="32192">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32192" type="text" value="" tabindex='712' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32188.31946" id="tr_item_32193" class="white tr_hover" uplevel_id="32188" kind="工項">
+    <td id="td_item_symbol_32193" row_id="32193">
+        <span>3.5</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32193" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>電力接地工程(含接地端子棒)責任施工</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32193" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32193" style="text-align: right;" class="ClickShowInfo" row_id="32193" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            7,837
+        
+    </td>
+    <td id="td_item_unit_num_32193" style="text-align: right;" class="ClickShowInfo" row_id="32193" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32193" item_id="32193" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="721" value="">
+            
+        </td>
+        <td id="item_another_num_32193" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32193"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32193" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32193" class="get_item_sum" item_id="32193">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32193" type="text" value="" tabindex='722' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32188.31946" id="tr_item_32194" class="white tr_hover" uplevel_id="32188" kind="工項">
+    <td id="td_item_symbol_32194" row_id="32194">
+        <span>3.6</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32194" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>組立工資</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32194" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32194" style="text-align: right;" class="ClickShowInfo" row_id="32194" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            4,149
+        
+    </td>
+    <td id="td_item_unit_num_32194" style="text-align: right;" class="ClickShowInfo" row_id="32194" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32194" item_id="32194" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="731" value="">
+            
+        </td>
+        <td id="item_another_num_32194" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32194"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32194" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32194" class="get_item_sum" item_id="32194">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32194" type="text" value="" tabindex='732' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32188.31946" id="tr_item_32195" class="white tr_hover" uplevel_id="32188" kind="工項">
+    <td id="td_item_symbol_32195" row_id="32195">
+        <span>3.7</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32195" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>管線及另料</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32195" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32195" style="text-align: right;" class="ClickShowInfo" row_id="32195" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            32,279
+        
+    </td>
+    <td id="td_item_unit_num_32195" style="text-align: right;" class="ClickShowInfo" row_id="32195" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32195" item_id="32195" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="741" value="">
+            
+        </td>
+        <td id="item_another_num_32195" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32195"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32195" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32195" class="get_item_sum" item_id="32195">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32195" type="text" value="" tabindex='742' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32188.31946" id="tr_item_32196" class="white tr_hover" uplevel_id="32188" kind="工項">
+    <td id="td_item_symbol_32196" row_id="32196">
+        <span>3.8</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32196" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>管線及另料</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32196" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32196" style="text-align: right;" class="ClickShowInfo" row_id="32196" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            16,598
+        
+    </td>
+    <td id="td_item_unit_num_32196" style="text-align: right;" class="ClickShowInfo" row_id="32196" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32196" item_id="32196" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="751" value="">
+            
+        </td>
+        <td id="item_another_num_32196" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32196"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32196" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32196" class="get_item_sum" item_id="32196">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32196" type="text" value="" tabindex='752' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32188.31946" id="tr_item_32197" class="white tr_hover" uplevel_id="32188" kind="工項">
+    <td id="td_item_symbol_32197" row_id="32197">
+        <span>3.9</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32197" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>工具、損耗及五金配件</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32197" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32197" style="text-align: right;" class="ClickShowInfo" row_id="32197" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            17,651
+        
+    </td>
+    <td id="td_item_unit_num_32197" style="text-align: right;" class="ClickShowInfo" row_id="32197" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32197" item_id="32197" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="761" value="">
+            
+        </td>
+        <td id="item_another_num_32197" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32197"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32197" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32197" class="get_item_sum" item_id="32197">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32197" type="text" value="" tabindex='762' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".31946" id="tr_item_32198" class="yellow tr_hover" uplevel_id="31946" kind="目錄">
+    <td id="td_item_symbol_32198" row_id="32198">
+        <span>4</span>
+    </td>
+    <td class="padding_1 ClickShowInfo" row_id="32198" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/dir.png" width="20">
+        
+        <span>間接工程費</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32198" field_name="unit_name">
+        
+            式
+        
+    </td>
+    <td id="td_item_unit_price_32198" style="text-align: right;" class="ClickShowInfo" row_id="32198" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            <span></span>
+        
+    </td>
+    <td id="td_item_unit_num_32198" style="text-align: right;" class="ClickShowInfo" row_id="32198" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td colspan="4"><span></span></td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32198.31946" id="tr_item_32199" class="white tr_hover" uplevel_id="32198" kind="工項">
+    <td id="td_item_symbol_32199" row_id="32199">
+        <span>4.1</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32199" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>工程品管費用</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32199" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32199" style="text-align: right;" class="ClickShowInfo" row_id="32199" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            92,926
+        
+    </td>
+    <td id="td_item_unit_num_32199" style="text-align: right;" class="ClickShowInfo" row_id="32199" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32199" item_id="32199" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="781" value="">
+            
+        </td>
+        <td id="item_another_num_32199" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32199"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32199" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32199" class="get_item_sum" item_id="32199">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32199" type="text" value="" tabindex='782' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32198.31946" id="tr_item_32200" class="white tr_hover" uplevel_id="32198" kind="工項">
+    <td id="td_item_symbol_32200" row_id="32200">
+        <span>4.2</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32200" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>品質檢驗費</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32200" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32200" style="text-align: right;" class="ClickShowInfo" row_id="32200" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            64,553
+        
+    </td>
+    <td id="td_item_unit_num_32200" style="text-align: right;" class="ClickShowInfo" row_id="32200" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32200" item_id="32200" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="791" value="">
+            
+        </td>
+        <td id="item_another_num_32200" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32200"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32200" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32200" class="get_item_sum" item_id="32200">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32200" type="text" value="" tabindex='792' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32198.31946" id="tr_item_32201" class="white tr_hover" uplevel_id="32198" kind="工項">
+    <td id="td_item_symbol_32201" row_id="32201">
+        <span>4.3</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32201" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>環保清潔費</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32201" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32201" style="text-align: right;" class="ClickShowInfo" row_id="32201" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            12,284
+        
+    </td>
+    <td id="td_item_unit_num_32201" style="text-align: right;" class="ClickShowInfo" row_id="32201" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32201" item_id="32201" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="801" value="">
+            
+        </td>
+        <td id="item_another_num_32201" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32201"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32201" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32201" class="get_item_sum" item_id="32201">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32201" type="text" value="" tabindex='802' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32198.31946" id="tr_item_32202" class="white tr_hover" uplevel_id="32198" kind="工項">
+    <td id="td_item_symbol_32202" row_id="32202">
+        <span>4.4</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32202" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>勞工安全衛生管理費</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32202" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32202" style="text-align: right;" class="ClickShowInfo" row_id="32202" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            78,385
+        
+    </td>
+    <td id="td_item_unit_num_32202" style="text-align: right;" class="ClickShowInfo" row_id="32202" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32202" item_id="32202" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="811" value="">
+            
+        </td>
+        <td id="item_another_num_32202" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32202"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32202" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32202" class="get_item_sum" item_id="32202">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32202" type="text" value="" tabindex='812' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32198.31946" id="tr_item_32203" class="white tr_hover" uplevel_id="32198" kind="工項">
+    <td id="td_item_symbol_32203" row_id="32203">
+        <span>4.5</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32203" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>營造工程財產損失險</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32203" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32203" style="text-align: right;" class="ClickShowInfo" row_id="32203" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            12,108
+        
+    </td>
+    <td id="td_item_unit_num_32203" style="text-align: right;" class="ClickShowInfo" row_id="32203" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32203" item_id="32203" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="821" value="">
+            
+        </td>
+        <td id="item_another_num_32203" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32203"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32203" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32203" class="get_item_sum" item_id="32203">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32203" type="text" value="" tabindex='822' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32198.31946" id="tr_item_32204" class="white tr_hover" uplevel_id="32198" kind="工項">
+    <td id="td_item_symbol_32204" row_id="32204">
+        <span>4.6</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32204" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>營造綜合保險第三人意外責任保險</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32204" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32204" style="text-align: right;" class="ClickShowInfo" row_id="32204" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            25,501
+        
+    </td>
+    <td id="td_item_unit_num_32204" style="text-align: right;" class="ClickShowInfo" row_id="32204" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32204" item_id="32204" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="831" value="">
+            
+        </td>
+        <td id="item_another_num_32204" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32204"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32204" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32204" class="get_item_sum" item_id="32204">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32204" type="text" value="" tabindex='832' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32198.31946" id="tr_item_32205" class="white tr_hover" uplevel_id="32198" kind="工項">
+    <td id="td_item_symbol_32205" row_id="32205">
+        <span>4.7</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32205" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>營造綜合保險附加僱主意外責任險</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32205" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32205" style="text-align: right;" class="ClickShowInfo" row_id="32205" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            33,250
+        
+    </td>
+    <td id="td_item_unit_num_32205" style="text-align: right;" class="ClickShowInfo" row_id="32205" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32205" item_id="32205" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="841" value="">
+            
+        </td>
+        <td id="item_another_num_32205" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32205"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32205" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32205" class="get_item_sum" item_id="32205">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32205" type="text" value="" tabindex='842' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32198.31946" id="tr_item_32206" class="white tr_hover" uplevel_id="32198" kind="工項">
+    <td id="td_item_symbol_32206" row_id="32206">
+        <span>4.8</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32206" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>包商工地管理費、利潤及工程雜項費用</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32206" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32206" style="text-align: right;" class="ClickShowInfo" row_id="32206" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            491,354
+        
+    </td>
+    <td id="td_item_unit_num_32206" style="text-align: right;" class="ClickShowInfo" row_id="32206" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32206" item_id="32206" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="851" value="">
+            
+        </td>
+        <td id="item_another_num_32206" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32206"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32206" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32206" class="get_item_sum" item_id="32206">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32206" type="text" value="" tabindex='852' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".31946" id="tr_item_32207" class="yellow tr_hover" uplevel_id="31946" kind="目錄">
+    <td id="td_item_symbol_32207" row_id="32207">
+        <span>5</span>
+    </td>
+    <td class="padding_1 ClickShowInfo" row_id="32207" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/dir.png" width="20">
+        
+        <span>營業稅</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32207" field_name="unit_name">
+        
+            式
+        
+    </td>
+    <td id="td_item_unit_price_32207" style="text-align: right;" class="ClickShowInfo" row_id="32207" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            <span></span>
+        
+    </td>
+    <td id="td_item_unit_num_32207" style="text-align: right;" class="ClickShowInfo" row_id="32207" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td colspan="4"><span></span></td>
+    
+</tr>
+
+        
+			
+
+<tr top_dir=".32207.31946" id="tr_item_32208" class="white tr_hover" uplevel_id="32207" kind="工項">
+    <td id="td_item_symbol_32208" row_id="32208">
+        <span>5.1</span>
+    </td>
+    <td class="padding_2 ClickShowInfo" row_id="32208" field_name="name" title="前版本名稱：無前版本">
+        
+            <img src="/media/dailyreport/images/T.png" width="20">
+        
+        
+            <img src="/media/dailyreport/images/item.png" width="15">
+        
+        <span>營業稅</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="32208" field_name="unit_name">
+        
+            <span>式 </span>
+        
+    </td>
+    <td id="td_item_unit_price_32208" style="text-align: right;" class="ClickShowInfo" row_id="32208" field_name="unit_price" value=1.000 title="前版本設計單價：無前版本">
+        
+            347,619
+        
+    </td>
+    <td id="td_item_unit_num_32208" style="text-align: right;" class="ClickShowInfo" row_id="32208" field_name="unit_num" value=1.000 title="前版本設計數量：無前版本">
+        
+            1
+        
+    </td>
+    
+        <td style="text-align: right;">
+            
+                <input id="item_num_32208" item_id="32208" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="871" value="">
+            
+        </td>
+        <td id="item_another_num_32208" style="text-align: right;" bgcolor="#668BB2">
+            
+                
+                    
+                        <span id="span_item_another_num_32208"></span>
+                    
+                
+            
+        </td>
+        <td id="item_sum_num_32208" value="" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_32208" class="get_item_sum" item_id="32208">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            
+                <input id="item_note_32208" type="text" value="" tabindex='872' class="arrow_keys_to_detect">
+            
+        </td>
+    
+</tr>
+
+        
+    </tbody>
+</table>
+
+
+
+<table class="table table-bordered" id="report_material_items" align="center" style="background-color:white;">
+    <thead>
+    	<col width="5%">
+	    <col width="40%">
+	    <col width="5%">
+	    <col width="10%">
+	    <col width="10%">
+	    <col width="10%">
+	    <col width="10%">
+	    
+	    	<col width="3%">
+	    
+        <tr bgcolor="#895117">
+            <td colspan="8" align="left" style="color: white;">
+                <h4>工地材料管理概況(含約定之重要材料使用狀況及數量等)：
+                	
+                		<button class="btn btn-success" type="button" id="create_site_material">新增工地材料</button>
+                	
+                	<span style="font-size: 14px; color: #FFCDE5;">
+	                	(因材料種類繁雜，系統僅提供當日紀錄功能，並不作統計功能)
+	                </span>
+	            </h4>
+            </td>
+        </tr>
+        <tr bgcolor="#CFD0A2">
+            <td style="text-align: center;">項次</td>
+            <td style="text-align: center;">材料名稱</td>
+            <td style="text-align: center;">單位</td>
+            <td style="text-align: center;">設計數量</td>
+            <td style="text-align: center;">本日完成數量</td>
+            <td style="text-align: center;">累計完成數量</td>
+            <td style="text-align: center;">備註</td>
+            
+            	<td style="text-align: center;"><span></span></td>
+            
+        </tr>
+    </thead>
+    <tbody id="report_material_items_tbody">
+    </tbody>
+</table>
+
+
+
+
+<table class="table table-bordered" id="report_labors_and_equips" align="center" style="background-color:white;">
+	<col width="50%">
+    <col width="50%">
+    <tr bgcolor="#895117">
+        <td colspan="2" align="left" style="color: white;">
+            <h4>工地人員及機具管理(含約定之出工人數及機具使用情形及數量)：
+            	
+					<button class="btn btn-danger" type="button" href="#create_labor_dailog" data-toggle="modal">新增人員種類</button>
+					<button class="btn btn-info" type="button" href="#create_equip_dailog" data-toggle="modal">新增機具種類</button>
+				
+            </h4>
+        </td>
+    </tr>
+    <tr>
+        <td style="vertical-align:top !important;">
+            <table class="table table-bordered" id="report_labors" align="center" style="background-color:white;">
+            	<col width="50%">
+    			<col width="25%">
+    			<col width="25%">
+                <thead>
+        			<tr bgcolor="#CFD0A2">
+        				<td style="text-align: center;">工別</td>
+        				<td style="text-align: center;">本日人數</td>
+        				<td style="text-align: center;">累計人數</td>
+        			</tr>
+                </thead>
+    			<tbody id="report_labors_tbody">
+                </tbody>
+            </table>
+		</td>
+		<td style="vertical-align:top !important;">
+            <table class="table table-bordered" id="report_equips" align="center" style="background-color:white;">
+            	<col width="50%">
+    			<col width="25%">
+    			<col width="25%">
+    			<thead>
+                    <tr bgcolor="#CFD0A2">
+                        <td style="text-align: center;">機具名稱</td>
+                        <td style="text-align: center;">本日使用數量</td>
+                        <td style="text-align: center;">累計使用數量</td>
+                    </tr>
+                </thead>
+                <tbody id="report_equips_tbody">
+                </tbody>
+            </table>
+        </td>
+    </tr>
+</table>
+
+
+<table class="table table-bordered" align="center" style="background-color:white;">
+	
+		<tr id="tr_has_professional_item">
+	        <td>
+	            <input type="checkbox"  id="has_professional_item">
+	            本日施工項目是否有須依「營造業專業工程特定施工項目應置之技術士種類、比率或人數標準表」規定應設置技術士之專業工程（此項如勾選”有”，則應填寫後附「建築物施工日誌之技術士簽章表」）<br><br>
+	        </td>
+	    </tr>
+	
+    <tr bgcolor="#895117">
+        <td style="color: white;">
+            <h4>
+            	
+            		工地勞工安全衛生事項之督導、公共環境與安全之維護及其他工地行政事務：
+            	
+            </h4>
+        </td>
+    </tr>
+    <tr height="150">
+        <td>
+            <textarea  id="describe_subcontractor" rows="7"></textarea><br>
+            <div class="alert alert-warning" id="another_describe_subcontractor">
+                
+                    <p style="color: blue;">監造報表(工程進行情況補充說明)填寫內容：</p>
+                
+            </div>
+        </td>
+    </tr>
+    <tr bgcolor="#895117" id="tr_note">
+        <td style="color: white;">
+            <h4>
+                
+                    重要事項紀錄(含主辦機關及監造單位指示、工地遇緊急異常狀況及需解決施工技術問題之通報處理情形、施工要徑、進度落原因及因應對策等)：
+                
+            </h4>
+        </td>
+    </tr>
+    <tr id="tr_note_2">
+        <td>
+            <textarea  id="note" rows="7"></textarea><br>
+            <div class="alert alert-warning" id="another_note">
+                
+                    <p style="color: blue;">監造報表(監督依照設計圖說施工)填寫內容：</p>
+                
+            </div>
+        </td>
+    </tr>
+    <tr bgcolor="#895117">
+        <td style="color: white;">
+            <h4>
+                
+                    施工取樣試驗紀錄：
+                
+            </h4>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <textarea  id="sampling" rows="7"></textarea><br>
+            <div class="alert alert-warning" id="another_sampling">
+                
+                    <p style="color: blue;">監造報表(查核材料規格及品質)填寫內容：</p>
+                
+            </div>
+        </td>
+    </tr>
+    <tr bgcolor="#895117">
+        <td style="color: white;">
+            <h4>
+                
+                    通知分包商辦理事項：
+                
+            </h4>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <textarea  id="notify" rows="7"></textarea><br>
+            <div class="alert alert-warning" id="another_notify">
+                
+                    <p style="color: blue;">監造報表(其他約定監造事項)填寫內容：</p>
+                
+            </div>
+        </td>
+    </tr>
+    <tr style="display:none;" id="tr_insert_place_for_note"></tr>
+</table>
+
+<span style="font-size: 14px;text-align:left">
+	<ol>
+        
+    		<li>依營造業法第32條第1項第2款規定，工地主任應按日填報施工日誌。</li>
+            <li>本施工日誌格式僅供參考，惟原則應包含上開欄位，各機關亦得依工程性質及契約約定事項自行增訂之。</li>
+            <li>本工程依營造業法第30條規定須置工地主任者，由工地主任簽章；依上開規定免置工地主任者，則由營造業法第32條第2項所定之人員簽章。廠商非屬營造業者，由工地負責人簽章。</li>
+            <li>契約工期如有修正，應填修正後之契約工期，含展延工期及不計工期天數；如有依契約變更設計，預定進度及實際進度應填變更設計後計算之進度。</li>
+            <li>上開重要事項記錄包含（1）主辦機關及監造單位指示（2）工地遇緊急異常狀況之通報處理情形（3）本日是否由專任工程人員督察按圖施工、解決施工技術問題等。</li>
+            <li>公共工程屬建築物者，請依內政部99年2月5日台內營字第0990800804號令頒之「建築物施工日誌」填寫。</li>
+        
+	</ol>
+</span>
+
+<br><br><br><br>
+
+<div id="div_update_dutton" style="position:fixed;bottom:0px;left:40%;visibility:visible;">
+	<span class="page_have_change_msg" style="font-size:18px;color: red;display:none;">此頁面資訊有變更尚未送出!!!</span><br>
+	<button class="btn btn-large btn-primary update_report_data" type="button">送出資料，並更新本日進度</button><br>
+	<span class="page_have_change_msg" style="font-size:18px;color: red;display:none;">此頁面資訊有變更尚未送出!!!</span>
+</div>
+

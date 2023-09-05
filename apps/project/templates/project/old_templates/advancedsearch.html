@@ -1,0 +1,432 @@
+{% extends 'project/index.html' %}
+
+{% load utiltags %}
+{% block menu %}
+    <ul id="menu" value ="/project/search/"></ul>
+{% endblock %}
+{% block style %}
+.style1 {
+	color: #CC9900;
+	font-size: 24px;
+}
+.style2 {
+	color: #FF0000;
+}
+
+td {padding: 5px 2px;}
+
+{% endblock %}
+
+{% block content %}
+<br><span id="pagemark" page="search"></span>
+<span style="font-size: 16px">
+    <form action="./" method="POST">
+        <table width="1000">
+            <tr>
+                <td colspan="3">
+                    <span style="font-size: 22px;">進階搜尋</span>
+                </td>
+            </tr>
+            <tr>
+                <td width="20"></td>
+                <td align="left" valign="top">
+                    <table align="center" border="1" style="border-collapse: collapse">
+                        <tr>
+                            <td align="left" bgcolor="#DDFFCC"><label for="id_bid_no">標案編號：</label></td>
+                            <td align="left">
+                                <input name="bid_no1" id="id_bid_no1" size="16" type="text" value="{{ INFO.bid_no1 }}">
+                                    <select name="bid_no_and1" id="id_bid_no_and1" style="background-color:#CCFFCC;">
+                                        <option value="and" {% if not INFO.bid_no_and1 %}selected{% endif %}>　and　</option>
+                                        <option value="or" {% ifequal INFO.bid_no_and1 'or' %}selected{% endifequal %}>　or　</option>
+                                    </select>
+                                <input name="bid_no2" id="id_bid_no2" size="16" type="text" value="{{ INFO.bid_no2 }}">
+                                    <select name="bid_no_and2" id="id_bid_no_and2" style="background-color:#CCFFCC;">
+                                        <option value="and" {% if not INFO.bid_no_and2 %}selected{% endif %}>　and　</option>
+                                        <option value="or" {% ifequal INFO.bid_no_and2 'or' %}selected{% endifequal %}>　or　</option>
+                                    </select>
+                                <input name="bid_no3" id="id_bid_no3" size="16" type="text" value="{{ INFO.bid_no3 }}">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="left" bgcolor="#DDFFCC"><label for="id_name">工作名稱：</label></td>
+                            <td align="left">
+                                <input name="name1" id="id_name1" size="16" type="text" value="{{ INFO.name1 }}">
+                                    <select name="name_and1" id="id_name_and1" style="background-color:#CCFFCC;">
+                                        <option value="and" {% if not INFO.name_and1 %}selected{% endif %}>　and　</option>
+                                        <option value="or" {% ifequal INFO.name_and1 'or' %}selected{% endifequal %}>　or　</option>
+                                    </select>
+                                <input name="name2" id="id_name2" size="16" type="text" value="{{ INFO.name2 }}">
+                                    <select name="name_and2" id="id_name_and2" style="background-color:#CCFFCC;">
+                                        <option value="and" {% if not INFO.name_and2 %}selected{% endif %}>　and　</option>
+                                        <option value="or" {% ifequal INFO.name_and2 'or' %}selected{% endifequal %}>　or　</option>
+                                    </select>
+                                <input name="name3" id="id_name3" size="16" type="text" value="{{ INFO.name3 }}">
+                            </td>
+                        </tr>
+                        <tr valign="top">
+                            <td align="left" bgcolor="#DDFFCC"><label for="id_vouch_no">發文(核定)文號：</label></td>
+                            <td align="left">
+                                <input name="vouch_no1" id="id_vouch_no1" size="16" type="text" value="{{ INFO.vouch_no1 }}">
+                                    <select name="vouch_no_and1" id="id_vouch_no_and1" style="background-color:#CCFFCC;">
+                                        <option value="and" {% if not INFO.vouch_no_and1 %}selected{% endif %}>　and　</option>
+                                        <option value="or" {% ifequal INFO.vouch_no_and1 'or' %}selected{% endifequal %}>　or　</option>
+                                    </select>
+                                <input name="vouch_no2" id="id_vouch_no2" size="16" type="text" value="{{ INFO.vouch_no2 }}">
+                                    <select name="vouch_no_and2" id="id_vouch_no_and2" style="background-color:#CCFFCC;">
+                                        <option value="and" {% if not INFO.vouch_no_and2 %}selected{% endif %}>　and　</option>
+                                        <option value="or" {% ifequal INFO.vouch_no_and2 'or' %}selected{% endifequal %}>　or　</option>
+                                    </select>
+                                <input name="vouch_no3" id="id_vouch_no3" size="16" type="text" value="{{ INFO.vouch_no3 }}">
+                            </td>
+                        </tr>
+                        <tr valign="top">
+                            <td align="left" bgcolor="#DDFFCC"><label for="id_plan">所屬計畫：</label></td>
+                            <td align="left">　　　　
+                                <select name="plan1" id="id_plan1">
+                                    <option value="" {% if INFO.plan1 %}selected{% endif %}>全部</option>
+                                    {% for plan in plans %}
+                                        <option value="{{ plan.id }}" {% ifequal INFO.plan1 plan.id %}selected{% endifequal %}>{{ plan.name }}</option>
+                                    {% endfor %}
+                                </select><br>
+                                    <select name="plan_and1" id="id_plan_and1" style="background-color:#CCFFCC;">
+                                        <option value="or" selected>　or　</option>
+                                    </select>
+                                <select name="plan2" id="id_plan2">
+                                    <option value="" {% if INFO.plan2 %}selected{% endif %}>全部</option>
+                                    {% for plan in plans %}
+                                        <option value="{{ plan.id }}" {% ifequal INFO.plan2 plan.id %}selected{% endifequal %}>{{ plan.name }}</option>
+                                    {% endfor %}
+                                </select><br>
+                                    <select name="plan_and2" id="id_plan_and2" style="background-color:#CCFFCC;">
+                                        <option value="or" selected>　or　</option>
+                                    </select>
+                                <select name="plan3" id="id_plan3">
+                                    <option value="" {% if INFO.plan3 %}selected{% endif %}>全部</option>
+                                    {% for plan in plans %}
+                                        <option value="{{ plan.id }}" {% ifequal INFO.plan3 plan.id %}selected{% endifequal %}>{{ plan.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="left" bgcolor="#DDFFCC"><label for="id_project_sub_type">　　層級：</label></td>
+                            <td align="left">
+                                <select name="project_sub_type" id="id_project_sub_type">
+                                    <option value="1" {% ifequal INFO.project_sub_type 1 %}selected{% endifequal %}>含下層計畫</option>
+                                    <option value="0" {% ifequal INFO.project_sub_type 0 %}selected{% endifequal %}>不含下層計畫</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="left" bgcolor="#DDFFCC"><label for="id_year">年度：</label></td>
+                            <td align="left">
+                                <select name="year_lb" id="id_year_lb">
+                                    <option value="" {% ifequal INFO.year_lb '全部' %}selected{% endifequal %}>全部</option>
+                                    {% for year in years %}
+                                        <option value="{{ year }}" {% ifequal INFO.year_lb year %}selected{% endifequal %}>{{ year }}</option>
+                                    {% endfor %}
+                                </select>
+                                ～
+                                <select name="year_ub" id="id_year_ub">
+                                    <option value="" {% ifequal INFO.year_up '全部' %}selected{% endifequal %}>全部</option>
+                                    {% for year in years %}
+                                        <option value="{{ year }}" {% ifequal INFO.year_ub year %}selected{% endifequal %}>{{ year }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="left" bgcolor="#DDFFCC"><label for="id_budget_type">預算別：</label></td>
+                            <td align="left">
+                                <select name="budget_type" id="id_budget_type">
+                                    <option value="" {% ifequal INFO.budget_type '全部' %}selected{% endifequal %}>全部</option>
+                                    {% for b in budget_types %}
+                                        <option value="{{ b.id }}" {% ifequal INFO.budget_type b.id %}selected{% endifequal %}>{{ b.value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="left" bgcolor="#DDFFCC"><label for="id_budget_sub_type">預算種類：</label></td>
+                            <td align="left">
+                                <select name="budget_sub_type" id="id_budget_sub_type">
+                                    <option value="" {% ifequal INFO.budget_sub_type '全部' %}selected{% endifequal %}>全部</option>
+                                    {% for b in budget_sub_types %}
+                                        <option value="{{ b.id }}" {% ifequal INFO.budget_sub_type b.id %}selected{% endifequal %}>{{ b.value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="left" bgcolor="#DDFFCC"><label for="id_undertake_type">承辦方式：</label></td>
+                            <td align="left">
+                                <select name="undertake_type" id="id_undertake_type">
+                                    <option value="" {% ifequal INFO.undertake_type '全部' %}selected{% endifequal %}>全部</option>
+                                    {% for b in undertake_types %}
+                                        <option value="{{ b.id }}" {% ifequal INFO.undertake_type b.id %}selected{% endifequal %}>{{ b.value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="left" bgcolor="#DDFFCC"><label for="id_unit">執行機關：</label></td>
+                            <td align="left">　　　　
+                                <select name="unit1" id="id_unit1">
+                                    <option value="" {% ifequal INFO.unit1 '全部' %}selected{% endifequal %}>全部</option>
+                                    {% for unit in units %}
+                                        <option value="{{ unit.id }}" {% ifequal INFO.unit1 unit.id %}selected{% endifequal %}>{{ unit.name }}</option>
+                                    {% endfor %}
+                                </select><br>
+                                    <select name="unit_and1" id="id_unit_and1" style="background-color:#CCFFCC;">
+                                        <option value="or" selected>　or　</option>
+                                    </select>
+                                <select name="unit2" id="id_unit2">
+                                    <option value="" {% ifequal INFO.unit2 '全部' %}selected{% endifequal %}>全部</option>
+                                    {% for unit in units %}
+                                        <option value="{{ unit.id }}" {% ifequal INFO.unit2 unit.id %}selected{% endifequal %}>{{ unit.name }}</option>
+                                    {% endfor %}
+                                </select><br>
+                                    <select name="unit_and2" id="id_unit_and2" style="background-color:#CCFFCC;">
+                                        <option value="or" selected>　or　</option>
+                                    </select>
+                                <select name="unit3" id="id_unit3">
+                                    <option value="" {% ifequal INFO.unit3 '全部' %}selected{% endifequal %}>全部</option>
+                                    {% for unit in units %}
+                                        <option value="{{ unit.id }}" {% ifequal INFO.unit3 unit.id %}selected{% endifequal %}>{{ unit.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+
+                        </tr>
+
+                        <tr>
+                            <td align="left" bgcolor="#DDFFCC"><label for="id_status">工程狀態：</label></td>
+                            <td align="left">　　　　
+                                <select name="status1" id="id_status1">
+                                    <option value="" {% ifequal INFO.status1 '全部' %}selected{% endifequal %}>全部</option>
+                                    {% for status in statuss %}
+                                        <option value="{{ status.id }}" {% ifequal INFO.status1 status.id %}selected{% endifequal %}>{{ status.value }}</option>
+                                    {% endfor %}
+                                </select><br>
+                                    <select name="status_and1" id="id_status_and1" style="background-color:#CCFFCC;">
+                                        <option value="or" selected>　or　</option>
+                                    </select>
+                                <select name="status2" id="id_status2">
+                                    <option value="" {% ifequal status2 '全部' %}selected{% endifequal %}>全部</option>
+                                    {% for status in statuss %}
+                                        <option value="{{ status.id }}" {% ifequal INFO.status2 status.id %}selected{% endifequal %}>{{ status.value }}</option>
+                                    {% endfor %}
+                                </select><br>
+                                    <select name="status_and2" id="id_status_and2" style="background-color:#CCFFCC;">
+                                        <option value="or" selected>　or　</option>
+                                    </select>
+                                <select name="status3" id="id_status3">
+                                    <option value="" {% ifequal INFO.status3 '全部' %}selected{% endifequal %}>全部</option>
+                                    {% for status in statuss %}
+                                        <option value="{{ status.id }}" {% ifequal INFO.status3 status.id %}selected{% endifequal %}>{{ status.value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="left" bgcolor="#DDFFCC"><label for="id_progress">進度搜尋：</label></td>
+                            <td align="left">
+                                <select name="progress" id="id_progress">
+                                    <option value="" {% if INFO.progress%}selected{% endif %}>全部</option>
+                                    <option value="g" {% ifequal INFO.progress 'g' %}selected{% endifequal %}>大於</option>
+                                    <option value="e" {% ifequal INFO.progress 'e' %}selected{% endifequal %}>等於</option>
+                                    <option value="s" {% ifequal INFO.progress 's' %}selected{% endifequal %}>小於</option>
+                                    <option value="b" {% ifequal INFO.progress 'b' %}selected{% endifequal %}>落後</option>
+                                </select>
+                                <input name="progress_value" id="id_progress_value" type="text" size="10" value="{{ INFO.progress_value }}">
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td>
+                    <input type="submit" name="submit" value="開始搜尋" style="width:100px;height:50px;" onClick="loading(this)">
+                    <a href="/project/search/">回普通搜尋</a>
+                    <br>
+                    <input type="button" name="clearSearchAdvanceInfo" id="clearSearchAdvanceInfo" value="清空資訊重新查詢" onClick="loading(this)"><br>
+                    <br>
+                    搜尋結果依照
+                    <select name="sortBy" id="id_sortBy">
+                        <option value="year" {% ifequal sortBy 'year' %}selected="selected"{% endifequal %}>年度</option>
+                        <option value="bid_no" {% ifequal sortBy 'bid_no' %}selected="selected"{% endifequal %}>標案編號</option>
+                        <option value="name" {% ifequal sortBy 'name' %}selected="selected"{% endifequal %}>工作名稱</option>
+                        <option value="plan" {% ifequal sortBy 'plan' %}selected="selected"{% endifequal %}>所屬計畫</option>
+                        <option value="unit" {% ifequal sortBy 'unit' %}selected="selected"{% endifequal %}>執行機關</option>
+                        <option value="status" {% ifequal sortBy 'status' %}selected="selected"{% endifequal %}>工程狀態</option>
+                    </select>
+                    排序<br><br>
+                    {% if delete %}
+                        <a href="/project/recover/"><img width="180" src="/media/project/image/trash.png" title="工程回收區"></a>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    </form>
+<br><hr width="900" color="#ff8000" noshade title="這不是分隔線">
+    {% pyif projects_num == 0 %}
+        無資料，請重設搜尋條件
+    {% endif %}
+    
+    {% pyif projects_num > 0 %}
+        <div align="right" style="margin-right: 200px">共 {{ projects_num }} 個結果</div>
+        {% ifnotequal page_list.all_pages 1 %}
+            {% if page_list.previous_page %}
+                <a href="./?{{ querystring }}&page={{ page_list.previous_page }}">上一頁</a>
+            {% endif %}
+            {% for page in page_list.page_list %}
+                {% ifequal page page_list.now_page %}
+                    <span class="page-number active">{{ page }}</span>
+                {% else %}
+                    <a href="./?{{ querystring }}&page={{ page }}">{{ page }}</a>
+                {% endifequal %}
+            {% endfor %}
+            {% if page_list.next_page %}
+                <a href="./?{{ querystring }}&page={{ page_list.next_page }}">下一頁</a>
+            {% endif %}
+        {% endifnotequal %}
+
+        <table border="1" style="border-collapse: collapse">
+            <thead bgcolor='#BBFFDD'>
+                <th></th>
+                <th></th>
+                <th>追蹤</th>
+                <th>年度</th>
+                <th>標案編號</th>
+                <th width="200">工作名稱</th>
+                <th>縣市</th>
+                <th>計畫名稱</th>
+                <!--<th width="160">工程狀態</th>-->
+                <th width="100">工程進度</th>
+                <th>執行機關</th>
+                <th width="100">發文(核定)文號</th>
+                <th>發文(核定)日期</th>
+                <th>連絡人</th>
+                {% if delete %}
+                <th>刪<br>除</th>
+                {% endif %}
+            </thead>
+            <tbody>
+                {% for p in projects %}
+                    <tr id="tr_project_{{ p.id }}" align="left" class="{% cycle "odd" "even" %}">
+                        <td>{{ p.order }}</td>
+                        <td id="setDefaultProject_{{ p.id }}"></td>
+                        <td align="center"><input class="setDefaultProject checkbox_{{ p.id }}" {% if p.default %}checked{% endif %} {% if p.default %}check="check"{% else %}check=""{% endif %} type="checkbox" name="checkbox" value="{{ p.id }}"></td>
+                        <td>{{ p.year }}</td>
+                        <td>{{ p.bid_no|default_if_none:"" }}</td>
+                        <td><a href="/project/reproject/{{ p.id }}/" target="_blank">{{ p.name }}</a></td>
+                        <td>{% if p.place %}{{ p.place.name }}{% endif %}</td>
+                        <td title="{{ p.plan.name }}">{{ p.short_plan_name }}</td>
+                        <!--{% if edit %}
+                        <td id="status_{{ p.id }}" class="editable" project_id="{{ p.id }}" item="status" {% ifequal p.status.value '待審查' %}class='style2'{% endifequal %}>
+                            <a id="status_{{ p.id }}" class="show_status_{{ p.id }}">{{ p.status.value }}</a>
+                            <select id="status_{{ p.id }}" class="edit_status_{{ p.id }} update_edited" project_id="{{ p.id }}" field="status" value="{{ p.status.id }}" old_value="{{ p.status.id }}" style="display: none;">
+                                {% for status in option.project_status %}
+                                        <option value="{{ status.id }}" {% ifequal p.status.id status.id %}selected{% endifequal %}>{{ status.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        {% else %}
+                        <td>{{ p.status.value }}</td>
+                        {% endif %}-->
+                        <td align="center">{% ifequal p.getProgressPercent 0 %}0.00%{% else %}{{ p.getProgressPercent }}%{% endifequal %}</td>
+                        <td>{% if p.unit %}{{ p.unit.name }}{% endif %}</td>
+                        {% if edit %}
+                        <td id="vouch_no_{{ p.id }}" class="editable" project_id="{{ p.id }}" item="vouch_no">
+                            <a id="vouch_no_{{ p.id }}" class="show_vouch_no_{{ p.id }}">{% if p.vouch_no %}{{ p.vouch_no }}{% endif %}</a>
+                            <input id="vouch_no_{{ p.id }}" class="edit_vouch_no_{{ p.id }} update_edited" project_id="{{ p.id }}" field="vouch_no" size="10" type="text" value="{% if p.vouch_no %}{{ p.vouch_no }}{% else %}{% endif %}" old_value="{% if p.vouch_no %}{{ p.vouch_no }}{% else %}{% endif %}" style="display: none;">
+                        </td>
+                        {% else %}
+                        <td>{% if p.vouch_no %}{{ p.vouch_no }}{% endif %}</td>
+                        {% endif %}
+                        {% if edit %}
+                        <td id="vouch_date_{{ p.id }}" class="editable" project_id="{{ p.id }}" item="vouch_date" align="right">
+                            <a id="vouch_date_{{ p.id }}" class="show_vouch_date_{{ p.id }}">{% if p.vouch_date %}{{ p.vouch_date }}{% endif %}</a>
+                            <input id="vouch_date_{{ p.id }}" class="edit_vouch_date_{{ p.id }} update_edited chooseDate" project_id="{{ p.id }}" field="vouch_date" size="10" type="text" value="{% if p.vouch_date %}{{ p.vouch_date }}{% else %}{% endif %}" old_value="{% if p.vouch_date %}{{ p.vouch_date }}{% else %}{% endif %}" style="display: none;">
+                        </td>
+                        {% else %}
+                        <td>{% if p.vouch_date %}{{ p.vouch_date }}{% endif %}</td>
+                        {% endif %}
+                        <td>{% if p.self_contacter %}{{ p.self_contacter }}{% endif %}</td>
+                        {% if delete %}
+                        <td><img p_id="{{ p.id }}" p_name="{{ p.name }}" class="deleteProject" src="/media/images/delete.png" title="刪除工程"></td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            <tbody>
+        </table>
+        {% ifnotequal page_list.all_pages 1 %}
+            {% if page_list.previous_page %}
+                <a href="./?{{ querystring }}&page={{ page_list.previous_page }}">上一頁</a>
+            {% endif %}
+            {% for page in page_list.page_list %}
+                {% ifequal page page_list.now_page %}
+                    <span class="page-number active">{{ page }}</span>
+                {% else %}
+                    <a href="./?{{ querystring }}&page={{ page }}">{{ page }}</a>
+                {% endifequal %}
+            {% endfor %}
+            {% if page_list.next_page %}
+                <a href="./?{{ querystring }}&page={{ page_list.next_page }}">下一頁</a>
+            {% endif %}
+        {% endifnotequal %}
+        <div align="right" style="margin-right: 200px">共 {{ projects_num }} 個結果</div>
+    {% endif %}
+    </div>
+</span>
+
+
+{% if default_projects %}
+<div align="center">
+<br><hr width="900" color="#ff8000" noshade title="這不是分隔線">
+    <br><span class="style1">您列入『追蹤』之工程案</span>
+    <span style="font-size:16px;">
+    <table border="1" style="border-collapse: collapse">
+            <thead bgcolor='#BBFFDD'>
+                <th></th>
+                <th>追蹤</th>
+                <th>年度</th>
+                <th>標案編號</th>
+                <th width="200">工作名稱</th>
+                <th>縣市</th>
+                <th>計畫名稱</th>
+                <!--<th width="160">工程狀態</th>-->
+                <th width="100">工程進度</th>
+                <th>執行機關</th>
+                <th width="100">發文(核定)文號</th>
+                <th>發文(核定)日期</th>
+                <th>連絡人</th>
+            </thead>
+            <tbody>
+                {% for p in default_projects %}
+                    <tr align="left" class="{% cycle "odd" "even" %}">
+                        <td>{{ forloop.counter }}</td>
+                        <td align="center"><input class="setDefaultProject checkbox_{{ p.id }}" checked type="checkbox" name="checkbox" value="{{ p.id }}"></td>
+                        <td>{{ p.year }}</td>
+                        <td><a href="/project/reproject/{{ p.id }}/" target="_blank">{{ p.bid_no }}</a></td>
+                        <td>{{ p.name }}</td>
+                        <td>{% if p.place %}{{ p.place.name }}{% endif %}</td>
+                        <td title="{{ p.plan.name }}">{{ p.short_plan_name }}</td>
+                        <!--<td {% ifequal p.status.value '待審查' %}class='style2'{% endifequal %}>{{ p.status.value }}</td>-->
+                        <td align="center">{% ifequal p.getProgressPercent 0 %}0.00%{% else %}{{ p.getProgressPercent }}%{% endifequal %}</td>
+                        <td>{% if p.unit %}{{ p.unit.name }}{% endif %}</td>
+                        <td>{% if p.vouch_no %}{{ p.vouch_no }}{% endif %}</td>
+                        <td>{% if p.vouch_date %}{{ p.vouch_date }}{% endif %}</td>
+                        <td>{% if p.self_contacter %}{{ p.self_contacter }}{% endif %}</td>
+                    </tr>
+                {% endfor %}
+            <tbody>
+        </table>
+        </span>
+</div>
+{% endif %}
+
+
+
+
+
+{% endblock %}
+

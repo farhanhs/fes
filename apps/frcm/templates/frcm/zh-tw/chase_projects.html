@@ -1,0 +1,67 @@
+{% extends "fishuser/zh-tw/base.html" %}
+{% load i18n %}
+{% load humanize %}
+{% load utiltags %}
+
+{% block body %}
+<h2>本期縣市進度追蹤工程</h2>
+<h3>追蹤開始日期：{{ chase.chase_date|date:'Y-m-d' }}</h3>
+
+<table class="table">
+    <tr>
+        <td width="25%" class="warning" align="right">
+            執行機關
+        </td>
+        <td>
+            <select id="unit" class="form-control" onchange="window.location='/frcm/chase_projects/?unit_id='+$(this).val()">
+                {% for u in units %}
+                    <option value="{{ u.id }}" {% if unit == u %}selected{% endif %}>－ {{ u.name }} －</option>
+                {% endfor %}
+            </select>
+        </td>
+    </tr>
+</table>
+
+<hr style="color: #FFC991;" align="center" size="1" width="900">
+<table class="table table-bordered table-hover" style="table-layout: fixed">
+    <thead>
+        <tr class="success">
+            <th width="50px">序<br>號</th>
+            <th width="50px" style="text-align: center;">結<br>案</th>
+            <th width="100px" style="text-align: center;">負責主辦</th>
+            <th width="50px" style="text-align: center;">是否<br>填報完畢</th>
+            <th width="50px" style="text-align: center;">年度</th>
+            <th>工程名稱</th>
+            <th width="180px">執行機關</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in chase_datas %}
+            <tr>
+                <td style="text-align: center;">{{ forloop.counter }}</td>
+                <td style="text-align: center;">{% if c.is_close %}Ｏ{% endif %}</td>
+                <td style="text-align: center;">{{ c.importer }}</td>
+                <td style="text-align: center;">{% if c.complete %}Ｏ{% endif %}</td>
+                <td style="text-align: center;">{{ c.project.year }}</td>
+                <td><a target="_blank" href="/frcm/project_profile/{{ c.project.id }}/">{{ c.project.name }}</a></td>
+                <td>{{ c.project.unit.name }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+
+
+
+<script type="text/javascript">
+    
+
+
+    $(document).ready(function(){
+    });
+
+</script>
+
+
+{% endblock%}

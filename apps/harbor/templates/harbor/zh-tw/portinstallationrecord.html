@@ -1,0 +1,518 @@
+{% extends "fishuser/zh-tw/base.html" %}
+{% load i18n %}
+{% load humanize %}
+{% load utiltags %}
+
+{% block body %}
+<h2>搜尋漁港設施紀錄</h2>
+<br>
+<table class="table">
+    <caption>請輸入搜尋條件</caption>
+
+    <tr>
+        <td width="15%" class="warning" align="right">
+            縣市
+        </td>
+        <td width="35%">
+            <select id="place" class="form-control input-sm">
+                {% for place in place %}
+                    <option value="{{ place.id }}">{{ place.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td width="15%" class="warning" align="right">
+            漁港
+        </td>
+        <td width="35%">
+            <select id="fishing_port" class="form-control input-sm">
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning" align="right">
+            記錄區間
+        </td>
+        <td colspan="3">
+            <div class="row">
+                <div class="col-md-5">
+                    <input class="form-control input-sm datepicker date_relation" field_name="date" do_nothing="true" id="date_from" value="">
+                </div>
+                <div class="col-md-2">~</div>
+                <div class="col-md-5">
+                    <input class="form-control input-sm datepicker date_relation" field_name="date" do_nothing="true" id="date_to" value="">
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
+
+<button id="search_record" class="btn btn-info btn-lg" page=1 type="button">搜尋</button>
+{% if edit %}
+    　　<button class="btn btn-success btn-lg" type="button" data-toggle="modal" data-target="#create_installation_dialog">新增紀錄</button>
+{% endif %}
+
+
+
+<div class="pages_list"></div>
+<br>
+<table id="SearchResultTable" class="sortable table table-bordered" style="text-align: center; display: none; font-size: 14px;">
+    <thead>
+        <tr class="success">
+            <th width="3%">序<br>號</th>
+            <th width="12%">漁港<br>漁會別</th>
+            <th width="12%">填表日期<br>填表時間</th>
+            <th width="13%">
+                船舶進港艘數<br>
+                船舶出港艘數<br>
+                泊區停泊艘數
+            </th>
+            <th>船隻補給情形<br>補給備註</th>
+            <th>港區環境清潔情形</th>
+            <th>港區突發情況<br>港區突發情形處理方式</th>
+            <th>備註</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<br>
+<div class="pages_list"></div>
+
+
+
+<script type="text/x-jquery-tmpl" id="HideSearchTr">
+    <tr style="text-align: center;" row_id="${id}" class="${class_name}" style="display: none;">
+        <td class="active">${sort}</td>
+        <td align="left">
+            ${listname_fishingport}<br>
+            ${listname_organization}
+        </td>
+        <td>${date}<br>${time}</td>
+        <td align="left">
+            進港：${arrival_port}<br>
+            出港：${leave_port}<br>
+            停泊：${anchor}
+        </td>   
+        <td align="left">
+            ${listname_boat_supplies}<br>${boat_supplies_memo}
+        </td>
+        <td align="left">
+            ${listname_port_environment}
+        </td>
+        <td align="left">
+            ${listname_emergency}<br>${listname_emergency_measures}
+        </td>
+        <td align="left">
+            ${memo}
+        </td>
+    </tr>
+</script>
+
+
+
+{% if edit %}
+    <div class="modal fade" id="create_installation_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">新增漁港設施紀錄</h4>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-border">
+                        <tr>
+                            <td width="25%" class="warning" align="right">
+                                縣市
+                            </td>
+                            <td width="75%">
+                                <select id="installation_place" class="form-control">
+                                    {% for place in place %}
+                                        <option value="{{ place.id }}">{{ place.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="warning" align="right">
+                                漁港
+                            </td>
+                            <td>
+                                <select id="installation_fishingport" class="form-control">
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>漁會別</td>
+                            <td>
+                                <select id="installation_organization" class="form-control">
+                                    {% for u in units %}
+                                        <option value="/fishuser/api/v2/unit/{{ u.id }}/">{{ u.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>記錄日期</td>
+                            <td>
+                                <input id="installation_date" class="form-control datepicker" do_nothing="true" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>記錄時間</td>
+                            <td>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <select id="installation_time_hour" class="form-control">
+                                            {% for hour in range24 %}
+                                                <option value="{{ hour }}">{{ hour }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select id="installation_time_minite" class="form-control">
+                                            <option value="00">00</option>
+                                            <option value="15">15</option>
+                                            <option value="30">30</option>
+                                            <option value="45">45</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>船舶進港艘數</td>
+                            <td>
+                                <input id="installation_arrival_port" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>船舶出港艘數</td>
+                            <td>
+                                <input id="installation_leave_port" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>泊區停泊艘數</td>
+                            <td>
+                                <input id="installation_anchor" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>船隻補給情形</td>
+                            <td>
+                                <select id="installation_boat_supplies" class="form-control">
+                                    <option value="">請選擇</option>
+                                    {% for type in option.boat_supplies %}
+                                        <option value="/harbor/api/v2/option/{{ type.id }}/">{{ type.value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>補給備註</td>
+                            <td>
+                                <textarea id="installation_boat_supplies_memo" class="form-control"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>港區環境<br>清潔情形</td>
+                            <td>
+                                <select id="installation_port_environment" class="form-control">
+                                    <option value="">請選擇</option>
+                                    {% for type in option.port_environment %}
+                                        <option value="/harbor/api/v2/option/{{ type.id }}/">{{ type.value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>港區突發情況</td>
+                            <td>
+                                <select id="installation_emergency" class="form-control">
+                                    <option value="">請選擇</option>
+                                    {% for type in option.emergency %}
+                                        <option value="/harbor/api/v2/option/{{ type.id }}/">{{ type.value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>港區突發情形<br>處理方式</td>
+                            <td>
+                                <select id="installation_emergency_measures" class="form-control">
+                                    <option value="">請選擇</option>
+                                    {% for type in option.emergency_measures %}
+                                        <option value="/harbor/api/v2/option/{{ type.id }}/">{{ type.value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>備註</td>
+                            <td>
+                                <textarea id="installation_memo" class="form-control"></textarea>
+                            </td>
+                        </tr>
+                    </table>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" id="create_installation" class="btn btn-primary">新增</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+    function search_record(){
+        var $obj = $(this);
+        if (!$('#fishing_port').val()){
+            alert('請選擇漁港!!');
+            return false;
+        }
+
+        var string = '';
+        string += '&date_from=' + $('#date_from').val();
+        string += '&date_to=' + $('#date_to').val();
+        string += '&fishing_port=' + $('#fishing_port').val();
+        var per_page = 25;
+        var page = $obj.attr('page');
+        if (!per_page){
+            per_page = 1000000000;
+        };
+        $.ajax({
+            url: '/harbor/api/v2/portinstallationrecord/search/?limit=1000000000&' + string,
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                $('.resultTr').remove();
+                $('#SearchResultTable').show();
+                for (var i=0; i<data.objects.length; i++){
+                    var page_num = parseInt(i/per_page, 10) + 1;
+                    data.objects[i]['class_name'] = 'resultTr page' + page_num;
+                    data.objects[i]['sort'] = i+1;
+                    var $div = $('#HideSearchTr').tmpl(data.objects[i]).appendTo($('#SearchResultTable > tbody:last'));
+                }
+
+                //處理分頁，其實所有資料都撈出來了
+                $('.pages_list').html('');
+
+                if (per_page){
+                    for (var i=1; i<data.objects.length/per_page + 1; i++){
+                        $('.pages_list').append('<a class="resultChangePage page_list_' + i + '" all_page=' + (data.objects.length/per_page + 1) + ' page=' + i + '>' + i + '</a>　');
+                        $('.page' + i).hide();
+                    }
+                    $('.page_list_1').attr('style', 'font-size: 25px;');
+                }
+                $('.page' + page).show();
+
+                $('.pages_list').append('共有' + data.objects.length + '筆資料');
+
+                $('.resultChangePage').unbind('click');
+                $('.resultChangePage').click(resultChangePage);
+            },
+            error: REST_ERROR
+        })
+    }
+
+    function resultChangePage(){
+        var $obj = $(this);
+        var all_page = $obj.attr('all_page');
+        var page = $obj.attr('page');
+        $('.resultChangePage').attr('style', '');
+        $('.page_list_' + $obj.html()).attr('style', 'font-size: 25px;');
+        for (var i=1; i<all_page; i++){
+            if (page==i){
+                $('.page' + i).show();
+            } else {
+                $('.page' + i).hide();
+            }
+        }
+    }
+
+    function date_relation(){
+        var $obj = $(this);
+        var id = $obj.attr('id');
+        var field_name = $obj.attr('field_name');
+        var from = $('#' + field_name + '_from').val();
+        var to = $('#' + field_name + '_to').val();
+        if (!$obj.val()){
+            $('#' + field_name + '_from').val('');
+            $('#' + field_name + '_to').val('');
+            return false;
+        }
+        if (id==field_name + '_from'){
+            if (!to) {
+                $('#' + field_name + '_to').val(from);
+            } else {
+                var startArray = from.split("-");
+                var endArray = to.split("-");
+                var start = new Date(startArray[0], startArray[1], startArray[2]);
+                var end = new Date(endArray[0], endArray[1], endArray[2]);
+                if (start > end) {
+                    $('#' + field_name + '_to').val(from);
+                }
+            }
+        } else if (id==field_name + '_to'){
+            if (!from) {
+                $('#' + field_name + '_from').val(to);
+            } else {
+                var startArray = from.split("-");
+                var endArray = to.split("-");
+                var start = new Date(startArray[0], startArray[1], startArray[2]);
+                var end = new Date(endArray[0], endArray[1], endArray[2]);
+                if (start > end) {
+                    $('#' + field_name + '_from').val(to);
+                }
+            }
+        }
+    }
+
+    function search_fishingport() {
+        var $obj = $(this);
+        var value = $obj.val();
+        $.ajax({
+            url: '/harbor/api/v2/fishingport/?limit=1000000000&place=' + value,
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                $('#fishing_port').html('');
+                for (var i=0; i<data.objects.length; i++){
+                    var option = '<option value="' + data.objects[i]['id'] + '">' + data.objects[i]['name'] + '</option>';
+                    var $div = $(option).appendTo($('#fishing_port'));
+                }
+            },
+            error: REST_ERROR
+        })
+    }
+
+    function search_installation_fishingport() {
+        var $obj = $(this);
+        var value = $obj.val();
+        $.ajax({
+            url: '/harbor/api/v2/fishingport/?limit=1000000000&place=' + value,
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                $('#installation_fishingport').html('');
+                for (var i=0; i<data.objects.length; i++){
+                    var option = '<option value="/harbor/api/v2/fishingport/' + data.objects[i]['id'] + '/">' + data.objects[i]['name'] + '</option>';
+                    var $div = $(option).appendTo($('#installation_fishingport'));
+                }
+            },
+            error: REST_ERROR
+        })
+    }
+
+    function create_installation() {
+        var fishingport = $('#installation_fishingport').val();
+        if (!fishingport){
+            alert('請選擇漁港!!!');
+            return false;
+        }
+        var organization = $('#installation_organization').val();
+        if (!organization){
+            alert('請選擇漁會別!!!');
+            return false;
+        }
+        var date = $('#installation_date').val();
+        if (!date){
+            alert('請選擇記錄日期!!!');
+            return false;
+        }
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            fishingport: fishingport,
+            organization: organization,
+            date: date,
+            time: $('#installation_time_hour').val() + ':' + $('#installation_time_minite').val(),
+        }
+
+        if ($('#installation_arrival_port').val()){
+            data['arrival_port'] = $('#installation_arrival_port').val();
+        }
+        if ($('#installation_leave_port').val()){
+            data['leave_port'] = $('#installation_leave_port').val();
+        }
+        if ($('#installation_anchor').val()){
+            data['anchor'] = $('#installation_anchor').val();
+        }
+        if ($('#installation_boat_supplies').val()){
+            data['boat_supplies'] = $('#installation_boat_supplies').val();
+        }
+        if ($('#installation_boat_supplies_memo').val()){
+            data['boat_supplies_memo'] = $('#installation_boat_supplies_memo').val();
+        }
+        if ($('#installation_port_environment').val()){
+            data['port_environment'] = $('#installation_port_environment').val();
+        }
+        if ($('#installation_emergency_measures').val()){
+            data['emergency_measures'] = $('#installation_emergency_measures').val();
+        }
+        if ($('#installation_emergency').val()){
+            data['emergency'] = $('#installation_emergency').val();
+        }
+        if ($('#installation_memo').val()){
+            data['memo'] = $('#installation_memo').val();
+        }
+        $.ajax({
+            url: '/harbor/api/v2/portinstallationrecord/',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                $('#installation_date').val('');
+                $('#installation_arrival_port').val('');
+                $('#installation_leave_port').val('');
+                $('#installation_anchor').val('');
+                $('#installation_boat_supplies').val('');
+                $('#installation_boat_supplies_memo').val('');
+                $('#installation_port_environment').val('');
+                $('#installation_emergency_measures').val('');
+                $('#installation_emergency').val('');
+                $('#installation_memo').val('');
+                $('#create_installation_dialog').modal('hide');
+                alert('新增成功!!');
+            },
+            error: function (data) {
+                if (data.responseText){
+                    alert(data.responseText);
+                } else {
+                    alert('操作失敗，可能系統忙碌中，請稍候重試一次。');
+                }
+            }
+        })
+    }
+
+    $(document).ready(function(){
+        $('#search_record').click(search_record);
+        $('#place').change(search_fishingport);
+        $('#place').change();
+        $('#installation_place').change(search_installation_fishingport);
+        $('#installation_place').change();
+        $('#create_installation').click(create_installation);
+        $('.date_relation').change(date_relation); //日期 的時間邏輯
+    });
+
+</script>
+
+
+{% endblock%}

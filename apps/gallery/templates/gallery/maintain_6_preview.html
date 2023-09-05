@@ -1,0 +1,33 @@
+<div align="center">
+    {% for page in image_list %}
+    <div style="width: 600px;" align="center"><h3>{{ project_name }}</h3></div>
+    <div style="width: 600px;" align="center"><h3>{{ page.0.0.node.name }} 施工照片</h3></div>
+
+    <table class="preview_table" align="center" border="1" style="width: 600px; border-collapse:collapse;">
+        {% for p1, p2 in page %}
+        <tr>
+            <td align="center" style="width: 50%; height: 300px;">
+                <img src="/gallery/api/v1/image/view/{{ p1.id }}/?v={{ photo.rDTVersion }}&size=document">
+            </td>
+            <td align="center" style="width: 50%; height: 300px;">
+                {% if p2 %}
+                <img src="/gallery/api/v1/image/view/{{ p2.id }}/?v={{ photo.rDTVersion }}&size=document">
+                {% endif %}
+            </td>
+        </tr>
+        <tr align="left">
+            <td>說明：{{ p1.note|default_if_none:'' }}</td>
+            <td>說明：{{ p2.note|default_if_none:'' }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <hr style="margin-top: 30px; margin-bottom: 30px;">
+    {% endfor %}
+
+    <form id="preview_form_{{ doc }}" method="post" action="/gallery/api/v1/photo/image_docx/">
+        {% csrf_token %}
+        <section class="inputs"></section>
+        <input name="doc_type" value="{{ doc }}" style="display: none;">
+        <input class="download" name="submit" type="submit" value="下載" style="display: none;" />
+    </form>
+</div>

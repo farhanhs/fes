@@ -1,0 +1,138 @@
+{% extends 'harbor/editmemu.html' %}
+{% block style %}
+.styleT {
+	font-size: 20px;
+}
+{% endblock %}
+{% block sidecontent %}
+<a id="location" class="port" loca="{{ classification.place.id }}" fishingport="{{ classification.id }}"></a><br>
+    
+<form enctype="multipart/form-data" action="./" method="POST">
+{% include 'harbor/insteditmenu.html' %}
+<h2>
+<center>
+<span class="style0">＝請選擇時間＝</span><br>
+<span class="style0">年度：</span>
+<select id="select_year" class="styleT">
+    {% for year in years %}
+    <option value="{{ year.0 }}" {% ifequal year.0 mark_year %}selected{% endifequal %}>　{{ year.1 }}　</option>
+    {% endfor %}
+</select>
+<span class="style0">月份：</span>
+<select id="select_month" class="styleT">
+    {% for m in month.1 %}
+    <option value="{{ m }}" {% ifequal m tar_month %}selected{% endifequal %}>　{{ m }}　</option>
+    {% endfor %}
+</select>
+<br><br>
+</center>
+<br>
+<hr widtd="800" color="#ff8000" noshade title="這不是分隔線">
+</h2>
+<br>
+
+{% if records %}
+<h3>
+<table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+    <tr align="center" bgcolor="#C3FFB4">
+        <td rowspan="2" width="100">漁會別</td>
+        <td rowspan="2" width="110">日期</td>
+        <td rowspan="2" width="50">時間</td>
+        <td colspan="3">船舶艘數</td>
+        <td colspan="2">船隻補給</td>
+        <td rowspan="2">港區環境</td>
+        <td rowspan="2">突發情況</td>
+        <td rowspan="2">突發應變</td>
+        <td rowspan="2" width="80">備註</td>
+    </tr>
+    <tr align="center" bgcolor="#C3FFB4">
+        <td width="38">進港</td>
+        <td width="38">出港</td>
+        <td width="38">泊區<br>停泊</td>
+        <td width="60">狀況</td>
+        <td width="80">備註</td>
+    </tr>
+    {% for data in records %}
+    <tr class="{% cycle "odd" "even" %}" align="center">
+        <td id="organization_{{ data.id }}" class="editable">
+            <a id="organization_{{ data.id }}" class="show_organization_{{ data.id }}">{% if data.organization %}{{ data.organization.name }}{% else %}----{% endif %}</a>
+            <select id="organization_{{ data.id }}" dt="organization" dn="{{ data.id }}" class="edit_organization_{{ data.id }} update_edited" value="{% if data.organization %}{{ data.organization }}{% else %}{% endif %}" old_value="{% if data.organization %}{{ data.organization }}{% else %}{% endif %}" style="display: none;">
+                <option value=""></option>
+                {% for unit in units %}
+                        <option value="{{ unit.0 }}" {% ifequal data.organization.id unit.0 %}selected{% endifequal %}>{{ unit.1 }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td id="date_{{ data.id }}" class="editable">
+            <a id="date_{{ data.id }}" class="show_date_{{ data.id }}">{% if data.date %}{{ data.date }}{% else %}----{% endif %}</a>
+            <input id="date_{{ data.id }}" dt="date" dn="{{ data.id }}" class="edit_date_{{ data.id }} requisite update_edited chooseDate" size="9" type="text" value="{% if data.date %}{{ data.date }}{% else %}{% endif %}" old_value="{% if data.date %}{{ data.date }}{% else %}{% endif %}" style="display: none;">
+        </td>
+        <td id="time_{{ data.id }}" class="editable">
+            <a id="time_{{ data.id }}" class="show_time_{{ data.id }}">{% if data.time %}{{ data.time|time:"H:i" }}{% else %}----{% endif %}</a>
+            <input id="time_{{ data.id }}" dt="time" dn="{{ data.id }}" class="edit_time_{{ data.id }} time update_edited" size="4" type="text" value="{% if data.time %}{{ data.time|time:"H:i" }}{% else %}{% endif %}" old_value="{% if data.time %}{{ data.time|time:"H:i" }}{% else %}{% endif %}" style="display: none;">
+        </td id="" class="editable">
+        <td id="arrival_port_{{ data.id }}" class="editable" align="right">
+            <a id="arrival_port_{{ data.id }}" class="show_arrival_port_{{ data.id }}">{% if data.arrival_port %}{{ data.arrival_port }}{% else %}----{% endif %}</a>
+            <input id="arrival_port_{{ data.id }}" dt="arrival_port" dn="{{ data.id }}" class="edit_arrival_port_{{ data.id }} int update_edited" size="2" type="text" value="{% if data.arrival_port %}{{ data.arrival_port }}{% else %}{% endif %}" old_value="{% if data.arrival_port %}{{ data.arrival_port }}{% else %}{% endif %}" style="display: none; text-align:right;">
+        </td>
+        <td id="leave_port_{{ data.id }}" class="editable" align="right">
+            <a id="leave_port_{{ data.id }}" class="show_leave_port_{{ data.id }}">{% if data.leave_port %}{{ data.leave_port }}{% else %}----{% endif %}</a>
+            <input id="leave_port_{{ data.id }}" dt="leave_port" dn="{{ data.id }}" class="edit_leave_port_{{ data.id }} int update_edited" size="2" type="text" value="{% if data.leave_port %}{{ data.leave_port }}{% else %}{% endif %}" old_value="{% if data.leave_port %}{{ data.leave_port }}{% else %}{% endif %}" style="display: none; text-align:right;">
+        </td>
+        <td id="anchor_{{ data.id }}" class="editable" align="right">
+            <a id="anchor_{{ data.id }}" class="show_anchor_{{ data.id }}">{% if data.anchor %}{{ data.anchor }}{% else %}----{% endif %}</a>
+            <input id="anchor_{{ data.id }}" dt="anchor" dn="{{ data.id }}" class="edit_anchor_{{ data.id }} int update_edited" size="2" type="text" value="{% if data.anchor %}{{ data.anchor }}{% else %}{% endif %}" old_value="{% if data.anchor %}{{ data.anchor }}{% else %}{% endif %}" style="display: none; text-align:right;">
+        </td>
+        <td id="boat_supplies_{{ data.id }}" class="editable">
+            <a id="boat_supplies_{{ data.id }}" class="show_boat_supplies_{{ data.id }}">{% if data.boat_supplies %}{{ data.boat_supplies.value }}{% else %}----{% endif %}</a>
+            <select id="boat_supplies_{{ data.id }}" dt="boat_supplies" dn="{{ data.id }}" class="edit_boat_supplies_{{ data.id }} update_edited" value="{% if data.boat_supplies %}{{ data.boat_supplies }}{% else %}{% endif %}" old_value="{% if data.boat_supplies %}{{ data.boat_supplies }}{% else %}{% endif %}" style="display: none;">
+                <option value=""></option>
+                {% for boat_supplies in option.boat_supplies %}
+                        <option value="{{ boat_supplies.id }}" {% ifequal data.boat_supplies.id boat_supplies.id %}selected{% endifequal %}>{{ boat_supplies.value }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td id="boat_supplies_memo_{{ data.id }}" class="editable">
+            <a id="boat_supplies_memo_{{ data.id }}" class="show_boat_supplies_memo_{{ data.id }}">{% if data.boat_supplies_memo %}{{ data.boat_supplies_memo|linebreaks }}{% else %}----{% endif %}</a>
+            <textarea id="boat_supplies_memo_{{ data.id }}" dt="boat_supplies_memo" dn="{{ data.id }}" class="edit_boat_supplies_memo_{{ data.id }} update_edited" cols="7" rows="1" size="56" type="text" value="{% if data.boat_supplies_memo %}{{ data.boat_supplies_memo|linebreaks }}{% else %}{% endif %}" old_value="{% if data.boat_supplies_memo %}{{ data.boat_supplies_memo|linebreaks }}{% else %}{% endif %}" style="display: none;">{% if data.boat_supplies_memo %}{{ data.boat_supplies_memo|linebreaks }}{% else %}{% endif %}</textarea>
+        </td>
+        <td id="port_environment_{{ data.id }}" class="editable" width="70">
+            <a id="port_environment_{{ data.id }}" class="show_port_environment_{{ data.id }}">{% if data.port_environment %}{{ data.port_environment.value }}{% else %}----{% endif %}</a>
+            <select id="port_environment_{{ data.id }}" dt="port_environment" dn="{{ data.id }}" class="edit_port_environment_{{ data.id }} update_edited" value="{% if data.port_environment %}{{ data.port_environment }}{% else %}{% endif %}" old_value="{% if data.port_environment %}{{ data.port_environment }}{% else %}{% endif %}" style="display: none;">
+                <option value=""></option>
+                {% for port_environment in option.port_environment %}
+                        <option value="{{ port_environment.id }}" {% ifequal data.port_environment.id port_environment.id %}selected{% endifequal %}>{{ port_environment.value }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td id="emergency_{{ data.id }}" class="editable" width="70">
+            <a id="emergency_{{ data.id }}" class="show_emergency_{{ data.id }}">{% if data.emergency %}{{ data.emergency.value }}{% else %}----{% endif %}</a>
+            <select id="emergency_{{ data.id }}" dt="emergency" dn="{{ data.id }}" class="edit_emergency_{{ data.id }} update_edited" value="{% if data.emergency %}{{ data.emergency }}{% else %}{% endif %}" old_value="{% if data.emergency %}{{ data.emergency }}{% else %}{% endif %}" style="display: none;">
+                <option value=""></option>
+                {% for emergency in option.emergency %}
+                        <option value="{{ emergency.id }}" {% ifequal data.emergency.id emergency.id %}selected{% endifequal %}>{{ emergency.value }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td id="emergency_measures_{{ data.id }}" class="editable" width="94">
+            <a id="emergency_measures_{{ data.id }}" class="show_emergency_measures_{{ data.id }}">{% if data.emergency_measures %}{{ data.emergency_measures.value }}{% else %}----{% endif %}</a>
+            <select id="emergency_measures_{{ data.id }}" dt="emergency_measures" dn="{{ data.id }}" class="edit_emergency_measures_{{ data.id }} update_edited" value="{% if data.emergency_measures %}{{ data.emergency_measures }}{% else %}{% endif %}" old_value="{% if data.emergency_measures %}{{ data.emergency_measures }}{% else %}{% endif %}" style="display: none;">
+                <option value=""></option>
+                {% for emergency_measures in option.emergency_measures %}
+                        <option value="{{ emergency_measures.id }}" {% ifequal data.emergency_measures.id emergency_measures.id %}selected{% endifequal %}>{{ emergency_measures.value }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td id="memo_{{ data.id }}" class="editable" height="40">
+            <a id="memo_{{ data.id }}" class="show_memo_{{ data.id }}">{% if data.memo %}{{ data.memo|linebreaks }}{% else %}----{% endif %}</a>
+            <textarea id="memo_{{ data.id }}" dt="memo" dn="{{ data.id }}" class="edit_memo_{{ data.id }} update_edited" cols="7" rows="1" type="text" value="{% if data.memo %}{{ data.memo }}{% else %}{% endif %}" old_value="{% if data.memo %}{{ data.memo }}{% else %}{% endif %}" style="display: none;">{% if data.memo %}{{ data.memo }}{% else %}{% endif %}</textarea>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+</h3>
+{% else %}
+<center><h2>查無資料</h2></center>
+{% endif %}
+{% endblock %}
+

@@ -1,0 +1,210 @@
+{% load i18n %}
+{% load humanize %}
+{% load utiltags %}
+{% load guardian_tags %}
+
+<br><br>
+<h3>
+    <span class="label label-success">
+        <span class="glyphicon glyphicon-paperclip"></span>
+        簡介
+    </span>
+    {% if edit %}　<button class="btn btn-info btn-sm ClickShowInfo" row_id="{{ reef.id }}" field_name="history">編輯</button><br>{% endif %}
+</h3>
+
+<span id="show_part_history_{{ reef.id }}">
+    {{ reef.history|default_if_none:""|linebreaks }}
+</span>
+{% if edit %}
+    <textarea id="edit_part_history_{{ reef.id }}"
+        class="BlurUpdateInfo form-control" style="display: none;"
+        field_type="str"
+        row_id="{{ reef.id }}"
+        field_name="history"
+        table_name="fishingport"
+        module_name='harbor'
+        type="textarea"
+        old_value="{{ reef.history|default_if_none:"" }}"
+        cols="100" rows="15">{{ reef.history|default_if_none:"" }}</textarea>
+{% endif %}
+
+<br>
+<h3>
+    <span class="label label-success">
+        <span class="glyphicon glyphicon-paperclip"></span>
+        地理位置
+    </span> 
+    {% if edit %}　<button class="btn btn-success btn-sm" id="create_reeflocation" row_id="{{ reef.id }}">新增</button><br>{% endif %}
+</h3>
+
+
+{% for location in reef.reeflocation_set.all %}
+<div class="row" id="div_reeflocation_{{ location.id }}">
+    <div class="col-md-3">
+        <div class="input-group">
+            <span class="input-group-addon">名稱：</span>
+            <input
+                class="BlurUpdateInfo form-control"
+                field_type="str"
+                row_id="{{ location.id }}"
+                field_name="name"
+                table_name="reeflocation"
+                module_name='harbor'
+                type="text"
+                {% if not edit %}
+                    disabled
+                {% endif %}
+                old_value="{{ location.name|default_if_none:"" }}"
+                value="{{ location.name|default_if_none:"" }}">
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="input-group">
+            <span class="input-group-addon">經度：</span>
+            <input
+                class="BlurUpdateInfo form-control"
+                field_type="str"
+                row_id="{{ location.id }}"
+                field_name="lon"
+                table_name="reeflocation"
+                module_name='harbor'
+                type="text"
+                {% if not edit %}
+                    disabled
+                {% endif %}
+                old_value="{{ location.lon|default_if_none:"" }}"
+                value="{{ location.lon|default_if_none:"" }}">
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="input-group">
+            <span class="input-group-addon">緯度：</span>
+            <input
+                class="BlurUpdateInfo form-control"
+                field_type="str"
+                row_id="{{ location.id }}"
+                field_name="lat"
+                table_name="reeflocation"
+                module_name='harbor'
+                type="text"
+                {% if not edit %}
+                    disabled
+                {% endif %}
+                old_value="{{ location.lat|default_if_none:"" }}"
+                value="{{ location.lat|default_if_none:"" }}">
+        </div>
+    </div>
+    {% if edit %}
+    <div class="col-md-1">
+        <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+            row_id="{{ location.id }}"
+            module_name = "harbor"
+            table_name = "reeflocation"
+            message="確定要刪除此筆紀錄嗎？"
+            remove_target = "div_reeflocation_{{ location.id }}"
+            title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
+<div id="insert_place_reeflocation"></div>
+
+
+
+
+<script type="text/x-jquery-tmpl" id="HideReefLocationDiv">
+    <div id="div_reeflocation_${id}" class="row">
+        <div class="col-md-3">
+            <div class="input-group">
+                <span class="input-group-addon">名稱：</span>
+                <input
+                    class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="${id}"
+                    field_name="name"
+                    table_name="reeflocation"
+                    module_name='harbor'
+                    type="text"
+                    old_value=""
+                    value="">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="input-group">
+                <span class="input-group-addon">經度：</span>
+                <input
+                    class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="${id}"
+                    field_name="lon"
+                    table_name="reeflocation"
+                    module_name='harbor'
+                    type="text"
+                    old_value=""
+                    value="">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="input-group">
+                <span class="input-group-addon">緯度：</span>
+                <input
+                    class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="${id}"
+                    field_name="lat"
+                    table_name="reeflocation"
+                    module_name='harbor'
+                    type="text"
+                    old_value=""
+                    value="">
+            </div>
+        </div>
+        <div class="col-md-1">
+            <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                row_id="${id}"
+                module_name = "harbor"
+                table_name = "reeflocation"
+                message="確定要刪除此筆紀錄嗎？"
+                remove_target = "div_reeflocation_${id}"
+                title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+        </div>
+    </div>
+</script>
+
+<script type="text/javascript">
+    function create_reeflocation() {
+        var $obj = $(this);
+        var reef_id = $obj.attr('row_id');
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            reef: '/harbor/api/v2/reef/' + reef_id + '/'
+        }
+        $.ajax({
+            url: '/harbor/api/v2/reeflocation/',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                var $div = $('#HideReefLocationDiv').tmpl(data).insertBefore($('#insert_place_reeflocation'));
+                $(".deleteRow").unbind('click');
+                $(".BlurUpdateInfo").unbind('blur');
+                $(".deleteRow").click(deleteRow);
+                $('.BlurUpdateInfo').blur(BlurUpdateInfo);
+                $('.BlurUpdateInfo').keypress(function(event) {
+                    var $obj = $(this);
+                    if (!$obj.is("textarea") && event.which == 13){
+                        $obj.blur();
+                    }
+                });
+            },
+            error: function (data) {}
+        })
+    }
+
+
+    $(document).ready(function(){
+        $('#create_reeflocation').click(create_reeflocation);
+    });
+
+</script>

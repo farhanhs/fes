@@ -1,0 +1,387 @@
+{% extends 'project/project.html' %}
+{% block menu %}
+{% endblock %}
+{% load humanize %}
+{% load utiltags %}
+{% block title %}<title id="title">{{ target_project }} 工程資訊</title>{% endblock %}
+{% block style %}
+td {padding:3px 5px;}
+{% endblock %}
+{% block content %}
+        <span style="font-size: 18px">
+        <form method="POST">
+        <ul><h1><a id="{{ target_project.id }}" class="target_project" name="Bidinfo"></a></h1><br>
+            <table  style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+            <tbody align="left">
+                <tr>
+                    <td width="160" bgcolor="#FFCC33">工作名稱</td>
+                    <td colspan="3" rowspan="1">
+                        <span>{{ target_project.name }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td bgcolor="#FFCC33">標案編號</td>
+                    <td colspan="3" rowspan="1">
+                        <span>{{ target_project.bid_no }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td bgcolor="#FFFF99">投標廠商</td>
+                        {% if edit %}
+                            <td id="bid_on" class="editable" colspan="3" rowspan="1" height="60">
+                                <a id="bid_on" class="show_bid_on">{% if target_project.bid_on %}{{ target_project.bid_on|linebreaks }}{% else %}{% endif %}</a>
+                                <textarea id="bid_on" class="edit_bid_on update_edited" cols="50" rows="2" size="56" type="text" value="{% if target_project.bid_on %}{{ target_project.bid_on }}{% else %}{% endif %}" old_value="{% if target_project.bid_on %}{{ target_project.bid_on }}{% else %}{% endif %}" style="display: none;">{% if target_project.bid_on %}{{ target_project.bid_on }}{% else %}{% endif %}</textarea>
+                            </td>
+                        {% else %}
+                            <td colspan="3" rowspan="1">
+                                {% if target_project.bid_on %}{{ target_project.bid_on }}{% else %}{% endif %}
+                            </td>
+                        {% endif %}
+                </tr>
+                <tr>
+                    <td bgcolor="#FFFF99">決標廠商</td>
+                        {% if edit %}
+                            <td id="bid_final" class="editable" colspan="3" rowspan="1" height="50">
+                                <a id="bid_final" class="show_bid_final">{% if target_project.bid_final %}{{ target_project.bid_final|linebreaks }}{% else %}{% endif %}</a>
+                                <textarea id="bid_final" class="edit_bid_final update_edited" cols="50" rows="1" size="56" type="text" value="{% if target_project.bid_final %}{{ target_project.bid_final }}{% else %}{% endif %}" old_value="{% if target_project.bid_final %}{{ target_project.bid_final }}{% else %}{% endif %}" style="display: none;">{% if target_project.bid_final %}{{ target_project.bid_final }}{% else %}{% endif %}</textarea>
+                            </td>
+                        {% else %}
+                            <td colspan="3" rowspan="1">
+                                {% if target_project.bid_final %}{{ target_project.bid_final }}{% else %}{% endif %}
+                            </td>
+                        {% endif %}
+                </tr>
+                <tr>
+                    <td bgcolor="#FFFF99">招標方式</td>
+                        {% if edit %}
+                            <td id="bid_type" class="editable" width="180">
+                                <a id="bid_type" class="show_bid_type">{% if target_project.bid_type %}{{ target_project.bid_type }}{% else %}{% endif %}</a>
+                                <select id="bid_type" class="edit_bid_type update_edited" value="{{ target_project.bid_type.id }}" old_value="{{ target_project.bid_type.id }}" style="display: none;">
+                                    <option value=""></option>
+                                    {% for bid_type in option.bid_type %}
+                                            <option value="{{ bid_type.id }}" {% ifequal target_project.bid_type.id bid_type.id %}selected{% endifequal %}>{{ bid_type.value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        {% else %}
+                            <td>
+                                {% if target_project.bid_type %}{{ target_project.bid_type }}{% else %}{% endif %}
+                            </td>
+                        {% endif %}
+                    <td bgcolor="#FFFF99">發包方式</td>
+                        {% if edit %}
+                            <td id="contract_type" class="editable" width="180">
+                                <a id="contract_type" class="show_contract_type">{% if target_project.contract_type %}{{ target_project.contract_type }}{% else %}{% endif %}</a>
+                                <select id="contract_type" class="edit_contract_type update_edited" value="{{ target_project.contract_type.id }}" old_value="{{ target_project.contract_type.id }}" style="display: none;">
+                                    <option value=""></option>
+                                    {% for contract_type in option.contract_type %}
+                                            <option value="{{ contract_type.id }}" {% ifequal target_project.contract_type.id contract_type.id %}selected{% endifequal %}>{{ contract_type.value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        {% else %}
+                            <td>
+                                {% if target_project.contract_type %}{{ target_project.contract_type }}{% else %}{% endif %}
+                            </td>
+                        {% endif %}
+                </tr>
+                <tr>
+                    <td bgcolor="#FFFF99">資格標審標日期</td>
+                        {% if edit %}
+                            <td id="examine_date" class="editable" align="center">
+                                <a id="examine_date" class="show_examine_date">{% if target_project.examine_date %}{{ target_project.examine_date }}{% else %}{% endif %}</a>
+                                <input id="examine_date"  class="edit_examine_date update_edited chooseDate" size="12" type="text" value="{% if target_project.examine_date %}{{ target_project.examine_date }}{% else %}{% endif %}" old_value="{% if target_project.examine_date %}{{ target_project.examine_date }}{% else %}{% endif %}" style="display: none;">
+                            </td>
+                        {% else %}
+                            <td align="center">
+                                {% if target_project.examine_date %}{{ target_project.examine_date }}{% else %}{% endif %}
+                            </td>
+                        {% endif %}
+                    <td bgcolor="#FFFF99">決標折數</td>
+                        {% if edit %}
+                            <td id="bid_discount" class="editable" align="center">
+                                <a id="bid_discount" class="show_bid_discount">{% if target_project.bid_discount %}{{ target_project.bid_discount }}{% else %}{% endif %}</a>
+                                <input id="bid_discount" class="edit_bid_discount update_edited" size="22" type="text" value="{% if target_project.bid_discount %}{{ target_project.bid_discount }}{% else %}{% endif %}" old_value="{% if target_project.bid_discount %}{{ target_project.bid_discount }}{% else %}{% endif %}" style="display: none;">
+                            </td>
+                        {% else %}
+                            <td align="center">
+                                {{ target_project.bid_discount }}
+                            </td>
+                        {% endif %}
+                </tr>
+                <tr>
+                    <td bgcolor="#FFFF99">預定發包日期</td>
+                        {% if edit %}
+                            <td id="bid_date" class="editable" align="center">
+                                <a id="bid_date" class="show_bid_date">{% if target_project.bid_date %}{{ target_project.bid_date }}{% else %}{% endif %}</a>
+                                <input id="bid_date"  class="edit_bid_date update_edited chooseDate" size="12" type="text" value="{% if target_project.bid_date %}{{ target_project.bid_date }}{% else %}{% endif %}" old_value="{% if target_project.bid_date %}{{ target_project.bid_date }}{% else %}{% endif %}" style="display: none;">
+                            </td>
+                        {% else %}
+                            <td align="center">
+                                {% if target_project.bid_date %}{{ target_project.bid_date }}{% else %}{% endif %}
+                            </td>
+                        {% endif %}
+                    <td bgcolor="#FFFF99">實際發包日期</td>
+                        {% if edit %}
+                            <td id="rbid_date" class="editable" align="center">
+                                <a id="rbid_date" class="show_rbid_date">{% if target_project.rbid_date %}{{ target_project.rbid_date }}{% else %}{% endif %}</a>
+                                <input id="rbid_date"  class="edit_rbid_date update_edited chooseDate" size="12" type="text" value="{% if target_project.rbid_date %}{{ target_project.rbid_date }}{% else %}{% endif %}" old_value="{% if target_project.rbid_date %}{{ target_project.rbid_date }}{% else %}{% endif %}" style="display: none;">
+                            </td>
+                        {% else %}
+                            <td align="center">
+                                {% if target_project.rbid_date %}{{ target_project.rbid_date }}{% else %}{% endif %}
+                            </td>
+                        {% endif %}
+                </tr>
+                <tr>
+                    <td bgcolor="#FFFF99">簽約日期</td>
+                        {% if edit %}
+                            <td id="sign_date" class="editable" align="center">
+                                <a id="sign_date" class="show_sign_date">{% if target_project.sign_date %}{{ target_project.sign_date }}{% else %}{% endif %}</a>
+                                <input id="sign_date"  class="edit_sign_date update_edited chooseDate" size="12" type="text" value="{% if target_project.sign_date %}{{ target_project.sign_date }}{% else %}{% endif %}" old_value="{% if target_project.sign_date %}{{ target_project.sign_date }}{% else %}{% endif %}" style="display: none;">
+                            </td>
+                        {% else %}
+                            <td align="center">
+                                {% if target_project.sign_date %}{{ target_project.sign_date }}{% else %}{% endif %}
+                            </td>
+                        {% endif %}
+                    <td bgcolor="#FFFF99">開工日期</td>
+                        {% if edit %}
+                            <td id="start_date" class="editable" align="center">
+                                <a id="start_date" class="show_start_date">{% if target_project.start_date %}{{ target_project.start_date }}{% else %}{% endif %}</a>
+                                <input id="start_date"  class="edit_start_date update_edited chooseDate" size="12" type="text" value="{% if target_project.start_date %}{{ target_project.start_date }}{% else %}{% endif %}" old_value="{% if target_project.start_date %}{{ target_project.start_date }}{% else %}{% endif %}" style="display: none;">
+                            </td>
+                        {% else %}
+                            <td align="center">
+                                {% if target_project.start_date %}{{ target_project.start_date }}{% else %}{% endif %}
+                            </td>
+                        {% endif %}
+                </tr>
+                <tr>
+                    <td bgcolor="#FFFF99">預定完工日期</td>
+                        {% if edit %}
+                            <td id="term_date" class="editable" align="center">
+                                <a id="term_date" class="show_term_date">{% if target_project.term_date %}{{ target_project.term_date }}{% else %}{% endif %}</a>
+                                <input id="term_date"  class="edit_term_date update_edited chooseDate" size="12" type="text" value="{% if target_project.term_date %}{{ target_project.term_date }}{% else %}{% endif %}" old_value="{% if target_project.term_date %}{{ target_project.term_date }}{% else %}{% endif %}" style="display: none;">
+                            </td>
+                        {% else %}
+                            <td align="center">
+                                {% if target_project.term_date %}{{ target_project.term_date }}{% else %}{% endif %}
+                            </td>
+                        {% endif %}
+                    <td bgcolor="#FFFF99">實際完工日期</td>
+                        {% if edit %}
+                            <td id="rterm_date" class="editable" align="center">
+                                <a id="rterm_date" class="show_rterm_date">{% if target_project.rterm_date %}{{ target_project.rterm_date }}{% else %}{% endif %}</a>
+                                <input id="rterm_date"  class="edit_rterm_date update_edited chooseDate" size="12" type="text" value="{% if target_project.rterm_date %}{{ target_project.rterm_date }}{% else %}{% endif %}" old_value="{% if target_project.rterm_date %}{{ target_project.rterm_date }}{% else %}{% endif %}" style="display: none;">
+                            </td>
+                        {% else %}
+                            <td align="center">
+                                {% if target_project.rterm_date %}{{ target_project.rterm_date }}{% else %}{% endif %}
+                            </td>
+                        {% endif %}
+                </tr>
+                <tr>
+                    <td bgcolor="#FFFF99">驗收日期</td>
+                        {% if edit %}
+                            <td id="check_date" class="editable" align="center">
+                                <a id="check_date" class="show_check_date">{% if target_project.check_date %}{{ target_project.check_date }}{% else %}{% endif %}</a>
+                                <input id="check_date"  class="edit_check_date update_edited chooseDate" size="12" type="text" value="{% if target_project.check_date %}{{ target_project.check_date }}{% else %}{% endif %}" old_value="{% if target_project.check_date %}{{ target_project.check_date }}{% else %}{% endif %}" style="display: none;">
+                            </td>
+                        {% else %}
+                            <td align="center">
+                                {% if target_project.check_date %}{{ target_project.check_date }}{% else %}{% endif %}
+                            </td>
+                        {% endif %}
+                    <td colspan="2"></td>
+                </tr>
+                <tr>
+                    <td bgcolor="#FFFF99">本署負擔比例</td>
+                        {% if edit %}
+                            <td align="center" id="allot_rate" class="editable">
+                                <a align="right" id="allot_rate" class="show_allot_rate">{% if target_project.allot_rate %}{{ target_project.allot_rate|cutzero }}{% else %}----{% endif %}</a>
+                                <input id="allot_rate"  class="edit_allot_rate update_edited percent" size="6" type="text" value="{% if target_project.allot_rate %}{{ target_project.allot_rate|intcomma|cutzero }}{% else %}{% endif %}" old_value="{% if target_project.allot_rate %}{{ target_project.allot_rate|intcomma|cutzero }}{% else %}{% endif %}" style="display: none; text-align:right;">
+                                 %
+                            </td>
+                        {% else %}
+                            <td align="right">
+                                {% if target_project.allot_rate %}{{ target_project.allot_rate|intcomma|cutzero }}{% else %}----{% endif %}
+                            </td>
+                        {% endif %}
+                        <td bgcolor="#FFFF99" colspan="2">
+                            <span id="intor">說明:{% if target_project.allot_rate %}本署將負擔總額 {{ target_project.allot_rate|cutzero }} %{% else %}預設本屬負擔比例為 100 %{% endif %}</span>
+                        </td>
+                </tr>
+                <tr>
+                    <td bgcolor="#FFFF99">設計決標金額</td>
+                        {% if edit %}
+                            <td align="right" id="design_bid" class="editable">
+                                <a align="right" id="design_bid" class="show_design_bid">{{ target_project.design_bid|intcomma|cutzero }}</a>
+                                <input id="design_bid"  class="edit_design_bid update_edited float" size="22" type="text" value="{% ifequal target_project.design_bid 0 %}{% else %}{{ target_project.design_bid|cutzero }}{% endifequal %}" old_value="{% ifequal target_project.design_bid 0 %}{% else %}{{ target_project.design_bid|cutzero }}{% endifequal %}" style="display: none; text-align:right;">
+                            </td>
+                        {% else %}
+                            <td align="right">
+                                {{ target_project.design_bid|intcomma|cutzero }}
+                            </td>
+                        {% endif %}
+                    <td bgcolor="#FFFF99">備註</td>
+                        {% if edit %}
+                            <td id="design_bid_memo" class="editable" colspan="3" rowspan="1">
+                                <a id="design_bid_memo" class="show_design_bid_memo">{% if target_project.design_bid_memo %}{{ target_project.design_bid_memo|linebreaks }}{% else %}{% endif %}</a>
+                                <textarea id="design_bid_memo" class="edit_design_bid_memo update_edited" cols="15" rows="1" size="56" type="text" value="{% if target_project.design_bid_memo %}{{ target_project.design_bid_memo }}{% else %}{% endif %}" old_value="{% if target_project.design_bid_memo %}{{ target_project.design_bid_memo }}{% else %}{% endif %}" style="display: none;">{% if target_project.design_bid_memo %}{{ target_project.design_bid_memo }}{% else %}{% endif %}</textarea>
+                            </td>
+                        {% else %}
+                            <td colspan="3" rowspan="1">
+                                {% if target_project.design_bid_memo %}{{ target_project.design_bid_memo }}{% else %}{% endif %}
+                            </td>
+                        {% endif %}
+                </tr>
+                <tr>
+                    <td bgcolor="#FFFF99">監造決標金額</td>
+                        {% if edit %}
+                            <td align="right" id="inspect_bid" class="editable">
+                                <a align="right" id="inspect_bid" class="show_inspect_bid">{{ target_project.inspect_bid|intcomma|cutzero }}</a>
+                                <input id="inspect_bid"  class="edit_inspect_bid update_edited float" size="22" type="text" value="{% ifequal target_project.inspect_bid 0 %}{% else %}{{ target_project.inspect_bid|cutzero }}{% endifequal %}" old_value="{% ifequal target_project.inspect_bid 0 %}{% else %}{{ target_project.inspect_bid|cutzero }}{% endifequal %}" style="display: none; text-align:right;">
+                            </td>
+                        {% else %}
+                            <td align="right">
+                                {{ target_project.inspect_bid|intcomma|cutzero }}
+                            </td>
+                        {% endif %}
+                    <td bgcolor="#FFFF99">備註</td>
+                        {% if edit %}
+                            <td id="inspect_bid_memo" class="editable" colspan="3" rowspan="1">
+                                <a id="inspect_bid_memo" class="show_inspect_bid_memo">{% if target_project.inspect_bid_memo %}{{ target_project.inspect_bid_memo|linebreaks }}{% else %}{% endif %}</a>
+                                <textarea id="inspect_bid_memo" class="edit_inspect_bid_memo update_edited" cols="15" rows="1" size="56" type="text" value="{% if target_project.inspect_bid_memo %}{{ target_project.inspect_bid_memo }}{% else %}{% endif %}" old_value="{% if target_project.inspect_bid_memo %}{{ target_project.inspect_bid_memo }}{% else %}{% endif %}" style="display: none;">{% if target_project.inspect_bid_memo %}{{ target_project.inspect_bid_memo }}{% else %}{% endif %}</textarea>
+                            </td>
+                        {% else %}
+                            <td colspan="3" rowspan="1">
+                                {% if target_project.inspect_bid_memo %}{{ target_project.inspect_bid_memo }}{% else %}{% endif %}
+                            </td>
+                        {% endif %}
+                </tr>
+                <tr>
+                    <td bgcolor="#FFFF99">工程決標金額</td>
+                        {% if edit %}
+                            <td align="right" id="construction_bid" class="editable">
+                                <a id="construction_bid" class="show_construction_bid">{{ target_project.construction_bid|intcomma|cutzero }}</a>
+                                <input id="construction_bid"  class="edit_construction_bid update_edited float" size="22" type="text" value="{% ifequal target_project.construction_bid 0 %}{% else %}{{ target_project.construction_bid|cutzero }}{% endifequal %}" old_value="{% ifequal target_project.construction_bid 0 %}{% else %}{{ target_project.construction_bid|cutzero }}{% endifequal %}" style="display: none; text-align:right;">
+                            </td>
+                        {% else %}
+                            <td align="right">
+                                {{ target_project.construction_bid|intcomma|cutzero }}
+                            </td>
+                        {% endif %}
+                    <td bgcolor="#FFFF99">備註</td>
+                        {% if edit %}
+                            <td id="construction_bid_memo" class="editable" colspan="3" rowspan="1">
+                                <a id="construction_bid_memo" class="show_construction_bid_memo">{% if target_project.construction_bid_memo %}{{ target_project.construction_bid_memo|linebreaks }}{% else %}{% endif %}</a>
+                                <textarea id="construction_bid_memo" class="edit_construction_bid_memo update_edited" cols="15" rows="1" size="56" type="text" value="{% if target_project.construction_bid_memo %}{{ target_project.construction_bid_memo }}{% else %}{% endif %}" old_value="{% if target_project.construction_bid_memo %}{{ target_project.construction_bid_memo }}{% else %}{% endif %}" style="display: none;">{% if target_project.construction_bid_memo %}{{ target_project.construction_bid_memo }}{% else %}{% endif %}</textarea>
+                            </td>
+                        {% else %}
+                            <td colspan="3" rowspan="1">
+                                {% if target_project.construction_bid_memo %}{{ target_project.construction_bid_memo }}{% else %}{% endif %}
+                            </td>
+                        {% endif %}
+                </tr>
+                <tr>
+                    <td bgcolor="#FFFF99">空污費</td>
+                        {% if edit %}
+                            <td align="right" id="pollution" class="editable">
+                                <a id="pollution" class="show_pollution">{{ target_project.pollution|intcomma|cutzero }}</a>
+                                <input id="pollution"  class="edit_pollution update_edited float" size="22" type="text" value="{% ifequal target_project.pollution 0 %}{% else %}{{ target_project.pollution|cutzero }}{% endifequal %}" old_value="{% ifequal target_project.pollution 0 %}{% else %}{{ target_project.pollution|cutzero }}{% endifequal %}" style="display: none; text-align:right;">
+                            </td>
+                        {% else %}
+                            <td align="right">
+                                {{ target_project.pollution|intcomma|cutzero }}
+                            </td>
+                        {% endif %}
+                    <td bgcolor="#FFFF99">備註</td>
+                        {% if edit %}
+                            <td id="pollution_memo" class="editable" colspan="3" rowspan="1">
+                                <a id="pollution_memo" class="show_pollution_memo">{% if target_project.pollution_memo %}{{ target_project.pollution_memo|linebreaks }}{% else %}{% endif %}</a>
+                                <textarea id="pollution_memo" class="edit_pollution_memo update_edited" cols="15" rows="1" size="56" type="text" value="{% if target_project.pollution_memo %}{{ target_project.pollution_memo }}{% else %}{% endif %}" old_value="{% if target_project.pollution_memo %}{{ target_project.pollution_memo }}{% else %}{% endif %}" style="display: none;">{% if target_project.pollution_memo %}{{ target_project.pollution_memo }}{% else %}{% endif %}</textarea>
+                            </td>
+                        {% else %}
+                            <td colspan="3" rowspan="1">
+                                {% if target_project.pollution_memo %}{{ target_project.pollution_memo }}{% else %}{% endif %}
+                            </td>
+                        {% endif %}
+                </tr>
+                <tr>
+                    <td bgcolor="#FFFF99">工程管理費</td>
+                        {% if edit %}
+                            <td align="right" id="manage" class="editable">
+                                <a id="manage" class="show_manage">{{ target_project.manage|intcomma|cutzero }}</a>
+                                <input id="manage"  class="edit_manage update_edited float" size="22" type="text" value="{% ifequal target_project.manage 0 %}{% else %}{{ target_project.manage|cutzero }}{% endifequal %}" old_value="{% ifequal target_project.manage 0 %}{% else %}{{ target_project.manage|cutzero }}{% endifequal %}" style="display: none; text-align:right;">
+                            </td>
+                        {% else %}
+                            <td align="right">
+                                {{ target_project.manage|intcomma|cutzero }}
+                            </td>
+                        {% endif %}
+                    <td bgcolor="#FFFF99">備註</td>
+                        {% if edit %}
+                            <td id="manage_memo" class="editable" colspan="3" rowspan="1">
+                                <a id="manage_memo" class="show_manage_memo">{% if target_project.manage_memo %}{{ target_project.manage_memo|linebreaks }}{% else %}{% endif %}</a>
+                                <textarea id="manage_memo" class="edit_manage_memo update_edited" cols="15" rows="1" size="56" type="text" value="{% if target_project.manage_memo %}{{ target_project.manage_memo }}{% else %}{% endif %}" old_value="{% if target_project.manage_memo %}{{ target_project.manage_memo }}{% else %}{% endif %}" style="display: none;">{% if target_project.manage_memo %}{{ target_project.manage_memo }}{% else %}{% endif %}</textarea>
+                            </td>
+                        {% else %}
+                            <td colspan="3" rowspan="1">
+                                {% if target_project.manage_memo %}{{ target_project.manage_memo }}{% else %}{% endif %}
+                            </td>
+                        {% endif %}
+                </tr>
+                <tr>
+                    <td bgcolor="#FFFF99">其他費用</td>
+                        {% if edit %}
+                            <td align="right" id="other_defray" class="editable">
+                                <a id="other_defray" class="show_other_defray">{{ target_project.other_defray|intcomma|cutzero }}</a>
+                                <input id="other_defray" class="edit_other_defray update_edited float" size="22" type="text" value="{% ifequal target_project.other_defray 0 %}{% else %}{{ target_project.other_defray|cutzero }}{% endifequal %}" old_value="{% ifequal target_project.other_defray 0 %}{% else %}{{ target_project.other_defray|cutzero }}{% endifequal %}" style="display: none; text-align:right;">
+                            </td>
+                        {% else %}
+                            <td align="right">
+                                {{ target_project.other_defray|intcomma|cutzero }}
+                            </td>
+                        {% endif %}
+                    <td bgcolor="#FFFF99">備註</td>
+                        {% if edit %}
+                            <td id="other_defray_memo" class="editable" colspan="3" rowspan="1">
+                                <a id="other_defray_memo" class="show_other_defray_memo">{% if target_project.other_defray_memo %}{{ target_project.other_defray_memo|linebreaks }}{% else %}{% endif %}</a>
+                                <textarea id="other_defray_memo" class="edit_other_defray_memo update_edited" cols="15" rows="1" size="56" type="text" value="{% if target_project.other_defray_memo %}{{ target_project.other_defray_memo }}{% else %}{% endif %}" old_value="{% if target_project.other_defray_memo %}{{ target_project.other_defray_memo }}{% else %}{% endif %}" style="display: none;">{% if target_project.other_defray_memo %}{{ target_project.other_defray_memo }}{% else %}{% endif %}</textarea>
+                            </td>
+                        {% else %}
+                            <td colspan="3" rowspan="1">
+                                {% if target_project.other_defray_memo %}{{ target_project.other_defray_memo }}{% else %}{% endif %}
+                            </td>
+                        {% endif %}
+                </tr>
+                <tr>
+                    <td bgcolor="#FFCC33">發包及其他費用</td>
+                        {% if edit %}
+                            <td align="right" id="total" class="">
+                                <span id="total" class="edit_total" value="{{ total_cost }}">{{ total_cost|intcomma|cutzero }}</span>
+                            </td>
+                        {% else %}
+                            <td>
+                                {{ total_cost|intcomma|cutzero }}
+                            </td>
+                        {% endif %}
+                    <td colspan="2" align="center">
+                        本署/地方:
+                        <span id="share">
+                            {% if share %}({{ share.0|intcomma|cutzero }} / {{ share.1|intcomma|cutzero }} ){% else %}{% endif %}
+                        </span>
+                    </td>
+                </tr>
+            </tbody>
+            </table>
+
+            <br>
+                <span class="notice" id="message">{{ message }}</span>
+        </form>
+        </span>
+    
+
+
+{% endblock %}

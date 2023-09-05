@@ -1,0 +1,47 @@
+{% extends 'harbor/vport.html' %}
+
+{% load humanize %}
+{% block menu %}
+    <ul id="menu" value ="/harbor/view"></ul>
+{% endblock %}
+{% block portinfocontent %}
+<table width="800">
+    <tr>
+        <td align="center">
+            {% if fishery_list %}
+            <h2><br><br>
+            <table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+                <tr align="center" bgcolor="#FFFF99">
+                    <td width="100">
+                        年度
+                    </td>
+                    <td width="200">
+                        產量(公噸)
+                    </td>
+                    <td width="200">
+                        產值(千元)
+                    </td>
+                </tr>
+                {% for fishery in fishery_list %}
+                <tr class="{% cycle "odd" "even" %}" align="right">
+                    <td align="center">
+                        {% if fishery.year %}{{ fishery.year }}{% else %}暫無資料{% endif %}
+                    </td>
+                    <td>
+                        {% if fishery.output %}{{ fishery.output|intcomma }}{% else %}暫無資料{% endif %}
+                    </td>
+                    <td>
+                        {% if fishery.value %}{{ fishery.value|intcomma }}{% else %}暫無資料{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            </h2>
+            {% else %}
+            <h2>暫無資料</h2>
+            {% endif %}
+        </td>
+    </tr>
+</table>
+
+{% endblock %}

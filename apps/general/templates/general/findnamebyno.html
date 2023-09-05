@@ -1,0 +1,123 @@
+{% extends 'authuser/base.html' %}
+{% block title %}輸入公司資料{% endblock %}
+
+{% block content %}
+    <font color="red"><a href="http://www.etax.nat.gov.tw/wSite/sp?xdUrl=/wSite/query/query01.jsp&ctNode=10818">限定使用此網站查詢統一編號</a>。查到結果後，直接把該網頁原始碼貼入左下角文字框。</font><br/><br/>
+    <div>
+    目前系統內未解析之統編：
+    {% for unit in units %}
+        {{ unit.no }}
+    {% endfor %}
+    </div>
+
+    <script type="text/javascript">
+        var parseHtml = function (obj) {
+            var $obj = $(obj);
+            var $html = $($obj.val());
+            var $parse_result = $('#parse_result');
+            $parse_result.html('');
+            $('table[@summary=營業登記資料公示查詢]', $html).find('tr').each(function(){
+                var name = $('td:first', $(this)).text();
+                var value = $('td:first', $(this)).next().text().replace(/^ *([\w ]+) *$/, "$1");
+                if (name == "營利事業統一編號"){
+                    $parse_result.append('<li>統一編號　　　：<input size="50" name="no" value="'+value+'"/></li>');
+                } else if (name == "負責人姓名") {
+                    $parse_result.append('<li>負責人姓名　　：<input size="50" name="chairman" value="'+value+'"/></li>');
+                } else if (name == "營利事業名稱") {
+                    $parse_result.append('<li>營利事業名稱　：<input size="50" name="name" value="'+value+'"/></li>');
+                } else if (name == "營利事業所在地") {
+                    $parse_result.append('<li>營利事業所在地：<input size="50" name="address" value="'+value+'"/></li>');
+                } else if (name == "資本額(千元)") {
+                    $parse_result.append('<li>資本額（千元）：<input size="50" name="capital" value="'+value+'"/></li>');
+                } else if (name == "組織種類") {
+                    $parse_result.append('<li>組織種類　　　：<input size="50" name="kind" value="'+value+'"/></li>');
+                } else if (name == "設立日期") {
+                    $parse_result.append('<li>設立日期　　　：<input size="50" name="birthday" value="'+value+'"/></li>');
+                } else if (name == "營業項目") {
+                    value = value.replace(/[ \t]/g, '');
+                    $parse_result.append('<li>營業項目　　　：<textarea name="operation" rows="10" cols="40">'+value+'</textarea></li>');
+                }
+            });
+            $parse_result.append('<li>「請」再看看我解析後的答案是否與原網頁有出入!!!</li>');
+            $parse_result.append('<li><input name="submit" type="submit" value="確定送出"/></li>');
+            $parse_result.append('<li>原始網頁碼　　：<textarea name="html">'+$('table[@summary=營業登記資料公示查詢]', $html).html()+'</textarea>本欄位不用檢查，純驗證用。</li>');
+            $obj.val('');
+        }
+    </script>
+
+    <br/>
+    <div>
+        <font color="red">{{ message }}</font>
+        {% if projects %}
+        <font color="red">
+            <p>該公司所相關的工程案如下，如有廠商亂填統編，請<a href="#reset">重設</a>它的工程案：</p>
+            <table border="1">
+                <tr>
+                    <th>工程序號</th>
+                    <th>原工程營造廠商名稱</th>
+                    <th>解析後工程營造廠商名稱</th>
+                    <th>原工程監造廠商名稱</th>
+                    <th>解析後工程監造廠商名稱</th>
+                </tr>
+                {% for p in projects %}
+                <tr>
+                    <td>{{ p.project.no }}</td>
+                    <td>{{ p.project.contractor.name }}</td>
+                    <td>{{ p.rawdata.factory|safe }}</td>
+                    <td>{{ p.project.inspector.name }}</td>
+                    <td>{{ p.rawdata.quem_com|safe }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </font>
+        {% endif %}
+        <div id="left" style="float: left">
+            <h4>貼入公司基本資料 html 碼：<a name="parse"></h4>
+            <ul>
+                <li><button>解析</button></li>
+                <li><textarea name="html" rows="10" cols="20" onChange="parseHtml(this)"></textarea></li>
+            </ul>
+            <div id="right" style="float: right">
+                html解析後結果：
+                <form action="./" method="POST">
+                    <ul id="parse_result">
+                    </ul>
+                </form>
+            </div>
+            <h4>輸入無法找到的統一編號：<a name="notfind"></h4>
+            <form action="./" method="POST">
+            <ul>
+                <li><input name="no"/></li>
+                <li><input type="submit" name="notfind" value="找不到"/></li>
+            </ul>
+            </form>
+            <h4>輸入欲重設的工程序號：<a name="reset"></h4>
+            <form action="./" method="POST">
+            <ul>
+                <li><input name="no"/></li>
+                <li>重設營造：<input type="checkbox" name="contractor"/></li>
+                <li>重設監造：<input type="checkbox" name="inspector"/></li>
+                <li><input type="submit" name="reset" value="重設"/></li>
+            </ul>
+            </form>
+            <h4>各系統管理員工作紀錄</h4>
+            <table border="1">
+                <thead>
+                    <th>帳號</th>
+                    <th>成功解析統編</th>
+                    <th>統編解析失敗<br/>(這是營造/監造的錯)</th>
+                </thead>
+                <tbody>
+                {% for admin in admins %}
+                    <tr class="{% cycle 'row1,row2' %}">
+                        <td>{{ admin.username }}</td>
+                        <td>{{ admin.success }}</td>
+                        <td>{{ admin.failure }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+

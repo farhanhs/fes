@@ -1,0 +1,384 @@
+{% extends "fishuser/zh-tw/base.html" %}
+
+{% load url from future %}
+{% load i18n %}
+{% load humanize %}
+{% load guardian_tags %}
+
+{% block js_in_compress %}
+    <script type="text/javascript" src="/media/auditing/jquery-pagination-v1.2.5/jquery.twbsPagination.js{{ settings.SV_ }}"></script>
+{% endblock %}
+
+{% block body %}
+
+<h2>搜尋查核紀錄</h2>
+<br>
+
+<div align="left">
+    <span style="color: red;" align="left">
+        <ol>
+            <li>注意：輸入條件越多，符合的資料可能會較少，例如設定"查核日期"、縣市選擇"臺南市"，則同時符合兩個條件之標案才會出現。</li>
+            <li>可使用空白或半形逗點來一次搜尋多組關鍵字，例如想找標案名稱含有"護岸"及含有"邊坡"的，則輸入"護岸 邊坡"，符合其中一項即會出現。</li>
+        </ol>
+    </span>
+</div>
+
+<table class="table">
+    <caption>請輸入搜尋條件</caption>
+    <tr>
+        <td width="13%" class="warning" align="right">
+            標案名稱
+        </td>
+        <td width="37%">
+            <input class="form-control input-sm" id="project_name" value="">
+        </td>
+        <td width="13%" class="warning" align="right">
+            查核日期
+        </td>
+        <td width="37%">
+            <div class="row">
+                <div class="col-md-5">
+                    <input class="form-control input-sm datepicker date_relation" field_name="date" do_nothing="true" id="date_from" value="">
+                </div>
+                <div class="col-md-1">~</div>
+                <div class="col-md-5">
+                    <input class="form-control input-sm datepicker date_relation" field_name="date" do_nothing="true" id="date_to" value="">
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning" align="right">
+            主辦機關
+        </td>
+        <td>
+            <select class="form-control input-sm" id="project_unit">
+                <option value="" selected="selected">請選擇</option>
+                {% for u in units %}
+                    <option value="{{ u.id }}">{{ u.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td class="warning" align="right">
+            查核分數
+        </td>
+        <td>
+            <div class="row">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <input style="z-index:1;" class="form-control input-sm num_relation" field_name="score" id="score_from" value="">
+                        <span class="input-group-addon">分</span>
+                    </div>
+                </div>
+                <div class="col-md-1">~</div>
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <input style="z-index:1;" class="form-control input-sm num_relation" field_name="score" id="score_to" value="">
+                        <span class="input-group-addon">分</span>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td class="success" align="right">
+            專案管理單位
+        </td>
+        <td>
+            <input class="form-control input-sm" id="project_manage_unit" value="">
+        </td>
+        <td class="warning" align="right">
+            行政區
+        </td>
+        <td>
+            <select id="place" class="RenewLocationList form-control input-sm">
+                <option value="">－ 全部 －</option>
+                {% for place in places %}
+                    <option value="{{ place.id }}">－ {{ place.name }} －</option>
+                {% endfor %}
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td class="success" align="right">
+            設計單位
+        </td>
+        <td>
+            <input class="form-control input-sm" id="designer" value="">
+        </td>
+        <td class="warning" align="right">
+            發包預算
+        </td>
+        <td>
+            <div class="row">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <input style="z-index:1;" class="form-control input-sm num_relation" field_name="budget_price" id="budget_price_from" value="">
+                        <span class="input-group-addon">千元</span>
+                    </div>
+                </div>
+                <div class="col-md-1">~</div>
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <input style="z-index:1;" class="form-control input-sm num_relation" field_name="budget_price" id="budget_price_to" value="">
+                        <span class="input-group-addon">千元</span>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td class="success" align="right">
+            監造單位
+        </td>
+        <td>
+            <input class="form-control input-sm" id="inspector" value="">
+        </td>
+        <td class="warning" align="right">
+            契約金額
+        </td>
+        <td>
+            <div class="row">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <input style="z-index:1;" class="form-control input-sm num_relation" field_name="contract_price" id="contract_price_from" value="">
+                        <span class="input-group-addon">千元</span>
+                    </div>
+                </div>
+                <div class="col-md-1">~</div>
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <input style="z-index:1;" class="form-control input-sm num_relation" field_name="contract_price" id="contract_price_to" value="">
+                        <span class="input-group-addon">千元</span>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td class="success" align="right">
+            承包廠商
+        </td>
+        <td>
+            <input class="form-control input-sm" id="construct" value="">
+        </td>
+        <td class="warning" align="right">
+            
+        </td>
+        <td>
+            
+        </td>
+    </tr>
+    <tr>
+        <td class="warning" align="right">
+            委員
+        </td>
+        <td>
+            <input class="form-control input-sm" id="supervisors" value="">
+        </td>
+        <td class="warning" align="right">
+            缺失搜尋
+        </td>
+        <td>
+            <input class="form-control input-sm" id="error" value="">
+        </td>
+    </tr>
+</table>
+<div align="center">
+<button class="search_case btn btn-info btn-lg" page="1" type="button">搜尋</button>
+</div>
+<br><br><br>
+
+<ul class="pagination pages_list"></ul> <span class="total_count"></span>
+<br>
+<table id="SearchResultTable" class="sortable table table-bordered cycle_color_table" style="text-align: center; font-size: 14px; display: none;">
+    <thead>
+        <tr class="success">
+            <th width="3%" style="text-align: center;">序<br>號</th>
+            <th width="10%" style="min-width:110px; text-align: center;">查核日期</th>
+            <th width="38%" style="text-align: center;">標案名稱</th>
+            <th width="20%" style="text-align: center;">查核小組</th>
+            <th width="15%" style="text-align: center;">主辦單位</th>
+            <th width="7%" style="text-align: center;">行政區</th>
+            <th width="7%" style="text-align: center;">查核<br>分數</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<br>
+<ul class="pagination pages_list"></ul> <span class="total_count"></span>
+
+
+
+
+
+
+
+
+
+
+<script type="text/x-jquery-tmpl" id="HideSearchTr">
+    <tr id="tr_case_${id}" style="text-align: center;" row_id="${id}" class="${class_name}" style="display: none;">
+        <td class="active">${sort}</td>
+        <td>
+            <a href="/auditing/view_profile/${id}/">${date}</a>
+        </td>
+        <td style="text-align: left;">${project_name}</td>
+        <td style="text-align: left;">${auditing_group}</td>
+        <td style="text-align: left;">${project_unit_name}</td>
+        <td style="text-align: left;">${location_name}</td>
+        <td style="text-align: right;">${score}分</td>
+    </tr>
+</script>
+
+
+
+<script type="text/javascript">
+    function search_case(){
+        var $obj = $(this);
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+        }
+
+        var string = '';
+        $.each($('.form-control'), function(){
+            var id = $(this).attr('id');
+            data[id] = $('#' + id).val();
+        });
+
+
+        var per_page = 25;
+        var page = parseInt($obj.attr('page'));
+        data['offsetid'] = ((page-1) * per_page);
+        data['limit'] = per_page;
+        $.ajax({
+            url: '/auditing/search_case/',
+            type: 'POST',
+            data: data,
+            dataType: 'json',
+            success: function (json, text, xhr) {
+                var OK_mark = '<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>';
+                $('.resultTr').remove();
+                $('#SearchResultTable').show();
+                for (var i=0; i<json['result'].length; i++){
+                    json['result'][i]['class_name'] = 'resultTr';
+                    json['result'][i]['sort'] = i+1+(page-1)*per_page;
+                    json['result'][i]['date'] = json['result'][i]['date'];
+                    var $div = $('#HideSearchTr').tmpl(json['result'][i]).appendTo($('#SearchResultTable > tbody:last'));
+                }
+                //製造分頁
+                if (json['total_count']){
+                    if ($('.pagination').html()) {
+                        $('.pagination').twbsPagination('destroy');
+                    }
+                    $('.pagination').twbsPagination({
+                        totalPages: Math.ceil(json['total_count']/per_page),
+                        startPage: page,
+                        visiblePages: Math.min(Math.ceil(json['total_count']/per_page), 10),
+                        onPageClick: function (event, page) {
+                            renew_search(page);
+                        }
+                    });
+                } else {
+                    if ($('.pagination').html()) {
+                        $('.pagination').twbsPagination('destroy');
+                    }
+                }
+                $('.total_count').html('共有' + Math.ceil(json['total_count']/per_page) + '頁，' + json['total_count'] + '筆資料');
+
+                $('.deleteRow').unbind('click');
+                $('.deleteRow').click(deleteRow);
+            },
+            error: REST_ERROR
+        })
+    }
+
+    function renew_search(page){
+        $('.search_case').attr('page', page);
+        $('.search_case').click();
+        $('.search_case').attr('page', '1');
+    }
+
+    function date_relation(){
+        var $obj = $(this);
+        var id = $obj.attr('id');
+        var field_name = $obj.attr('field_name');
+        var from = $('#' + field_name + '_from').val();
+        var to = $('#' + field_name + '_to').val();
+        if (!$obj.val()){
+            $('#' + field_name + '_from').val('');
+            $('#' + field_name + '_to').val('');
+            return false;
+        }
+        if (id==field_name + '_from'){
+            if (!to) {
+                $('#' + field_name + '_to').val(from);
+            } else {
+                var startArray = from.split("-");
+                var endArray = to.split("-");
+                var start = new Date(startArray[0], startArray[1], startArray[2]);
+                var end = new Date(endArray[0], endArray[1], endArray[2]);
+                if (start > end) {
+                    $('#' + field_name + '_to').val(from);
+                }
+            }
+        } else if (id==field_name + '_to'){
+            if (!from) {
+                $('#' + field_name + '_from').val(to);
+            } else {
+                var startArray = from.split("-");
+                var endArray = to.split("-");
+                var start = new Date(startArray[0], startArray[1], startArray[2]);
+                var end = new Date(endArray[0], endArray[1], endArray[2]);
+                if (start > end) {
+                    $('#' + field_name + '_from').val(to);
+                }
+            }
+        }
+    }
+
+    function num_relation(){
+        var $obj = $(this);
+        var id = $obj.attr('id');
+        var field_name = $obj.attr('field_name');
+        var from = $('#' + field_name + '_from').val();
+        var to = $('#' + field_name + '_to').val();
+        if (!$obj.val()){
+            $('#' + field_name + '_from').val('');
+            $('#' + field_name + '_to').val('');
+            return false;
+        }
+        if (id==field_name + '_from'){
+            if (!to) {
+                $('#' + field_name + '_to').val(from);
+            } else {
+                var start = parseInt(from);
+                var end = parseInt(to);
+                if (start > end) {
+                    $('#' + field_name + '_to').val(from);
+                }
+            }
+        } else if (id==field_name + '_to'){
+            if (!from) {
+                $('#' + field_name + '_from').val(to);
+            } else {
+                var start = parseInt(from);
+                var end = parseInt(to);
+                if (start > end) {
+                    $('#' + field_name + '_from').val(to);
+                }
+            }
+        }
+    }
+
+    
+    $(document).ready(function(){
+        $('.search_case').click(search_case); //搜尋
+        $('.date_relation').change(date_relation); //日期 的時間邏輯
+        $('.num_relation').change(num_relation); //數字 的大小邏輯
+        $('#location').unbind('change');
+    });
+
+</script>
+{% endblock %}

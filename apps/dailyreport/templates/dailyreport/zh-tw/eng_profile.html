@@ -1,0 +1,283 @@
+{% extends 'dailyreport/zh-tw/base.html' %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load i18n %}
+{% block body %}
+    {% include 'dailyreport/zh-tw/menu.html' %}
+    <h3>日報表基本資料</h3>
+    <input type="hidden" id="project_id" value="{{ engprofile.project.id }}">
+    <input type="hidden" id="engprofile_id" value="{{ engprofile.id }}">
+    請設定以下基本資訊才可執行後續的功能操作
+    <table class="table table-bordered" align="center" style="table-layout:fixed;width: 800px;">
+        <col width="50%">
+        <col width="50%">
+        <tr>
+            <td>
+                <input type="text" id="schedule_progress">
+            </td>
+        </tr>
+        <tr id="tr_start_date">
+            <td style="text-align: right;" bgcolor="#CAE1FF">實際開工日期</td>
+            <td bgcolor="white">
+                {% if edit %}
+                    <input class="datepicker have_change" name="start_date" type="text" placeholder="請輸入開工日期…" id="start_date" value="{{ engprofile.start_date|default_if_none:'' }}">
+                {% else %}
+                    {{ engprofile.start_date|default_if_none:'' }}
+                {% endif %}
+            </td>
+        </tr>
+        <tr id="tr_date_type">
+            <td style="text-align: right;" bgcolor="#CAE1FF">工期計算方式</td>
+            <td bgcolor="white">
+                {% if edit %}
+                    <select class="have_change" name="date_type" id="date_type">
+                        {% for type in choose.date_type %}
+                            <option value="{{ type.value }}"
+                            {% ifequal type.id engprofile.date_type.id %}selected{% endifequal %}
+                            >{{ type.value }}</option>
+                        {% endfor %}
+                    </select>
+                {% else %}
+                    {{ engprofile.date_type.value|default_if_none:'' }}
+                {% endif %}
+            </td>
+        </tr>
+        <tr id="tr_duration" {% ifequal engprofile.date_type.value '限期完工(日曆天每日施工)' %}style="display:none;"{% endifequal %}>
+            <td style="text-align: right;" bgcolor="#CAE1FF">施工天數<span style="color: red;">(不含展延)</span></td>
+            <td bgcolor="white">
+                {% if edit %}
+                    <div class="input-append">
+                        <input class="have_change" type="text" name="duration" input_type="int" placeholder="請輸入施工天數…" id="duration" value="{% if not engprofile.duration %}0{% else %}{{ engprofile.duration }}{% endif %}">
+                        <span class="add-on">天</span>
+                    </div>
+                {% else %}
+                    {{ engprofile.duration|default_if_none:'' }}
+                {% endif %}
+            </td>
+        </tr>
+        <tr id="tr_deadline" {% ifnotequal engprofile.date_type.value '限期完工(日曆天每日施工)' %}style="display:none;"{% endifnotequal %}>
+            <td style="text-align: right;" bgcolor="#CAE1FF">限期完工日期<span style="color: red;">(不含展延)</span></td>
+            <td bgcolor="white">
+                {% if edit %}
+                    <input class="datepicker have_change" type="text" name="deadline" id="deadline" placeholder="請輸入限期完工日期…" value="{{ engprofile.deadline|default_if_none:'' }}">
+                {% else %}
+                    {{ engprofile.deadline|default_if_none:'' }}
+                {% endif %}
+            </td>
+        </tr>
+        <tr id="tr_scheduled_completion_day">
+            <td style="text-align: right;" bgcolor="#CAE1FF">預定完工日期<span style="color: red;">(系統自動運算請留空白)</span></td>
+            <td bgcolor="white">
+                {% if edit %}
+                    <input do_nothing="true" class="datepicker have_change" name="scheduled_completion_day" type="text" placeholder="系統自動運算請留空白" id="scheduled_completion_day" value="{{ engprofile.scheduled_completion_day|default_if_none:'' }}">
+                {% else %}
+                    {{ engprofile.scheduled_completion_day|default_if_none:'' }}
+                {% endif %}
+            </td>
+        </tr>
+        <tr id="tr_inspector_name">
+            <td style="text-align: right;" bgcolor="#CAE1FF">監造廠商名稱</td>
+            <td bgcolor="white">
+                {% if edit %}
+                    <input class="have_change" type="text" name="inspector_name" id="inspector_name" placeholder="請輸入監造廠商名稱" value="{{ engprofile.inspector_name|default_if_none:'' }}">
+                {% else %}
+                    {{ engprofile.inspector_name|default_if_none:'' }}
+                {% endif %}
+            </td>
+        </tr>
+        <tr id="tr_contractor_name">
+            <td style="text-align: right;" bgcolor="#CAE1FF">營造廠商名稱</td>
+            <td bgcolor="white">
+                {% if edit %}
+                    <input class="have_change" type="text" name="contractor_name" id="contractor_name" placeholder="請輸入營造廠商名稱" value="{{ engprofile.contractor_name|default_if_none:'' }}">
+                {% else %}
+                    {{ engprofile.contractor_name|default_if_none:'' }}
+                {% endif %}
+            </td>
+        </tr>
+        <tr id="tr_contractor_lock">
+            <td style="text-align: right;" bgcolor="#CAE1FF">是否鎖定施工項目(不讓營造廠商修改)</td>
+            <td bgcolor="white">
+                {% if engprofile.is_inspector %}
+                    <select class="have_change" name="contractor_lock" id="contractor_lock">
+                        <option value="open"
+                        {%if not engprofile.contractor_lock %}selected{% endif %}
+                        >開放修改</option>
+                        <option value="lock"
+                        {%if engprofile.contractor_lock %}selected{% endif %}
+                        >鎖定</option>
+                    </select>
+                {% else %}
+                    {% if engprofile.contractor_lock %}鎖定{% else %}開放修改{% endif %}
+                {% endif %}
+            </td>
+        </tr>
+        <tr id="tr_contractor_read_inspectorReport">
+            <td style="text-align: right;" bgcolor="#CAE1FF">營造廠商是否可觀看監工報表</td>
+            <td bgcolor="white">
+                {% if engprofile.is_inspector %}
+                    <select class="have_change" name="contractor_read_inspectorReport" id="contractor_read_inspectorReport">
+                        <option value="open"
+                        {%if engprofile.contractor_read_inspectorReport %}selected{% endif %}
+                        >可觀看</option>
+                        <option value="lock"
+                        {%if not engprofile.contractor_read_inspectorReport %}selected{% endif %}
+                        >不可觀看</option>
+                    </select>
+                {% else %}
+                    {% if engprofile.contractor_read_inspectorReport %}可觀看{% else %}不可觀看{% endif %}
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: right;" bgcolor="#CAE1FF">預定進度</td>
+            <td bgcolor="white">
+                <div class="input-append">
+                    <span class="add-on">{{ engprofile.schedule_progress|default_if_none:engprofile.read__design__c__i__percent.design }}</span>
+                    <span class="add-on">%</span>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: right;" bgcolor="#CAE1FF">監造實際進度</td>
+            <td bgcolor="white">
+                <div class="input-append">
+                    <span class="add-on">{{ engprofile.read__design__c__i__percent.i }}</span>
+                    <span class="add-on">%</span>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: right;" bgcolor="#CAE1FF">施工實際進度</td>
+            <td bgcolor="white">
+                <div class="input-append">
+                    <span class="add-on">{{ engprofile.read__design__c__i__percent.c }}</span>
+                    <span class="add-on">%</span>
+                </div>
+            </td>
+        </tr>
+    </table>
+    <div class="alert alert-error" id="have_change_alert" style="display:none;">
+        <strong>Warning!</strong> 頁面有修改資訊，尚未儲存!!!
+    </div>
+
+    {% if edit %}
+        <button class="btn btn-large btn-success" engprofile_id={{ engprofile.id }} id="update_engprofile" type="button">確定修改</button>
+    {% endif %}
+
+
+
+
+    <script type="text/javascript">
+        var int_check = /^-?[0-9]*$/;
+        jQuery.checkDateFormat = function(id_tag, message){
+            var value = $('#'+id_tag).val();
+            var match = /^((19|20)[0-9][0-9])[-\/]([012][0-9])[-\/]([0-3][0-9])$/.exec(value);
+            if (match){
+                var d = new Date();
+                d.setFullYear(match[1]);
+                d.setMonth(Number(match[3])-1);
+                d.setDate(match[4]);
+                d.setHours(0);
+                d.setMinutes(0);
+                d.setSeconds(0);
+                return d;
+            } else {
+                alert(message);
+                return false;
+            }
+        }
+        jQuery.checkPositiveIntegerFormat = function(id_tag, message){
+            var value = $('#'+id_tag).val();
+            var match = /^[0-9]+$/.exec(value);
+            if (match){
+                return value;
+            } else {
+                alert(message);
+                return false;
+            }
+        }
+        $(document).ready(function(){
+            CSRFMIDDLEWARETOKEN = $('input[name=csrfmiddlewaretoken]').val();
+            $('#date_type').change(function(){
+                var date_type = $(this).val();
+                if (date_type != '限期完工(日曆天每日施工)'){
+                    $('#tr_duration').show();
+                    $('#tr_deadline').hide();
+                } else {
+                    $('#tr_deadline').show();
+                    $('#tr_duration').hide();
+                }
+            });
+
+            $('.have_change').change(function(){
+                var $obj = $(this);
+                var name = $obj.attr('name');
+                $('#tr_' + name).attr('class', 'error');
+                $('#have_change_alert').show();
+            });
+
+            $('#update_engprofile').click(function(){
+                var $obj = $(this);
+                var engprofile_id = $obj.attr('engprofile_id');
+                $.checkDateFormat('start_date', '開工日期不正確');
+                var start_date = $('#start_date').val();
+                var date_type = $('#date_type').val();
+                var scheduled_completion_day = $('#scheduled_completion_day').val();
+                var duration = $.checkPositiveIntegerFormat('duration', '施工天數必須為整數');
+                var deadline = $('#deadline').val();
+                var contractor_lock = $('#contractor_lock').val();
+                var contractor_read_inspectorReport = $('#contractor_read_inspectorReport').val();
+                var inspector_name = $('#inspector_name').val();
+                var contractor_name = $('#contractor_name').val();
+                var schedule_progress123 = $('#schedule_progress').val()
+                
+                if (!start_date){
+                    alert('請輸入實際開工日期');
+                    return false;
+                };
+                if (date_type == '限期完工(日曆天每日施工)' && !deadline){
+                    alert('請輸入限期完工日期');
+                    return false;
+                } else if (date_type == '限期完工(日曆天每日施工)' && ($.checkDateFormat('deadline', '限期完工日期不正確') <= $.checkDateFormat('start_date', '限期完工日期不正確'))){
+                    alert('限期完工日期必須大於實際開工日期');
+                    return false;
+                } else if (date_type != '限期完工(日曆天每日施工)' && (!duration || duration == '0')){
+                    alert('請輸入施工天數(不可為 0 天)');
+                    return false;
+                };
+
+                var data = {
+                    csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                    engprofile_id: engprofile_id,
+                    start_date: start_date,
+                    date_type: date_type,
+                    duration: duration,
+                    deadline: deadline,
+                    scheduled_completion_day: scheduled_completion_day,
+                    inspector_name: inspector_name,
+                    contractor_name: contractor_name,
+                    contractor_lock: contractor_lock,
+                    contractor_read_inspectorReport: contractor_read_inspectorReport,
+                    schedule_progress456: schedule_progress123,
+                }
+                $.ajax({
+                    url: '/dailyreport/update_engprofile/',
+                    type: 'POST',
+                    data: data,
+                    dataType: 'json',
+                    success: function (json) {
+                        if (json['status']){
+                            location.reload();
+                            alert('修改成功!!!');
+                        } else {
+                            alert(json['msg']);
+                        }
+                    },
+                    error: function(){
+                    }
+                })
+            });
+        });
+    </script>
+{% endblock body %}
