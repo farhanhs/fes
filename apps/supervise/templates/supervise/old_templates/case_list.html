@@ -1,0 +1,45 @@
+
+<hr align="left" width="800" size="1" style="color: #FFC991;" id="sarch_result">
+
+<br>{{ search_condition }} 查詢結果共有  {{ cases_num }} 筆符合的資料<br><br>
+
+<table class="sortable" border="1" style="border-collapse: collapse">
+	<thead bgcolor='#CDFFE7'>
+	<tr>
+	{% if edit %}
+		<th width=20></th>
+	{% endif %}
+		<th width=20></th>
+		<th width=120>列管計畫名稱</th>
+		<th width=250>標案名稱</th>
+		<th width=120>標案所屬<br>工程主管機關</th>
+		<th width=120>標案主辦機關</th>
+		<th width=100>監造單位</th>
+		<th width=100>承包商</th>
+		<th width=60>督導日期</th>
+		<th width=35>督導分數</th>
+	</tr>
+	</thead>
+	<tbody>
+	{% for case in cases %}
+	<tr bgcolor={% cycle "white" "#DEE6EE" %} id="case_tr_{{ case.id }}">
+	{% if edit %}
+		<td>
+			<img src="/media/images/delete.png"
+				case_id="{{ case.id }}" class="deleteCase"
+				title="刪除">
+		</td>
+	{% endif %}
+		<td>{{ forloop.counter }}</td>
+		<td>{{ case.plan }}</td>
+		<td><a href="/supervise/profile/{{ case.id }}/" target="_blank">{{ case.project }}</a></td>
+		<td>{{ case.subordinate_agencies_unit.fullname }}</td>
+		<td>{{ case.project_organizer_agencies }}</td>
+		<td title="{{ case.inspector }}">{{ case.inspector_s }}</td>
+		<td title="{{ case.construct }}">{{ case.construct_s }}</td>
+		<td>{{ case.date }}</td>
+		<td>{{ case.score }}</td>
+	</tr>
+	{% endfor %}
+	</tbody>
+</table>

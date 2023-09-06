@@ -1,0 +1,1010 @@
+{% load i18n %}
+{% load utiltags %}
+{% load humanize %}
+
+<br>
+<h3 class="text-primary" id="h3_bid_info">標案資訊</h3>
+<table class="table table-bordered" style="font-size: 14px; text-align: center;" total_width="860">
+    <tr>
+        <td class="active">投標廠商</td>
+        <td align="left" colspan="3">
+            {% if edit %}
+                <textarea
+                    class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    type="textarea"
+                    row_id="{{ project.id }}"
+                    field_name="bid_on"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    rows="3"
+                    old_value="{{ project.bid_on|default_if_none:'' }}">{{ project.bid_on|default_if_none:'' }}</textarea>
+            {% else %}
+                {{ project.bid_on|default_if_none:''|linebreaks }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="active">決標廠商</td>
+        <td align="left" colspan="3">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="bid_final"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.bid_final|default_if_none:'' }}"
+                    value="{{ project.bid_final|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.bid_final|default_if_none:'' }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="active">招標方式</td>
+        <td align="left" colspan="3">
+            {% if edit %}
+                <select
+                    class="BlurUpdateInfo form-control"
+                    is_select="true"
+                    row_id="{{ project.id }}"
+                    field_name="bid_type"
+                    table_name="project"
+                    module_name='fishuser'
+                    old_value="/fishuser/api/v2/option/{{ project.contract_type.id }}/">
+                    <option value="">待輸入</option>
+                    {% for type in option.bid_type %}
+                        <option value="/fishuser/api/v2/option/{{ type.id }}/" {% ifequal project.bid_type.id type.id %}selected="selected"{% endifequal %}>{{ type.value }}</option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                {{ project.bid_type.value|default_if_none:'' }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="active">發包方式</td>
+        <td align="left" colspan="3">
+            {% if edit %}
+                <select
+                    class="BlurUpdateInfo form-control"
+                    is_select="true"
+                    row_id="{{ project.id }}"
+                    field_name="contract_type"
+                    table_name="project"
+                    module_name='fishuser'
+                    old_value="/fishuser/api/v2/option/{{ project.contract_type.id }}/">
+                    <option value="">待輸入</option>
+                    {% for type in option.contract_type %}
+                        <option value="/fishuser/api/v2/option/{{ type.id }}/" {% ifequal project.contract_type.id type.id %}selected="selected"{% endifequal %}>{{ type.value }}</option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                {{ project.contract_type.value|default_if_none:'' }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="active">決標折數</td>
+        <td align="left" colspan="3">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="bid_discount"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.bid_discount|default_if_none:'' }}"
+                    value="{{ project.bid_discount|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.bid_discount|default_if_none:'' }}
+            {% endif %}
+        </td>
+    </tr>
+
+    <tr>
+        <td class="active">招標期間流廢標次數</td>
+        <td align="left" colspan="3">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="int"
+                    row_id="{{ project.id }}"
+                    field_name="abandoned_tender_count"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.abandoned_tender_count|default_if_none:'' }}"
+                    value="{{ project.abandoned_tender_count|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.abandoned_tender_count|default_if_none:'' }}
+            {% endif %}
+        </td>
+    </tr>
+
+    <tr>
+        <td class="active">招標預算</td>
+        <td align="left" colspan="3">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="float"
+                    row_id="{{ project.id }}"
+                    field_name="tender_budget"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.tender_budget|default_if_none:'' }}"
+                    value="{{ project.tender_budget|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.tender_budget|default_if_none:'' }}
+            {% endif %}
+        </td>
+    </tr>
+
+    <tr>
+        <td class="active">是否為屬標餘款再使用增辦之工程</td>
+        <td align="left" colspan="3">
+            {% if edit %}
+                    <select
+                    id='tender_excess_funds'
+                    class="BlurUpdateInfo form-control"
+                    is_select="true"
+                    row_id="{{ project.id }}"
+                    field_name="tender_excess_funds"
+                    table_name="project"
+                    module_name='fishuser'
+                    old_value="{% if project.tender_excess_funds %}true{% else %}false{% endif %}">
+                        <option value="true" {% if project.tender_excess_funds %}selected="selected"{% endif %}>是</option>
+                        <option value="false" {% if not project.tender_excess_funds %}selected="selected"{% endif %}>否</option>
+                </select>
+            {% else %}
+                {% if project.tender_excess_funds %}是{% else %}否{% endif %}
+            {% endif %}
+        </td>
+    </tr>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <tr class="success">
+        <td width="20%">
+            <button class="btn btn-warning btn-sm" data-toggle="modal" id="show_get_projectbidmoneyversion_dialog" data-target="#get_projectbidmoneyversion_dialog">契約變更</button>
+        </td>
+        <td width="22%">契約金額</td>
+        <td width="22%">結算金額</td>
+        <td width="36%">備註</td>
+    </tr>
+    <tr>
+        <td class="active" align="left">#工程金額</td>
+        <td>
+            <div class="input-group">
+                <input
+                    id="project_construction_bid"
+                    type="text" class="BlurUpdateInfo form-control inputcomma bid_money_field"
+                    field_type="float" style="text-align: right;"
+                    field_name="construction_bid"
+                    {% if edit %}
+                        row_id="{{ project.id }}"
+                        table_name="project"
+                        module_name='fishuser'
+                        placeholder="待輸入"
+                    {% else %}
+                        disabled
+                    {% endif %}
+                    old_value="{{ project.construction_bid|default_if_none:''|cutzero }}"
+                    value="{{ project.construction_bid|default_if_none:''|cutzero }}"/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td>
+            <div class="input-group">
+                <input
+                    type="text" class="BlurUpdateInfo form-control inputcomma bid_money_field"
+                    field_type="float" style="text-align: right;"
+                    field_name="settlement_construction_bid"
+                    {% if edit %}
+                        row_id="{{ project.id }}"
+                        table_name="project"
+                        module_name='fishuser'
+                        placeholder="待輸入"
+                    {% else %}
+                        disabled
+                    {% endif %}
+                    old_value="{{ project.settlement_construction_bid|default_if_none:''|cutzero }}"
+                    value="{{ project.settlement_construction_bid|default_if_none:''|cutzero }}"/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td>
+            {% if edit %}
+                <textarea
+                    class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    type="textarea"
+                    row_id="{{ project.id }}"
+                    field_name="construction_bid_memo"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    style="height: 34px;"
+                    old_value="{{ project.construction_bid_memo|default_if_none:'' }}">{{ project.construction_bid_memo|default_if_none:'' }}</textarea>
+            {% else %}
+                {{ project.construction_bid_memo|default_if_none:''|linebreaks }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="active" align="left">保險費</td>
+        <td>
+            <div class="input-group">
+                <input
+                    type="text" class="BlurUpdateInfo form-control inputcomma bid_money_field"
+                    field_type="float" style="text-align: right;"
+                    field_name="safety_fee"
+                    {% if edit %}
+                        row_id="{{ project.id }}"
+                        table_name="project"
+                        module_name='fishuser'
+                        placeholder="待輸入"
+                    {% else %}
+                        disabled
+                    {% endif %}
+                    old_value="{{ project.safety_fee|default_if_none:''|cutzero }}"
+                    value="{{ project.safety_fee|default_if_none:''|cutzero }}"/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td>
+            <div class="input-group">
+                <input
+                    type="text" class="BlurUpdateInfo form-control inputcomma bid_money_field"
+                    field_type="float" style="text-align: right;"
+                    field_name="settlement_safety_fee"
+                    {% if edit %}
+                        row_id="{{ project.id }}"
+                        table_name="project"
+                        module_name='fishuser'
+                        placeholder="待輸入"
+                    {% else %}
+                        disabled
+                    {% endif %}
+                    old_value="{{ project.settlement_safety_fee|default_if_none:''|cutzero }}"
+                    value="{{ project.settlement_safety_fee|default_if_none:''|cutzero }}"/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td>
+            {% if edit %}
+                <textarea
+                    class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    type="textarea"
+                    row_id="{{ project.id }}"
+                    field_name="safety_fee_memo"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    style="height: 34px;"
+                    old_value="{{ project.safety_fee_memo|default_if_none:'' }}">{{ project.safety_fee_memo|default_if_none:'' }}</textarea>
+            {% else %}
+                {{ project.safety_fee_memo|default_if_none:''|linebreaks }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="active" align="left">營業稅</td>
+        <td>
+            <div class="input-group">
+                <input
+                    type="text" class="BlurUpdateInfo form-control inputcomma bid_money_field"
+                    field_type="float" style="text-align: right;"
+                    field_name="business_tax"
+                    {% if edit %}
+                        row_id="{{ project.id }}"
+                        table_name="project"
+                        module_name='fishuser'
+                        placeholder="待輸入"
+                    {% else %}
+                        disabled
+                    {% endif %}
+                    old_value="{{ project.business_tax|default_if_none:''|cutzero }}"
+                    value="{{ project.business_tax|default_if_none:''|cutzero }}"/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td>
+            <div class="input-group">
+                <input
+                    type="text" class="BlurUpdateInfo form-control inputcomma bid_money_field"
+                    field_type="float" style="text-align: right;"
+                    field_name="settlement_business_tax"
+                    {% if edit %}
+                        row_id="{{ project.id }}"
+                        table_name="project"
+                        module_name='fishuser'
+                        placeholder="待輸入"
+                    {% else %}
+                        disabled
+                    {% endif %}
+                    old_value="{{ project.settlement_business_tax|default_if_none:''|cutzero }}"
+                    value="{{ project.settlement_business_tax|default_if_none:''|cutzero }}"/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td>
+            {% if edit %}
+                <textarea
+                    class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    type="textarea"
+                    row_id="{{ project.id }}"
+                    field_name="business_tax_memo"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    style="height: 34px;"
+                    old_value="{{ project.business_tax_memo|default_if_none:'' }}">{{ project.business_tax_memo|default_if_none:'' }}</textarea>
+            {% else %}
+                {{ project.business_tax_memo|default_if_none:''|linebreaks }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="active" align="left">#規劃設計監造費用</td>
+        <td>
+            <div class="input-group">
+                <input
+                    type="text" class="BlurUpdateInfo form-control inputcomma bid_money_field"
+                    field_type="float" style="text-align: right;"
+                    field_name="planning_design_inspect"
+                    {% if edit %}
+                        row_id="{{ project.id }}"
+                        table_name="project"
+                        module_name='fishuser'
+                        placeholder="待輸入"
+                    {% else %}
+                        disabled
+                    {% endif %}
+                    old_value="{{ project.planning_design_inspect|default_if_none:''|cutzero }}"
+                    value="{{ project.planning_design_inspect|default_if_none:''|cutzero }}"/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td>
+            <div class="input-group">
+                <input
+                    type="text" class="BlurUpdateInfo form-control inputcomma bid_money_field"
+                    field_type="float" style="text-align: right;"
+                    field_name="settlement_planning_design_inspect"
+                    {% if edit %}
+                        row_id="{{ project.id }}"
+                        table_name="project"
+                        module_name='fishuser'
+                        placeholder="待輸入"
+                    {% else %}
+                        disabled
+                    {% endif %}
+                    old_value="{{ project.settlement_planning_design_inspect|default_if_none:''|cutzero }}"
+                    value="{{ project.settlement_planning_design_inspect|default_if_none:''|cutzero }}"/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td>
+            {% if edit %}
+                <textarea
+                    class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    type="textarea"
+                    row_id="{{ project.id }}"
+                    field_name="planning_design_inspect_memo"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    style="height: 34px;"
+                    old_value="{{ project.planning_design_inspect_memo|default_if_none:'' }}">{{ project.planning_design_inspect_memo|default_if_none:'' }}</textarea>
+            {% else %}
+                {{ project.planning_design_inspect_memo|default_if_none:''|linebreaks }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="active" align="left">#工程管理費</td>
+        <td>
+            <div class="input-group">
+                <input
+                    type="text" class="BlurUpdateInfo form-control inputcomma bid_money_field"
+                    field_type="float" style="text-align: right;"
+                    field_name="manage"
+                    {% if edit %}
+                        row_id="{{ project.id }}"
+                        table_name="project"
+                        module_name='fishuser'
+                        placeholder="待輸入"
+                    {% else %}
+                        disabled
+                    {% endif %}
+                    old_value="{{ project.manage|default_if_none:''|cutzero }}"
+                    value="{{ project.manage|default_if_none:''|cutzero }}"/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td>
+            <div class="input-group">
+                <input
+                    type="text" class="BlurUpdateInfo form-control inputcomma bid_money_field"
+                    field_type="float" style="text-align: right;"
+                    field_name="settlement_manage"
+                    {% if edit %}
+                        row_id="{{ project.id }}"
+                        table_name="project"
+                        module_name='fishuser'
+                        placeholder="待輸入"
+                    {% else %}
+                        disabled
+                    {% endif %}
+                    old_value="{{ project.settlement_manage|default_if_none:''|cutzero }}"
+                    value="{{ project.settlement_manage|default_if_none:''|cutzero }}"/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td>
+            {% if edit %}
+                <textarea
+                    class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    type="textarea"
+                    row_id="{{ project.id }}"
+                    field_name="manage_memo"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    style="height: 34px;"
+                    old_value="{{ project.manage_memo|default_if_none:'' }}">{{ project.manage_memo|default_if_none:'' }}</textarea>
+            {% else %}
+                {{ project.manage_memo|default_if_none:''|linebreaks }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="active" align="left">#空污費</td>
+        <td>
+            <div class="input-group">
+                <input
+                    type="text" class="BlurUpdateInfo form-control inputcomma bid_money_field"
+                    field_type="float" style="text-align: right;"
+                    field_name="pollution"
+                    {% if edit %}
+                        row_id="{{ project.id }}"
+                        table_name="project"
+                        module_name='fishuser'
+                        placeholder="待輸入"
+                    {% else %}
+                        disabled
+                    {% endif %}
+                    old_value="{{ project.pollution|default_if_none:''|cutzero }}"
+                    value="{{ project.pollution|default_if_none:''|cutzero }}"/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td>
+            <div class="input-group">
+                <input
+                    type="text" class="BlurUpdateInfo form-control inputcomma bid_money_field"
+                    field_type="float" style="text-align: right;"
+                    field_name="settlement_pollution"
+                    {% if edit %}
+                        row_id="{{ project.id }}"
+                        table_name="project"
+                        module_name='fishuser'
+                        placeholder="待輸入"
+                    {% else %}
+                        disabled
+                    {% endif %}
+                    old_value="{{ project.settlement_pollution|default_if_none:''|cutzero }}"
+                    value="{{ project.settlement_pollution|default_if_none:''|cutzero }}"/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td>
+            {% if edit %}
+                <textarea
+                    class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    type="textarea"
+                    row_id="{{ project.id }}"
+                    field_name="pollution_memo"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    style="height: 34px;"
+                    old_value="{{ project.pollution_memo|default_if_none:'' }}">{{ project.pollution_memo|default_if_none:'' }}</textarea>
+            {% else %}
+                {{ project.pollution_memo|default_if_none:''|linebreaks }}
+            {% endif %}
+        </td>
+    </tr>
+    
+    <tr>
+        <td class="active" align="right">委辦工程管理費</td>
+        <td>
+            <div class="input-group">
+                <input
+                    type="text" class="BlurUpdateInfo form-control inputcomma bid_money_field"
+                    field_type="float" style="text-align: right;"
+                    field_name="cm_value"
+                    {% if edit %}
+                        row_id="{{ project.id }}"
+                        table_name="project"
+                        module_name='fishuser'
+                        placeholder="待輸入"
+                    {% else %}
+                        disabled
+                    {% endif %}
+                    old_value="{{ project.cm_value|default_if_none:''|cutzero }}"
+                    value="{{ project.cm_value|default_if_none:''|cutzero }}"/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td>
+            <div class="input-group">
+                <input
+                    type="text" class="BlurUpdateInfo form-control inputcomma bid_money_field"
+                    field_type="float" style="text-align: right;"
+                    field_name="cm_settlement_value"
+                    {% if edit %}
+                        row_id="{{ project.id }}"
+                        table_name="project"
+                        module_name='fishuser'
+                        placeholder="待輸入"
+                    {% else %}
+                        disabled
+                    {% endif %}
+                    old_value="{{ project.cm_settlement_value|default_if_none:''|cutzero }}"
+                    value="{{ project.cm_settlement_value|default_if_none:''|cutzero }}"/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td>
+            {% if edit %}
+                <textarea
+                    class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    type="textarea"
+                    row_id="{{ project.id }}"
+                    field_name="cm_memo"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    style="height: 34px;"
+                    old_value="{{ project.cm_memo|default_if_none:'' }}">{{ project.cm_memo|default_if_none:'' }}</textarea>
+            {% else %}
+                {{ project.cm_memo|default_if_none:''|linebreaks }}
+            {% endif %}
+        </td>
+    </tr>
+
+
+
+    {% for bid_money in project.projectbidmoney_set.all %}
+        <tr id="tr_bid_money_{{ bid_money.id }}">
+            <td class="active" align="left">
+                #{{ bid_money.field_type.value }}
+                {% if edit %}
+                <button class="deleteRow btn btn-danger btn-xs"
+                        row_id="{{ bid_money.id }}"
+                        module_name = "fishuser"
+                        table_name = "projectbidmoney"
+                        remove_target = "tr_bid_money_{{ bid_money.id }}"
+                        do_change_action = "#project_construction_bid"
+                        message = '你確定要刪除此項費用嗎？'
+                        title="刪除">X</button>
+                {% endif %}
+            </td>
+            <td>
+                <div class="input-group">
+                    <input
+                        type="text" class="BlurUpdateInfo form-control inputcomma bid_money_field add_bid_money_value" {% if not edit %}disabled{% endif %}
+                        field_type="float" style="text-align: right;"
+                        row_id="{{ bid_money.id }}"
+                        field_name="value"
+                        listname_field_name="{{ bid_money.field_type.value }}"
+                        table_name="projectbidmoney"
+                        module_name='fishuser'
+                        placeholder="待輸入"
+                        old_value="{{ bid_money.value|default_if_none:''|cutzero }}"
+                        value="{{ bid_money.value|default_if_none:''|cutzero }}"/>
+                    <span class="input-group-addon">元</span>
+                </div>
+            </td>
+            <td>
+                <div class="input-group">
+                    <input
+                        type="text" class="BlurUpdateInfo form-control inputcomma bid_money_field add_bid_money_settlement_value" {% if not edit %}disabled{% endif %}
+                        field_type="float" style="text-align: right;"
+                        row_id="{{ bid_money.id }}"
+                        field_name="settlement_value"
+                        table_name="projectbidmoney"
+                        module_name='fishuser'
+                        placeholder="待輸入"
+                        old_value="{{ bid_money.settlement_value|default_if_none:''|cutzero }}"
+                        value="{{ bid_money.settlement_value|default_if_none:''|cutzero }}"/>
+                    <span class="input-group-addon">元</span>
+                </div>
+            </td>
+            <td align="left">
+                {% if edit %}
+                    <textarea
+                        class="BlurUpdateInfo form-control"
+                        field_type="str"
+                        type="textarea"
+                        row_id="{{ bid_money.id }}"
+                        field_name="memo"
+                        table_name="projectbidmoney"
+                        module_name='fishuser'
+                        placeholder="待輸入"
+                        style="height: 34px;"
+                        old_value="{{ bid_money.memo|default_if_none:'' }}">{{ bid_money.memo|default_if_none:'' }}</textarea>
+                {% else %}
+                    {{ bid_money.memo|default_if_none:''|linebreaks }}
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    <tr id="insert_place_bid_money">
+        <td colspan="3"></td>
+        <td align="left">
+            {% if edit %}
+            <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#add_bid_money_dialog">新增更多費用種類</button>
+            {% endif %}
+        </td>
+    </tr>
+    {% ifnotequal project.undertake_type.value '自辦' %}
+    <tr>
+        <td class="active">直接輸入總額</td>
+        <td>
+            <div class="input-group">
+                <input
+                    id="bid_total_money"
+                    type="text" class="BlurUpdateInfo form-control inputcomma bid_money_field"
+                    field_type="float" style="text-align: right;"
+                    field_name="total_money"
+                    {% if edit %}
+                        row_id="{{ project.id }}"
+                        table_name="project"
+                        module_name='fishuser'
+                        placeholder="待輸入"
+                    {% else %}
+                        disabled
+                    {% endif %}
+                    old_value="{{ project.total_money|default_if_none:''|cutzero }}"
+                    value="{{ project.total_money|default_if_none:''|cutzero }}"/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td>
+            <div class="input-group">
+                <input
+                    id="bid_settlement_total_money"
+                    type="text" class="BlurUpdateInfo form-control inputcomma bid_money_field"
+                    field_type="float" style="text-align: right;"
+                    field_name="settlement_total_money"
+                    {% if edit %}
+                        row_id="{{ project.id }}"
+                        table_name="project"
+                        module_name='fishuser'
+                        placeholder="待輸入"
+                    {% else %}
+                        disabled
+                    {% endif %}
+                    old_value="{{ project.settlement_total_money|default_if_none:''|cutzero }}"
+                    value="{{ project.settlement_total_money|default_if_none:''|cutzero }}"/>
+
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td class="active" align="left">若上述欄位資訊不足，可於此欄直接輸入總價，系統會直接採用此欄資料。</td>
+    </tr>
+    {% endifnotequal %}
+    <tr>
+        <td bgcolor="#FFC991">最後採用之<br>『發包及其他費用』</td>
+        <td align="right"><span id="final_total_money" style="font-size: 16px; color: #DC7100;"></span> 元</td>
+        <td align="right"><span id="final_settlement_total_money" style="font-size: 16px; color: #DC7100;"></span> 元</td>
+        <td class="active" align="left">採用總額：若有直接輸入總額則直接採用，否則以#字欄位加總。</td>
+    </tr>
+</table>
+
+
+<!-- 新增的bid_money 的dialog -->
+<div class="modal fade" id="add_bid_money_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">新增更多費用種類</h4>
+            </div>
+            <div class="modal-body">
+                請選擇欲新增的費用種類
+                <select id="bid_money_field_type" class="form-control">
+                    {% for money_type in option.bid_money_type %}
+                        <option value="{{ money_type.id }}">{{ money_type.value }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="add_bid_money" project_id="{{ project.id }}">確定新增</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 新增的bid_money -->
+<script type="text/x-jquery-tmpl" id="HideBidMoneyTr">
+    <tr id="tr_bid_money_${ id }">
+        <td class="active" align="left">
+            #${ listname_field_name }
+            <button class="deleteRow btn btn-danger btn-xs"
+                    row_id="${ id }"
+                    module_name = "fishuser"
+                    table_name = "projectbidmoney"
+                    remove_target = "tr_bid_money_${ id }"
+                    do_change_action = "#project_construction_bid"
+                    message = '你確定要刪除此項費用嗎？'
+                    title="刪除">X</button>
+        </td>
+        <td>
+            <div class="input-group">
+                <input
+                    type="text" class="BlurUpdateInfo form-control inputcomma bid_money_field add_bid_money_value"
+                    field_type="float" style="text-align: right;"
+                    row_id="${ id }"
+                    field_name="value"
+                    listname_field_name="${listname_field_name}"
+                    table_name="projectbidmoney"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value=""
+                    value=""/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td>
+            <div class="input-group">
+                <input
+                    type="text" class="BlurUpdateInfo form-control inputcomma bid_money_field add_bid_money_settlement_value"
+                    field_type="float" style="text-align: right;"
+                    row_id="${ id }"
+                    field_name="settlement_value"
+                    table_name="projectbidmoney"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value=""
+                    value=""/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td align="left">
+            <textarea
+                class="BlurUpdateInfo form-control"
+                field_type="str"
+                type="textarea"
+                row_id="${ id }"
+                field_name="memo"
+                table_name="projectbidmoney"
+                module_name='fishuser'
+                placeholder="待輸入"
+                style="height: 34px;"
+                old_value=""></textarea>
+        </td>
+    </tr>
+</script>
+
+<!-- 新增的金額資訊版本 的dialog -->
+<div class="modal fade" id="add_projectbidmoneyversion_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">新增契約變更紀錄</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered">
+                    <tr>
+                        <td class="warning" width="20%">變更日期：</td>
+                        <td width="80%">
+                            <input id="new_projectbidmoneyversion_date" do_nothing="true" class="form-control datepicker" value="">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="warning">文號：</td>
+                        <td>
+                            <input id="new_projectbidmoneyversion_no" class="form-control" value="">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="warning">備註：</td>
+                        <td>
+                            <textarea id="new_projectbidmoneyversion_memo" rows="3" class="form-control"></textarea>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="add_projectbidmoneyversion" project_id="{{ project.id }}">確定新增</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- 觀看的金額資訊版本 的dialog -->
+<div class="modal fade" id="get_projectbidmoneyversion_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog" style="width:800px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">觀看契約變更紀錄</h4>
+            </div>
+            <div class="modal-body" id="div_projectbidmoneyversion_dialog">
+                
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    function add_bid_money(){
+        var $obj = $(this);
+        var project_id = $obj.attr('project_id');
+        var field_type = $('#bid_money_field_type').val();
+        var listname_field_name = $('#bid_money_field_type').find(":selected").text();
+
+        if (listname_field_name == '規劃費' || listname_field_name == '設計金額' || listname_field_name == '監造金額'){
+            if (($('input[field_name=planning_design_inspect]').val() && $('input[field_name=planning_design_inspect]').val() != '0') || ($('input[field_name=settlement_planning_design_inspect]').val() && $('input[field_name=settlement_planning_design_inspect]').val() != '0')){
+                alert('新增失敗!!! 要新增『規劃費』、『設計金額』、『監造金額』，請先將『規劃設計監造費』設定為0。');
+                return false;
+            }
+        }
+
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+        }
+        $.ajax({
+            url: '/fishuser/api/v2/projectbidmoney/?project=' + project_id + '&field_type=' + field_type,
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                if (data.objects.length){
+                    alert('新增失敗!!! 已有此項金額欄位，請重新確認。');
+                } else {
+                    data['project'] = '/fishuser/api/v2/project/' + project_id + '/';
+                    data['field_type'] = '/fishuser/api/v2/option/' + field_type + '/';
+                    $.ajax({
+                        url: '/fishuser/api/v2/projectbidmoney/',
+                        type: 'POST',
+                        data: JSON.stringify(data),
+                        contentType: 'application/json',
+                        dataType: 'json',
+                        success: function (json, text, xhr) {
+                            $('#add_bid_money_dialog').modal('hide');
+                            json['listname_field_name'] = listname_field_name;
+                            var $div = $('#HideBidMoneyTr').tmpl(json).insertBefore($('#insert_place_bid_money'));
+                            $('.BlurUpdateInfo').unbind('blur');
+                            $('.BlurUpdateInfo').unbind('keypress');
+                            $('.bid_money_field').unbind('change');
+                            $('.deleteRow').unbind('click');
+                            $('.deleteRow').click(deleteRow);
+                            $('.BlurUpdateInfo').blur(BlurUpdateInfo);
+                            $('.BlurUpdateInfo').keypress(function(event) {
+                                var $obj = $(this);
+                                if (!$obj.is("textarea") && event.which == 13){
+                                    $obj.blur();
+                                }
+                            });
+                            $('.bid_money_field').change(bid_money_field);
+                            if (listname_field_name == '規劃費' || listname_field_name == '設計金額' || listname_field_name == '監造金額' || !edit){
+                                $('input[field_name=planning_design_inspect]').attr('disabled', true);
+                                $('input[field_name=settlement_planning_design_inspect]').attr('disabled', true);
+                            }
+                        },
+                        error: function (data) {
+                        },
+                    })
+                }
+            },
+            error: function (data) {
+            },
+        })
+    }
+
+    function add_projectbidmoneyversion(){
+        var $obj = $(this);
+        var project_id = $obj.attr('project_id');
+        var date = $('#new_projectbidmoneyversion_date').val();
+        var no = $('#new_projectbidmoneyversion_no').val();
+        var memo = $('#new_projectbidmoneyversion_memo').val();
+        if (!date){
+            Lobibox.notify('warning', {
+                title: '警告訊息',
+                msg: '請輸入紀錄日期',
+            });
+            return false;
+        }
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            project_id: project_id,
+            date: date,
+            no: no,
+            memo: memo
+        }
+        $.ajax({
+            url: '/project/add_projectbidmoneyversion/',
+            type: 'POST',
+            data: data,
+            dataType: 'json',
+            success: function (json) {
+                $('#add_projectbidmoneyversion_dialog').modal('hide');
+                $('#get_projectbidmoneyversion_dialog').modal('hide');
+                $('#show_get_projectbidmoneyversion_dialog').click();
+                Lobibox.notify('success', {
+                    title: '系統訊息',
+                    msg: json['msg'],
+                });
+            },
+            error: function (data) {
+                alert(data.responseText);
+            }
+        })
+    }   
+
+    function show_get_projectbidmoneyversion_dialog(){
+        var $obj = $(this);
+        var project_id = {{ project.id }};
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            project_id: project_id,
+        }
+        $.ajax({
+            url: '/project/get_projectbidmoneyversion/',
+            type: 'POST',
+            data: data,
+            dataType: 'json',
+            success: function (json) {
+                $('#div_projectbidmoneyversion_dialog').html(json['html']);
+                $('#div_projectbidmoneyversion_dialog').find('.deleteRow').click(deleteRow);
+            },
+            error: function (data) {
+                alert(data.responseText);
+            }
+        })
+    }
+
+    $(document).ready(function(){
+        $('#add_bid_money').click(add_bid_money);
+        $('#add_projectbidmoneyversion').click(add_projectbidmoneyversion);
+        $('#show_get_projectbidmoneyversion_dialog').click(show_get_projectbidmoneyversion_dialog);
+    });
+
+</script>

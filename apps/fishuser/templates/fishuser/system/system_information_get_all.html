@@ -1,0 +1,101 @@
+{% extends "fishuser/zh-tw/base.html" %}
+
+{% load url from future %}
+{% load i18n %}
+{% load humanize %}
+{% load project_tags %}
+
+{% block script %}
+    <style>
+        tr{
+            border-bottom-style: solid;
+            border-bottom-width:1px;
+        }
+        td{
+            vertical-align: top;
+            padding-top: 5px; 
+            padding-bottom: 5px; 
+        }
+        .content-wrapper{
+            margin-left:0px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="flexs flex-column">
+    <div class="flex-box-1">
+        <table width="100%">
+            <tr style="border-bottom-width:3px;">
+                <td>
+                    <h3><b>系統重要公告</b>
+                        {% if request.user.is_staff %}<button class="btn btn-xs btn-danger" onclick="window.location='/fishuser/system_edit/'">編輯</button>{% endif %}
+                    </h3>
+                </td>
+                <td align="right" style="vertical-align: bottom;">
+                    <a href="/">→回首頁</a>
+                </td>
+            </tr>
+        </table>
+        <table id="system_information" width="100%">
+            {% for info in infos %}
+                <tr>
+                    <td width="20px;" style="vertical-align: middle;padding-bottom: 0px;">{{ info.sort }}.</td>
+                    <td width="140px;">{{ info.start_date|date:'Y-m-d' }} 公告：</td>
+                    <td>
+                        <a class="show_system_info_dialog pointer" row_id="{{ info.id }} ">{{ info.title }} </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div classs="flex-box-0" align="center">
+        <ul class="pagination pages_list">
+            {% for p in page_list %}
+                <li class="li_page {% ifequal p page %}active{% endifequal %}" onclick="window.location='?page={{ p }}'" page="{{ p }}"><a>{{ p }}</a></li>
+            {% endfor %}
+        </ul>
+        <span class="total_count">...共有 {{ n }} 筆資料</span>
+    </div>
+
+<!-- system_info_memo_dialog -->
+<div class="modal fade bs-example-modal-lg" id="system_info_memo_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog" style="width: 900px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="myModalLabel">系統公告</h4>
+            </div>
+            <div class="modal-body" id="system_information_memo" style="overflow-y: scroll; height:600px;">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function show_system_info_dialog(){
+        var $obj = $(this);
+        var row_id = $obj.attr('row_id');
+        $.ajax({
+            url: '/fishuser/api/v2/systeminformation/?id=' + row_id,
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (json, text, xhr) {
+                $('#system_information_memo').html(json.objects[0]['memo']);
+                $('#system_info_memo_dialog').modal('show');
+            }
+        });
+    }
+
+    $(document).ready(function(){
+        $('.show_system_info_dialog').click(show_system_info_dialog);
+    });
+</script>
+
+{% endblock %}

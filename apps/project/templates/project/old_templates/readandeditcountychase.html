@@ -1,0 +1,170 @@
+{% extends 'project/index.html' %}
+{% load utiltags %}
+{% load project_tags %}
+{% block style %}
+td {
+    padding:3px 5px;
+    height: 25px;
+}
+{% endblock %}
+{% block menu %}
+    <ul id="menu" value ="/project/county_chase/"></ul>
+{% endblock %}
+{% block content %}
+<br>
+<table border="1" style="border-collapse: collapse">
+    <tr bgcolor="#FFC991" align="center" valign="middle">
+        <td rowspan="2">
+            此為第 {{ countychasetime.time }} 次追蹤
+            {% if countychasetime.new_update %}
+                <img id="updateChartNewUpdateInfoDialog" src="/media/project/image/new_update.gif" width="30" title="注意，有新的更新~!!">
+            {% endif %}<br>
+            追蹤日期：{{ countychasetime.chase_date }}<br>
+            (已經過 {{ countychasetime.pastDay }} 天)<br><br>
+            {% if edit %}
+                <button type="button" id="addNewChase" user_id="{{ user.id }}">清除所有紀錄<br>並進行新的追蹤!!</button><br><br><br><br>
+                <button type="button" id="deleteLastChase">刪除這次的追蹤!!</button>
+            {% endif %}
+        </td>
+        <td bgcolor="#FFCECD" style="font-size:20px;"><b>追蹤狀態</b></td>
+    </tr>
+    <tr align="center" valign="middle">
+        <td>
+            <table border="1" style="border-collapse: collapse">
+                <tr bgcolor="#CDE5FF" align="center" valign="middle">
+                    <td rowspan="4" style="font-size: 16px;" class="ShowChaseProject" place_id="all" type="all">總件數<br>{{ countychasetime.num }}</td>
+                    <td></td>
+                    {% for place in places %}
+                        <td {% if not place.south %}bgcolor="#CDFFE7"{% endif %} width="15" class="ShowChaseProject" place_id="{{ place.id }}" type="all"><b>{{ place.name }}</b></td>
+                    {% endfor %}
+                </tr>
+                <tr height="40" align="center" valign="middle">
+                    <td bgcolor="#73FF75" class="ShowChaseProject" place_id="all" type="check">填寫完畢</td>
+                    {% for place in places %}
+                        <td {% if place.check %}class="ShowChaseProject"{% endif %} place_id="{{ place.id }}" type="check">
+                            {% ifnotequal place.check 0 %}{{ place.check }}{% endifnotequal %}
+                        </td>
+                    {% endfor %}
+                </tr>
+                <tr height="40" align="center" valign="middle">
+                    <td bgcolor="#FCFF19" class="ShowChaseProject" place_id="all" type="not_check">已匯入<br>尚未填寫</td>
+                    {% for place in places %}
+                        <td {% if place.not_check %}class="ShowChaseProject"{% endif %} place_id="{{ place.id }}" type="not_check">
+                            {% ifnotequal place.not_check 0 %}{{ place.not_check }}{% endifnotequal %}
+                        </td>
+                    {% endfor %}
+                </tr>
+                <tr height="40" align="center" valign="middle">
+                    <td bgcolor="#FF9291" class="ShowChaseProject" place_id="all" type="not_in_frcm">尚未匯入</td>
+                    {% for place in places %}
+                        <td {% if place.not_in_frcm %}class="ShowChaseProject"{% endif %} place_id="{{ place.id }}" type="not_in_frcm">
+                            {% ifnotequal place.not_in_frcm 0 %}{{ place.not_in_frcm }}{% endifnotequal %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<br><hr width="800" style="color:orange"><hr width="800" style="color:orange"><br>
+{% block search %}
+<form action="./" method="POST">
+        <table width="900">
+            <tr>
+                <td align="left">
+                    <table align="center">
+                        {% for field in form %}
+                        <tr>
+                            <td align="right">{{ field.label_tag }}</td>
+                            <td align="left">{{ field }}　<span style="color: gray; font-size: 12px;">{{ field.help_text }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </td>
+                <td>
+                    <span style="font-size:28px;"><b>選擇追蹤工程</b></span><br>
+                    <a href="/project/epcounty_chase/">觀看填寫狀況或列印報表→</a><br><br>
+                    <input type="submit" name="submit" value="開始搜尋" style="width:100px;height:50px;">
+                    <br>
+                    搜尋結果依照
+                    <select name="sortBy" id="id_sortBy">
+                        <option value="year" {% ifequal sortBy 'year' %}selected="selected"{% endifequal %}>年度</option>
+                        <option value="name" {% ifequal sortBy 'name' %}selected="selected"{% endifequal %}>工作名稱</option>
+                        <option value="plan" {% ifequal sortBy 'plan' %}selected="selected"{% endifequal %}>所屬計畫</option>
+                        <option value="undertake_type" {% ifequal sortBy 'undertake_type' %}selected="selected"{% endifequal %}>承辦方式</option>
+                        <option value="unit" {% ifequal sortBy 'unit' %}selected="selected"{% endifequal %}>執行機關</option>
+                    </select>
+                    排序<br><br><br><br>
+
+                </td>
+            </tr>
+        </table>
+    </form>
+<br><hr width="900" color="#ff8000" noshade title="這不是分隔線">
+    {% pyif projects_num == 0 %}
+        無資料，請重設搜尋條件
+    {% endif %}
+
+    {% pyif projects_num > 0 %}
+        <div align="right" style="margin-right: 200px">共 {{ projects_num }} 個結果</div>
+        <table width="750">
+            <tr>
+                <td align="left">
+                    <input id="setAllChaseProject" type="checkbox" name="checkbox" value="{{ p_list }}">全部追蹤
+                    <span id="checked_msg" style="color: red;"></span>
+                </td>
+            </tr>
+        </table>
+        <table class="sortable" border="1" style="border-collapse: collapse">
+            <thead bgcolor='#BBFFDD'>
+                <tr>
+                    <th></th>
+                    <th colspan="2">追蹤</th>
+                    <th width="20px" class="sorttable_nosort">確認結案</th>
+                    <th width="40px">年度</th>
+                    <th width="100px">計畫編號</th>
+                    <th width="50px">縣市</th>
+                    <th>漁港</th>
+                    <th width="260px">工作名稱</th>
+                    <th>遠端<br>系統</th>
+                    <th width="60px">承辦方式</th>
+                    <th width="90px">執行機關</th>
+                    <th width="60px">執行單位<br>聯絡窗口</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in projects %}
+                    <tr id="tr_project_{{ p.id }}" align="left" class="{% cycle 'odd' 'even' %}">
+                        <td>{{ forloop.counter }}</td>
+                        <td id="setChaseProject_{{ p.id }}">{% if p.isChase %}追蹤進度{% endif %}</td>
+                        <td align="center">
+                            {% if edit %}
+                            <input class="setChaseProject" id="checkbox_{{ p.id }}" {% if p.isChase %}checked{% endif %} {% if p.isChase %}check="check"{% else %}check=""{% endif %} type="checkbox" name="checkbox" value="{{ p.id }}">
+                            {% endif %}
+                        </td>
+                        <td bgcolor="{% if p.isChaseOBO.check %}#91FF92{% endif %}">{% if p.isChaseOBO.check %}O{% endif %}</td>
+                        <td>{{ p.year }}</td>
+                        <td title="{{ p.plan.no }}">{{ p.work_no|default_if_none:'' }}</td>
+                        <td align="center">{{ p.place.name|default_if_none:'' }}</td>
+                        <td>{% for port in p.rSubLocation %}{{ port.name }}<br>{% endfor %}</td>
+                        <td><a href="/project/reproject/{{ p.id }}/" target="_blank">{{ p.name }}</a></td>
+                        <td align="center">
+                            {% if p.frcm %}
+                            <a href="/frcm/{{ p.id }}/profile/" target="_blank">O</a>
+                            {% endif %}
+                        </td>
+                        <td title="{{ p.undertake_type.value }}" align="center">{{ p.undertake_type.value|default_if_none:'' }}</td>
+                        <td>{{ p.unit.name|default_if_none:'' }}</td>
+                        <td>{{ p.self_contacter|default_if_none:'' }}</td>
+                    </tr>
+                {% endfor %}
+            <tbody>
+        </table>
+        
+        <div align="right" style="margin-right: 200px">共 {{ projects_num }} 個結果</div>
+    {% endif %}
+{% endblock %}
+
+
+{% endblock %}

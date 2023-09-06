@@ -1,0 +1,708 @@
+{% load humanize %}
+<br><br>
+<h3>
+    <span class="label label-success">
+        <span class="glyphicon glyphicon-paperclip"></span>
+        {{ port.name }}-『FES系統管理中』工程
+    </span>
+</h3>
+<table class="table table-bordered" style="font-size: 14px;">
+    <tr class="warning" align="center">
+        <td width="7%">
+            年度
+        </td>
+        <td width="60%">
+            計畫名稱<br>
+            標案編號<br>
+            工程名稱
+        </td>
+        <td width="20%">
+            執行單位
+        </td>
+        <td width="10%">
+            詳細資料
+        </td>
+    </tr>
+    {% for p in port.fes_project %}
+        <tr align="center">
+            <td>{{ p.year }}</td>
+            <td align="left">
+                {{ p.plan.name|default_if_none:"" }}<br>
+                {{ p.pcc_no|default_if_none:"" }}<br>
+                {{ p.name|default_if_none:"" }}
+            </td>
+            <td align="left">{{ p.unit.name }}</td>
+            <td>
+                <button class="btn btn-info get_fes_project_info" row_id="{{ p.id }}" data-toggle="modal" data-target="#fes_project_info_dialog">
+                    檢視
+                </button>
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+
+<div class="modal fade" id="fes_project_info_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog" style="width:800px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">工程詳細資料</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered" style="font-size: 14px;" id="fes_project_info_table"></table>
+                <script type="text/x-jquery-tmpl" id="HideFESSearchTr">
+                    <tr>
+                        <td width="17%" class="active">年度</td>
+                        <td width="33%" align="left">${year}</td>
+                        <td width="17%" class="active">縣市</td>
+                        <td width="33%">${listname_place}</td>
+                    </tr>
+                    <tr>
+                        <td class="active">計畫名稱</td>
+                        <td align="left" colspan="3">${listname_plan}</td>
+                    </tr>
+                    <tr>
+                        <td class="active">工程會標案編號</td>
+                        <td colspan="3">
+                            ${pcc_no}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="active">工程名稱</td>
+                        <td align="left" colspan="3">${name}</td>
+                    </tr>
+                    <tr>
+                        <td class="active">採購類別<br><span style="font-size:12px;">(工程/勞務)</span></td>
+                        <td>
+                            ${listname_purchase_type}
+                        </td>
+                        <td class="active">承辦方式</td>
+                        <td align="left">
+                            ${listname_undertake_type}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="active">執行機關</td>
+                        <td align="left">${listname_unit}</td>
+                        <td class="active">監造方式</td>
+                        <td align="left">
+                            ${listname_frcm_inspector_type}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="active">X座標(M)<br>TWD97</td>
+                            <td>
+                                ${x_coord}
+                            </td>
+                        <td class="active">Y座標(M)<br>TWD97</td>
+                        <td>
+                            ${y_coord}
+                        </td>
+                    </tr>
+                </script>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br>
+<h3>
+    <span class="label label-success">
+        <span class="glyphicon glyphicon-paperclip"></span>
+        歷年主要工程項目
+    </span>
+    {% if edit %}　<button class="btn btn-info btn-sm" data-toggle="modal" data-target="#create_mainproject_dialog">新增</button><br>{% endif %}
+</h3>
+<table class="table table-bordered" id="mainproject_table">
+    <tr class="warning" align="center">
+        <td width="11%">
+            年度
+        </td>
+        <td>
+            項目
+        </td>
+        <td width="15%">
+            數量
+        </td>
+        <td>
+            備註
+        </td>
+        {% if edit %}
+            <td width="5%">刪除</td>
+        {% endif %}
+    </tr>
+    {% for i in port.mainprojects %}
+        <tr align="center" id="tr_mainproject_{{ i.id }}">
+            <td>{{ i.year }}</td>
+            <td align="left">{{ i.item }}</td>
+            <td>{{ i.num }}</td>
+            <td align="left">{{ i.memo|linebreaks }}</td>
+            {% if edit %}
+                <td>
+                    <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                        row_id="{{ i.id }}"
+                        module_name = "harbor"
+                        table_name = "mainproject"
+                        remove_target = "tr_mainproject_{{ i.id }}"
+                        title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+                </td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+</table>
+
+{% if edit %}
+    <script type="text/x-jquery-tmpl" id="HideMainProjectTr">
+        <tr align="center" id="tr_mainproject_${id}">
+            <td>${year}</td>
+            <td align="left">${item}</td>
+            <td>${num}</td>
+            <td align="left">${memo}</td>
+            <td>
+                <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                    row_id="${id}"
+                    module_name = "harbor"
+                    table_name = "mainproject"
+                    remove_target = "tr_mainproject_${id}"
+                    title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+            </td>
+        </tr>
+    </script>
+
+    <div class="modal fade" id="create_mainproject_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">新增歷年主要工程項目</h4>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-border">
+                        <tr>
+                            <td width="25%">年度</td>
+                            <td width="75%">
+                                <input id="mainproject_year" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>項目</td>
+                            <td>
+                                <input id="mainproject_item" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>數量</td>
+                            <td>
+                                <input id="mainproject_num" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>備註</td>
+                            <td>
+                                <textarea id="mainproject_memo" class="form-control"></textarea>
+                            </td>
+                        </tr>
+                    </table>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" id="create_mainproject" class="btn btn-primary">新增</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br>
+<h3>
+    <span class="label label-success">
+        <span class="glyphicon glyphicon-paperclip"></span>
+        歷年工程計畫
+    </span>
+    {% if edit %}　<button class="btn btn-info btn-sm" data-toggle="modal" data-target="#create_project_dialog">新增</button><br>{% endif %}
+</h3>
+<table class="table table-bordered" style="font-size: 14px;" id="project_table">
+    <tr class="warning" align="center">
+        <td width="7%">
+            年度
+        </td>
+        <td width="60%">
+            計畫名稱<br>
+            工程名稱
+        </td>
+        <td width="20%">
+            經費來源
+        </td>
+        <td width="10%">
+            詳細資料
+        </td>
+        {% if edit %}
+            <td width="5%">刪除</td>
+        {% endif %}
+    </tr>
+    {% for p in port.projects %}
+        <tr align="center" id="tr_project_{{ p.id }}">
+            <td>{{ p.year }}</td>
+            <td align="left">
+                {{ p.plan|default_if_none:"" }}<br>
+                {{ p.name|default_if_none:"" }}
+            </td>
+            <td align="left">{{ p.funds_source|default_if_none:"" }}</td>
+            <td>
+                <button class="btn btn-info get_project_info" row_id="{{ p.id }}" data-toggle="modal" data-target="#project_info_dialog">
+                    檢視
+                </button>
+            </td>
+            {% if edit %}
+                <td>
+                    <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                        row_id="{{ p.id }}"
+                        module_name = "harbor"
+                        table_name = "project"
+                        remove_target = "tr_project_{{ p.id }}"
+                        title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+                </td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+</table>
+
+<div class="modal fade" id="project_info_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog" style="width:800px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">工程詳細資料</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered" style="font-size: 14px;" id="project_info_table"></table>
+                <script type="text/x-jquery-tmpl" id="HideSearchTr">
+                    <tr>
+                        <td width="17%" class="active">年度</td>
+                        <td width="33%" align="left">${year}</td>
+                        <td width="17%" class="active">漁港</td>
+                        <td width="33%">${fishingport}</td>
+                    </tr>
+                    <tr>
+                        <td class="active">計畫名稱</td>
+                        <td align="left" colspan="3">${plan}</td>
+                    </tr>
+                    <tr>
+                        <td class="active">工程名稱</td>
+                        <td align="left" colspan="3">${name}</td>
+                    </tr>
+                    <tr>
+                        <td class="active">經費來源</td>
+                        <td>
+                            ${funds_source}
+                        </td>
+                        <td class="active">計畫經費</td>
+                        <td align="left">
+                            ${plan_fund}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="active">發包日期</td>
+                        <td align="left">${contract_date}</td>
+                        <td class="active">經費</td>
+                        <td align="left">
+                            ${funds}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="active">預定工作項目</td>
+                        <td colspan="3">
+                            ${schedule_item}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="active">實際工作項目</td>
+                        <td colspan="3">
+                            ${reality_item}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="active">預定完工日期</td>
+                        <td colspan="3">
+                            ${design_finish_date}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="active">實際完工日期</td>
+                        <td colspan="3">
+                            ${act_finish_date}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="active">發包工作費</td>
+                        <td align="left">${contract_fund}</td>
+                        <td class="active">管理經費</td>
+                        <td align="left">${manage_fund}</td>
+                    </tr>
+                    <tr>
+                        <td class="active">供給材料經費</td>
+                        <td align="left">${supply_material_fund}</td>
+                        <td class="active">其它經費</td>
+                        <td align="left">${other_fund}</td>
+                    </tr>
+                    <tr>
+                        <td class="active">實列預算經費</td>
+                        <td align="left">${reality_budget_fund}</td>
+                        <td class="active">結算經費</td>
+                        <td align="left">${settlement_fund}</td>
+                    </tr>
+                    <tr>
+                        <td class="active">第一次追加日期</td>
+                        <td align="left">${first_change_design_date}</td>
+                        <td class="active">一次追加變更設計費</td>
+                        <td align="left">${first_change_design}</td>
+                    </tr>
+                    <tr>
+                        <td class="active">第二次追加日期</td>
+                        <td align="left">${second_change_design_date}</td>
+                        <td class="active">二次追加變更設計費</td>
+                        <td align="left">${second_change_design}</td>
+                    </tr>
+                </script>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if edit %}
+    <script type="text/x-jquery-tmpl" id="HideProjectTr">
+        <tr align="center" id="tr_project_${id}">
+            <td>${year}</td>
+            <td>${plan}<br>${name}</td>
+            <td>${funds_source}</td>
+            <td>
+                <button class="btn btn-info get_project_info" row_id="${id}" data-toggle="modal" data-target="#project_info_dialog">
+                    檢視
+                </button>
+            </td>
+            <td>
+                <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                    row_id="${id}"
+                    module_name = "harbor"
+                    table_name = "project"
+                    remove_target = "tr_project_${id}"
+                    title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+            </td>
+        </tr>
+    </script>
+
+    <div class="modal fade" id="create_project_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="width:800px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">新增歷年工程計畫</h4>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered" style="font-size: 14px;">
+                        <tr>
+                            <td width="17%" class="active">年度*</td>
+                            <td width="33%" align="left">
+                                <input id="project_year" class="form-control project_field" value="">
+                            </td>
+                            <td width="17%" class="active"></td>
+                            <td width="33%"></td>
+                        </tr>
+                        <tr>
+                            <td class="active">計畫名稱</td>
+                            <td align="left" colspan="3">
+                                <input id="project_plan" class="form-control project_field" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="active">工程名稱*</td>
+                            <td align="left" colspan="3">
+                                <input id="project_name" class="form-control project_field" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="active">經費來源</td>
+                            <td>
+                                <input id="project_funds_source" class="form-control project_field" value="">
+                            </td>
+                            <td class="active">計畫經費</td>
+                            <td align="left">
+                                <input id="project_plan_fund" class="form-control project_field" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="active">發包日期</td>
+                            <td align="left">
+                                <input id="project_contract_date" do_nothing="true" class="form-control project_field datepicker" value="">
+                            </td>
+                            <td class="active">經費</td>
+                            <td align="left">
+                                <input id="project_funds" class="form-control project_field" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="active">預定工作項目</td>
+                            <td colspan="3">
+                                <input id="project_schedule_item" class="form-control project_field" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="active">實際工作項目</td>
+                            <td colspan="3">
+                                <input id="project_reality_item" class="form-control project_field" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="active">預定完工日期</td>
+                            <td colspan="3">
+                                <input id="project_design_finish_date" do_nothing="true" class="form-control project_field datepicker" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="active">實際完工日期</td>
+                            <td colspan="3">
+                                <input id="project_act_finish_date" do_nothing="true" class="form-control project_field datepicker" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="active">發包工作費</td>
+                            <td align="left">
+                                <input id="project_contract_fund" class="form-control project_field" value="">
+                            </td>
+                            <td class="active">管理經費</td>
+                            <td align="left">
+                                <input id="project_manage_fund" class="form-control project_field" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="active">供給材料經費</td>
+                            <td align="left">
+                                <input id="project_supply_material_fund" class="form-control project_field" value="">
+                            </td>
+                            <td class="active">其它經費</td>
+                            <td align="left">
+                                <input id="project_other_fund" class="form-control project_field" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="active">實列預算經費</td>
+                            <td align="left">
+                                <input id="project_reality_budget_fund" class="form-control project_field" value="">
+                            </td>
+                            <td class="active">結算經費</td>
+                            <td align="left">
+                                <input id="project_settlement_fund" class="form-control project_field" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="active">第一次追加日期</td>
+                            <td align="left">
+                                <input id="project_first_change_design_date" do_nothing="true" class="form-control project_field datepicker" value="">
+                            </td>
+                            <td class="active">一次追加變更設計費</td>
+                            <td align="left">
+                                <input id="project_first_change_design" class="form-control project_field" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="active">第二次追加日期</td>
+                            <td align="left">
+                                <input id="project_second_change_design_date" do_nothing="true" class="form-control project_field datepicker" value="">
+                            </td>
+                            <td class="active">二次追加變更設計費</td>
+                            <td align="left">
+                                <input id="project_second_change_design" class="form-control project_field" value="">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" id="create_project" class="btn btn-primary">新增</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+    function get_fes_project_info() {
+        var $obj = $(this);
+        var row_id = $obj.attr('row_id');
+        $.ajax({
+            url: '/fishuser/api/v2/project/' + row_id + '/',
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                $('#fes_project_info_table').html('');
+                var $div = $('#HideFESSearchTr').tmpl(data).appendTo($('#fes_project_info_table'));
+            },
+            error: function (data) {}
+        })
+    }
+
+    function get_project_info() {
+        var $obj = $(this);
+        var row_id = $obj.attr('row_id');
+        $.ajax({
+            url: '/harbor/api/v2/project/' + row_id + '/',
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                $('#project_info_table').html('');
+                var $div = $('#HideSearchTr').tmpl(data).appendTo($('#project_info_table'));
+            },
+            error: function (data) {}
+        })
+    }
+
+    function create_mainproject() {
+        var fishingport = $('#fishingport').val();;
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            fishingport: fishingport,
+        }
+        if ($('#mainproject_year').val()){
+            data['year'] = $('#mainproject_year').val();
+        }
+        if ($('#mainproject_item').val()){
+            data['item'] =  $('#mainproject_item').val();
+        }
+        if ($('#mainproject_num').val()){
+            data['num'] =  $('#mainproject_num').val();
+        }
+        if ($('#mainproject_memo').val()){
+            data['memo'] =  $('#mainproject_memo').val();
+        }
+        $.ajax({
+            url: '/harbor/api/v2/mainproject/',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                var $div = $('#HideMainProjectTr').tmpl(data).appendTo($('#mainproject_table'));
+                $('#mainproject_year').val('');
+                $('#mainproject_item').val('');
+                $('#mainproject_num').val('');
+                $('#mainproject_memo').val('');
+                $('#create_mainproject_dialog').modal('hide');
+                $('.deleteRow').unbind('click');
+                $('.deleteRow').click(deleteRow);
+            },
+            error: function (data) {}
+        })
+    }
+
+    function create_project() {
+        var fishingport = $('#fishingport').val();;
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            fishingport: fishingport,
+        }
+        $.each($('.project_field'), function(){
+            var $obj = $(this);
+            var field_name = $obj.attr('id').replace('project_', '');
+            if ($obj.val()){
+                data[field_name] = $obj.val();
+            }
+        });
+
+        if ($('#mainproject_year').val()){
+            data['year'] = $('#mainproject_year').val();
+        }
+        if ($('#mainproject_item').val()){
+            data['item'] =  $('#mainproject_item').val();
+        }
+        if ($('#mainproject_num').val()){
+            data['num'] =  $('#mainproject_num').val();
+        }
+        if ($('#mainproject_memo').val()){
+            data['memo'] =  $('#mainproject_memo').val();
+        }
+        $.ajax({
+            url: '/harbor/api/v2/project/',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                var $div = $('#HideProjectTr').tmpl(data).appendTo($('#project_table'));
+                $('.project_field').val('');
+                $('#create_project_dialog').modal('hide');
+                $('.deleteRow').unbind('click');
+                $('.get_project_info').unbind('click');
+                $('.deleteRow').click(deleteRow);
+                $('.get_project_info').click(get_project_info);
+            },
+            error: function (data) {}
+        })
+    }
+
+
+    $(document).ready(function(){
+        $('.get_fes_project_info').click(get_fes_project_info);
+        $('.get_project_info').click(get_project_info);
+        $('#create_mainproject').click(create_mainproject);
+        $('#create_project').click(create_project);
+    });
+
+</script>

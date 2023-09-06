@@ -1,0 +1,145 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>FES Weblive Replay System</title>
+        <script type="text/javascript" src="/media/weblive/js/jquery-ui-1.8.6.custom/js/jquery-1.4.2.min.js"></script>
+        <script type="text/javascript" src="/media/weblive/js/jquery-ui-1.8.6.custom/js/jquery-ui-1.8.6.custom.min.js"></script>
+        <link rel=stylesheet type="text/css" href="/media/weblive/js/jquery-ui-1.8.6.custom/css/smoothness/jquery-ui-1.8.6.custom.css">
+
+        <link rel=stylesheet type="text/css" href="/media/replay/jquery.treeview.css">
+        <script type="text/javascript" src="/media/replay/jquery.cookie.js"></script>
+        <script type="text/javascript" src="/media/replay/jquery.treeview.js"></script>
+
+        <script type="text/javascript" src="/media/replay/flowplayer/example/flowplayer-3.2.6.min.js"></script>
+
+        <script type="text/javascript" src="/media/replay/replay.js"></script>
+        <link rel=stylesheet type="text/css" href="/media/replay/replay.css">
+        <link rel=stylesheet type="text/css" href="/media/weblive/jQuery-Timepicker-Addon/jquery-ui-timepicker-addon.css">
+        <script type="text/javascript" src="/media/weblive/jQuery-Timepicker-Addon/jquery-ui-timepicker-addon.js"></script>
+        <script type="text/javascript" src="/media/replay/jquery-ui-timepicker-zh_TW.js"></script>
+    </head>
+
+    <body>
+        {% csrf_token %}
+        <div style="float:right; z-index: 30000;">
+            錄影系統
+            <a href="/{{ site_id }}/">監控系統</a>
+            <a href="http://fes.fa.gov.tw/">FES首頁</a>
+        </div><br/>
+        <div id="container">
+            <div id="title_board">
+                <div id="left_top"></div><div id="mid_top"></div><div id="right_top"></div>
+                <div id="left_bottom"></div><div id="mid_bottom"></div><div id="right_bottom"></div>
+                <div id="logo"><img src="/media/weblive/image/fa_logo.png" width="120" alt=""></div>
+                <div id="main_title">漁業署港區錄影回看系統</div>
+                <div id="sub_title">Fisheries Agency Weblive Monitor System</div>
+            </div>
+            <div id="menu_board" style="background-color: #FFFFFF;">
+                <div id="select_cam" style="background-color: #FFFFFF; overflow-y: auto; height: 360px;">
+                    <ul id="tree" class="treeview-red">
+                        {% if not hash %}
+                            <li>您的縣市並無配置攝影機</li>
+                        {% endif %}
+                        {% for city, ports in hash.list_sorted_key_and_value %}
+                            <li class="opened">
+                                <span>{{ city }}</span>
+                                <ul>
+                                    {% for port, monitors in ports.list_sorted_key_and_value %}
+                                        <li class="opened">
+                                            <span>{{ port }}</span>
+                                            <ul>
+                                                {% for monitor in monitors %}
+                                                    <li><a class="monitor_name"
+                                                           machine_no="{{ monitor.machine_no }}"
+                                                           video_duration="{% ifequal monitor.machine_no 'BE3204' %}75{% else %}300{% endifequal %}"
+                                                           monitor_id="{{ monitor.fes_id }}"
+                                                           href="#">{{ monitor.name }}</a></li>
+                                                {% endfor %}
+                                            </ul>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div>
+                    觀看時段： <br/>
+                    <input id="datetime_picker" size="13" type="text" />
+
+                    <div><img id="loading" src="/media/replay/loading.gif" style="display: none" /></div>
+                    <div id="video_in_5_minutes" style="display: none;">請點選欲觀看的5分鐘紀錄檔：<br/>
+                    <table id="minutes" border="0" style="margin-left: 20px;">
+                        <tr>
+                            <td>00</td>
+                            <td>05</td>
+                            <td>10</td>
+                            <td>15</td>
+                        </tr>
+                        <tr>
+                            <td>20</td>
+                            <td>25</td>
+                            <td>30</td>
+                            <td>35</td>
+                        </tr>
+                        <tr>
+                            <td>40</td>
+                            <td>45</td>
+                            <td>50</td>
+                            <td>55</td>
+                        </tr>
+                    </table></div>
+                </div>
+            </div>
+            <div id="screen_board">
+                <video id="html5_video" width="640" height="426" autoplay="autoplay"
+                    preload="preload" controls="controls" allowfullscreen="true">
+                    <source src="/media/replay/help.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"' />
+                </video>
+                <div id="flash_video" style="display: none; height:426px; width:640px;"></div>
+                <script type="text/javascript">
+                    if(!$.browser.webkit){
+                        $('#html5_video').hide();
+                        $('#flash_video').show();
+                        flowplayer("flash_video", "/media/replay/flowplayer/flowplayer-3.2.7.swf", {
+                            playlist: [{url: '/media/replay/help.mp4'}],
+                            allowfullscreen: false,
+                            mute: true,
+                            clip: {
+                                autoPlay: true,
+                                autoBuffering: true
+                            }});
+                    }
+                </script>
+                <div id="video_note">系統說明影片</div>
+                照相存證<a class="download_url" onclick="alert('請點選滑鼠右鍵另存目標'); return false;"
+                   href="/media/replay/help.mp4">下載</a>、
+                錄影存證<a class="download_url" onclick="alert('請點選滑鼠右鍵另存目標'); return false;"
+                   href="/media/replay/help.mp4">下載</a>
+            </div>
+        </div>
+
+        <div id="footer">
+            <p>
+                Copyright &copy; 2009 ~ 2011 <a href="http://www.fa.gov.tw/chnn/" target="_blank">行政院農業部漁業署</a><br>
+                Designed by <a href="http://www.tfm.org.tw/" target="_blank">財團法人臺灣漁業及海洋技術顧問社</a>
+            </p>
+        </div>
+        <script type="text/javascript">
+
+          var _gaq = _gaq || [];
+          _gaq.push(['_setAccount', 'UA-12194145-3']);
+          _gaq.push(['_setDomainName', 'nchu-cm.com']);
+          _gaq.push(['_setAllowLinker', true]);
+          _gaq.push(['_trackPageview']);
+
+          (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+          })();
+
+        </script>
+    </body>
+</html>

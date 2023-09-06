@@ -1,0 +1,53 @@
+{% extends 'project/readandeditcountychase.html' %}
+{% load utiltags %}
+{% load project_tags %}
+
+{% block content %}
+<br><br>
+<h1>工程名稱：{{ project.name }}</h1><br>
+
+<br><hr width="900" color="#ff8000" noshade title="這不是分隔線"><br><br>
+所有追蹤資訊列表<br>
+<table class="sortable" border="1" style="border-collapse: collapse">
+    <thead bgcolor='#BBFFDD'>
+        <tr>
+            <th width="20px">第幾次追蹤</th>
+            <th>追蹤日期</th>
+            <th width="70px">預計進度</th>
+            <th width="70px">實際進度</th>
+            <th width="70px">執行率</th>
+            <th width="70px">達成率</th>
+            <th width="70px">預計至年底執行率</th>
+            <th width="150px" title="若有執行落後者，請詳細說明預定完成日期及因應措施">計畫執行情形說明</th>
+            <th width="80px">本署實支數(元)</th>
+            <th width="80px">地方實支數(元)</th>
+            <th width="80px">本署應付未付數(元)</th>
+            <th width="80px">地方應付未付數(元)</th>
+            <th width="80px">本署賸餘款</th>
+            <th width="80px">地方賸餘款</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in chases %}
+            <tr id="tr_project_{{ p.id }}" class="{% cycle "odd" "even" %}" align="center">
+                <td>{{ c.chase_time }}</td>
+                <td>{{ c.countychasetime.chase_date }}</td>
+                <td>{{ c.schedul_progress_percent|default_if_none:"" }} %</td>
+                <td>{{ c.actual_progress_percent|default_if_none:"" }} %</td>
+                <td>{{ c.getExecutionRate|default_if_none:"" }} %</td>
+                <td>{{ c.getReachedRate|default_if_none:"" }} %</td>
+                <td>{{ c.expected_to_end_percent|default_if_none:"" }} %</td>
+                <td align="left">{{ c.memo|default_if_none:""|linebreaks }}</td>
+                <td>{{ c.self_payout|default_if_none:"" }}</td>
+                <td>{{ c.local_payout|default_if_none:"" }}</td>
+                <td>{{ c.self_unpay|default_if_none:"" }}</td>
+                <td>{{ c.local_unpay|default_if_none:"" }}</td>
+                <td>{{ c.rSelf_Surplus|default_if_none:"" }}</td>
+                <td>{{ c.rLocal_Surplus|default_if_none:"" }}</td>
+            </tr>
+        {% endfor %}
+    <tbody>
+</table>
+
+
+{% endblock %}

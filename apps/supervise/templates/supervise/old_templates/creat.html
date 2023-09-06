@@ -1,0 +1,215 @@
+{% extends 'supervise/index.html' %}
+{% load utiltags %}
+
+{% block menu %}
+    <ul id="menu" value ="/supervise/creat/"></ul>
+{% endblock %}
+
+{% block content %}
+<br>
+<h1>[新增]  工程施工督導小組督導紀錄</h1>
+<br>
+<table border="1" style="border-collapse: collapse">
+	<tr>
+		<td class="table_title" width=110><span style="font-size:20px;color: red;">*</span>列管計畫名稱</td>
+		<td width=530 colspan="3">
+			<input class="input_text needExist" ch_name="列管計畫名稱" id="plan" type="text" name="plan" size=65 value=""/>
+		</td>
+		<td class="table_title" width=110>計畫主辦機關</td>
+		<td width=210>行政院農業部漁業署</td>
+	</tr>
+	<tr>
+		<td class="table_title"><span style="font-size:20px;color: red;">*</span>標案所屬<br>工程主管機關</td>
+		<td colspan="3">
+			<select class="input_text needExist" ch_name="標案所屬工程主管機關" name="subordinate_agencies_unit" id="subordinate_agencies_unit">
+				<option value="">請選擇單位</option>
+				{% for i in subordinate_agencies_units %}
+					<option value="{{ i.0 }}">{{ i.1 }}</option>
+				{% endfor %}
+			</select>
+		</td>
+		<td class="table_title"><span style="font-size:20px;color: red;">*</span>督導日期</td>
+		<td>
+			<input id="date" name="date" ch_name="督導日期" class="input_text setDateCreate needExist" size="10" type="text" value="">
+		</td>
+	</tr>
+	<tr>
+		<td class="table_title"><span style="font-size:20px;color: red;">*</span>標案名稱</td>
+		<td colspan="3">
+			<input class="input_text needExist" ch_name="標案名稱" id="project" type="text" name="project" size=65 value=""/>
+		</td>
+		<td class="table_title"><span style="font-size:20px;color: red;">*</span>地點</td>
+		<td>
+			<select class="input_text needExist" ch_name="地點" name="place" id="place">
+				<option value=""> 請選擇 </option>
+				{% for i in places %}
+					<option value="{{ i.0 }}">{{ i.1 }}</option>
+				{% endfor %}
+			</select>
+			<span id="change_location">
+				
+			</span>
+		</td>
+	</tr>
+	<tr>
+		<td class="table_title">標案主辦機關</td>
+		<td colspan="3">
+			<input class="input_text" id="project_organizer_agencies" type="text" name="project_organizer_agencies" size=65 value=""/>
+		</td>
+		<td class="table_title">專案管理單位</td>
+		<td>
+			<input class="input_text" id="project_manage_unit" type="text" name="project_manage_unit" size=24 value=""/>
+		</td>
+	</tr>
+	<tr>
+		<td class="table_title">設計單位</td>
+		<td width=210>
+			<input class="input_text" id="designer" type="text" name="designer" size=24 value=""/>
+		</td>
+		<td class="table_title" width=110>監造單位</td>
+		<td width=210>
+			<input class="input_text" id="inspector" type="text" name="inspector" size=24 value=""/>
+		</td>
+		<td class="table_title">承包商</td>
+		<td>
+			<input class="input_text" id="construct" type="text" name="construct" size=24 value=""/>
+		</td>
+	</tr>
+	<tr>
+		<td class="table_title">發包預算(千元)</td>
+		<td colspan="3">
+			<input class="input_text float" id="budget_price" type="text" name="budget_price" size=24 value=""/>
+		</td>
+		<td class="table_title">契約金額(千元)</td>
+		<td>
+			<input class="input_text float" id="contract_price" type="text" name="contract_price" size=24 value=""/>
+		</td>
+	</tr>
+	<tr>
+		<td class="table_title">工程概要</td>
+		<td colspan="5">
+			<textarea class="input_textarea" id="info" name="info" cols="103" rows="10"></textarea>
+		</td>
+	</tr>
+	<tr>
+		<td class="table_title">工程進度、<br>經費支用及<br>目前施工概況</td>
+		<td colspan="5">
+			截至
+				<input id="progress_date" name="progress_date" class="input_text setDateCreate" size="10" type="text" value="">
+			止：<br>
+			　　1.工程累計進度：預定：<input class="input_text float" id="scheduled_progress" type="text" name="scheduled_progress" size=3 value=""/>％
+						     ；實際：<input class="input_text float" id="actual_progress" type="text" name="actual_progress" size=3 value=""/>％<br>
+			　　2.經費累計支用：預定：<input class="input_text float" id="scheduled_money" type="text" name="scheduled_money" size=10 value=""/>千元
+						     ；實際：<input class="input_text float" id="actual_money" type="text" name="actual_money" size=10 value=""/>千元
+		</td>
+	</tr>
+	<tr>
+		<td class="table_title">督導委員</td>
+		<td colspan="3">
+			<table>
+				<tr>
+					<td>
+						內部委員：<input class="input_text" id="inguides" type="text" name="inguides" size=40 value=""/>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						外部委員：<input class="input_text" id="outguides" type="text" name="outguides" size=40 value=""/>
+					</td>
+				</tr>
+			</table>
+			(可使用， , 、 _ 空白 隔開)
+		</td>
+		<td class="table_title">開工及<br>預定完工日期</td>
+		<td>
+			開工：<input id="start_date" name="start_date" class="input_text setDateCreate" size="10" type="text" value=""><br>
+			完工：<input id="expected_completion_date" name="expected_completion_date" class="input_text setDateCreate" size="10" type="text" value="">(預定)
+		</td>
+	</tr>
+	<tr>
+		<td class="table_title">領隊<br>及工作人員</td>
+		<td colspan="3">
+			<table>
+				<tr>
+					<td>
+						領　　隊：<input class="input_text" id="captains" type="text" name="captains" size=40 value=""/>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						工作人員：<input class="input_text" id="workers" type="text" name="workers" size=40 value=""/>
+					</td>
+				</tr>
+			</table>
+			(可使用， , 、 _ 空白 隔開)
+		</td>
+		<td class="table_title">督導分數(等級)</td>
+		<td>
+			<input class="input_text ScoreLevel" id="score" type="text" name="score" size=15 value=""/>
+			<span id="score_level"></span>
+		</td>
+	</tr>
+	<tr>
+		<td class="table_title">優點</td>
+		<td colspan="5">
+			<textarea class="input_textarea" id="merit" name="merit" cols="103" rows="10"></textarea>
+		</td>
+	</tr>
+	<!--
+	<tr>
+		<td id="add_New_Error" now_num=1 class="table_title" title="點擊新增缺失">
+			缺點<img src="/media/images/additem.png" >
+		</td>
+		<td colspan="5">
+			<table border="1" style="border-collapse: collapse">
+				<tr bgcolor="#E8FFF5" align="center">
+					<td width=70>缺失編號</td>
+					<td width=50>缺失<br>程度</td>
+					<td width=750>缺　失　內　容</td>
+				</tr>
+				<tr>
+					<td><input class="input_text error_no" id="error_no_1" type="text" name="error_no_1" size=7 value=""/></td>
+					<td><input class="input_text" id="error_level_1" type="text" name="error_level_1" size=4 value=""/></td>
+					<td><input class="input_text" id="error_context_1" type="text" name="error_context_1" size=90 value=""/></td>
+				</tr>
+				<tr id="insert_Error_Place" style="display: none;"></tr>
+			</table>
+		
+		
+		</td>
+	</tr>
+	-->
+	<tr>
+		<td class="table_title">規劃設計<br>問題及建議</td>
+		<td colspan="5">
+			<textarea class="input_textarea" id="advise" name="advise" cols="103" rows="10"></textarea>
+		</td>
+	</tr>
+	<tr>
+		<td class="table_title">其他建議</td>
+		<td colspan="5">
+			<textarea class="input_textarea" id="other_advise" name="other_advise" cols="103" rows="10"></textarea>
+		</td>
+	</tr>
+	<tr>
+		<td class="table_title">扣點統計</td>
+		<td colspan="5">
+			承攬廠商　　扣點：<input class="input_text integer" id="construct_deduction" type="text" name="construct_deduction" size=24 value=""/><br>
+			監造廠商　　扣點：<input class="input_text integer" id="inspector_deduction" type="text" name="inspector_deduction" size=24 value=""/><br>
+			主辦單位　　扣點：<input class="input_text integer" id="organizer_deduction" type="text" name="organizer_deduction" size=24 value=""/><br>
+			專案管理單位扣點：<input class="input_text integer" id="project_manage_deduction" type="text" name="project_manage_deduction" size=24 value=""/>
+		</td>
+	</tr>
+	<tr>
+		<td class="table_title">檢驗拆驗</td>
+		<td colspan="5">
+			<textarea class="input_textarea" id="test" name="test" cols="103" rows="10"></textarea>
+		</td>
+	</tr>
+</table>
+<br>
+<input id="add_New_Supervise_Case" type="submit" value="確定新增紀錄，並繼續新增缺失項目" />
+<span style="font-size:20px;color: red;">*</span>為必填欄位
+<br><br>
+
+{% endblock %}

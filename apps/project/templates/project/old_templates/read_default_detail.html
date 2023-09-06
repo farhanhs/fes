@@ -1,0 +1,61 @@
+{% extends 'project/search.html' %}
+{% load utiltags %}
+{% load project_tags %}
+{% load common_tags %}
+
+{% block content %}
+
+
+{% if default_projects %}
+<div align="center">
+<br><hr width="900" color="#ff8000" noshade title="這不是分隔線">
+    <br><span class="style1">您列入『追蹤』之工程案</span>
+    <span style="font-size:16px;">
+    <table border="1" style="border-collapse: collapse">
+            <thead bgcolor='#BBFFDD'>
+                <th></th>
+                <th>年度</th>
+                <th>標案編號</th>
+                <th width="200">工作名稱</th>
+                <th>縣市</th>
+                <th>計畫名稱</th>
+                <!--<th width="160">工程狀態</th>-->
+                <th width="100">工程會<br>同步進度</th>
+                <th width="100" bgcolor="#FEFFCD">縣市追蹤<br>預定進度</th>
+                <th width="100" bgcolor="#FEFFCD">縣市追蹤<br>實際進度</th>
+                <th>執行機關</th>
+                <th width="100">發文(核定)文號</th>
+                <th>發文(核定)日期</th>
+                <th>連絡人</th>
+            </thead>
+            <tbody>
+                {% for p in default_projects %}
+                    <tr align="left" class="{% cycle "odd" "even" %}">
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ p.year }}</td>
+                        <td>{{ p.bid_no|default_if_none:"" }}</td>
+                        <td><a href="/project/reproject/{{ p.id }}/" target="_blank">{{ p.name }}</a></td>
+                        <td>{% if p.place %}{{ p.place.name }}{% endif %}</td>
+                        <td title="{{ p.plan.name }}">{{ p.short_plan_name }}</td>
+                        <!--<td {% ifequal p.status.value '待審查' %}class='style2'{% endifequal %}>{{ p.status.value }}</td>-->
+                        <td align="center">{% ifequal p.getProgressPercent 0 %}0.00%{% else %}{{ p.getProgressPercent }}%{% endifequal %}</td>
+                        <td align="center">{{ p.chase.schedul_progress_percent }}%</td>
+                        <td align="center">{{ p.chase.actual_progress_percent }}%</td>
+                        <td>{% if p.unit %}{{ p.unit.name }}{% endif %}</td>
+                        <td>{% if p.vouch_no %}{{ p.vouch_no }}{% endif %}</td>
+                        <td>{% if p.vouch_date %}{{ p.vouch_date }}{% endif %}</td>
+                        <td>{% if p.self_contacter %}{{ p.self_contacter }}{% endif %}</td>
+                    </tr>
+                {% endfor %}
+            <tbody>
+        </table>
+        </span>
+</div>
+{% endif %}
+
+
+
+
+
+{% endblock %}
+

@@ -1,0 +1,54 @@
+{% load utiltags %}
+{% load humanize %}
+
+{% for f in document_files %}
+    {% if edit %}
+        <tr id="tr_file_document_{{ f.id }}">
+            <td align="center">{{ forloop.counter }}</td>
+            <td align="center" class="Show_File_Info" row_id="{{ f.id }}" field_name="date">
+                <a id="Show_File_Info_date_{{ f.id }}">
+                    {{ f.date|default_if_none:'' }}
+                </a>
+                <input class="Hide_File_Info chooseFileDate" row_id="{{ f.id }}" field_name="date" table_name="DocumentFile"
+                       input_type="date" style="text-align: right; display: none;" id="Edit_File_Info_date_{{ f.id }}"
+                       type="text" name="date" size="15"
+                       value="{{ f.date|default_if_none:''|cutzero }}"
+                       old_value="{{ f.date|default_if_none:''|cutzero }}"/>
+            </td>
+            <td align="center" class="Show_File_Info" row_id="{{ f.id }}" field_name="no">
+                <a id="Show_File_Info_no_{{ f.id }}">
+                    {{ f.no|default_if_none:'' }}
+                </a>
+                <input class="Hide_File_Info" row_id="{{ f.id }}" field_name="no" table_name="DocumentFile"
+                       input_type="no" style="text-align: right; display: none;" id="Edit_File_Info_no_{{ f.id }}"
+                       type="text" name="no" size="15"
+                       value="{{ f.no|default_if_none:''|cutzero }}"
+                       old_value="{{ f.no|default_if_none:''|cutzero }}"/>
+            </td>
+            <td align="right">{{ f.calSize }}</td>
+            <td align="center">{{ f.ext }}</td>
+            <td><a class="pleaseUseRightClick" href="/{{ f.rUrl }}"><img width="30" src="/media/project/image/download.png" title="請用滑鼠右鍵另存目標"></a</td>
+            <td class="Show_File_Info" row_id="{{ f.id }}" field_name="memo" align="left">
+                <a id="Show_File_Info_memo_{{ f.id }}">
+                    {{ f.memo|default_if_none:''|linebreaks }}
+                </a>
+                <textarea class="Hide_File_Info" row_id="{{ f.id }}" field_name="memo" table_name="DocumentFile"
+                       input_type="str" style="display: none;" id="Edit_File_Info_memo_{{ f.id }}"
+                       type="text" name="memo" cols="25" rows="2"
+                       old_value="{{ f.memo|default_if_none:'' }}">{{ f.memo|default_if_none:'' }}</textarea>
+            </td>
+            <td align="center"><img class="deleteDocumentFile" row_id="{{ f.id }}" width="20" src="/media/project/image/plan_delete.png" title="刪除檔案"></td>
+        </tr>
+    {% else %}
+        <tr id="tr_file_document_{{ f.id }}">
+            <td align="center">{{ forloop.counter }}</td>
+            <td align="center">{{ f.date|default_if_none:'' }}</td>
+            <td>{{ f.no|default_if_none:'' }}</td>
+            <td align="right">{{ f.calSize }}</td>
+            <td align="center">{{ f.ext }}</td>
+            <td><a class="pleaseUseRightClick" href="/{{ f.rUrl }}"><img width="30" src="/media/project/image/download.png" title="請用滑鼠右鍵另存目標"></a></td>
+            <td>{{ f.memo|default_if_none:''|linebreaks }}</td>
+        </tr>
+    {% endif %}
+{% endfor %}
+

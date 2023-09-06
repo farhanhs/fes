@@ -1,0 +1,140 @@
+{% extends 'project/index.html' %}
+{% load utiltags %}
+{% load project_tags %}
+{% load common_tags %}
+{% load humanize %}
+{% block menu %}
+    <ul id="menu" value ="{{ url }}"></ul>
+{% endblock %}
+
+{% block upgradeJqueryUI %}
+    {% comment %}
+        loadDefaultJqueryUI_1_8_6 需要 common module 68:a0428b9e6510 以上版本
+    {% endcomment %}
+    {% loadDefaultJqueryUI_1_8_6 %}
+{% endblock %}
+
+{% block style %}
+td{
+    line-height:150%;padding:5px;
+}
+{% endblock %}
+
+{% block content %}
+
+<table>
+    <tr>
+        {% ifequal page_title '漁業署提案' %}
+            <td width="200" align="center" bgcolor="{% ifequal type '漁業署草稿' %}#FFE7CD{% endifequal %}"><h1><a href="{{ url }}fishery">漁業署核定</a></h1></td>
+            <td width="200" align="center" bgcolor="{% ifequal type '縣市提案草稿' %}#FFE7CD{% endifequal %}"><h1><a href="{{ url }}city">縣市政府提案</a></h1></td>
+        {% else %}
+            <td width="400"><h1>縣市政府提案</h1></td>
+        {% endifequal %}
+        <td align="right" width="550">提報工程<img id="Show_Draft_Table" show_type="show" width="40" src="/media/project/image/plan_add_plan.png" title="新增"></td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            {% include 'project/add_draft_project.html' %}
+        </td>
+    </tr>
+</table>
+
+
+<table class="sortable" border="1" style="border-collapse: collapse">
+    <thead>
+    <tr bgcolor='#BBFFDD' align="center">
+        <th rowspan="2"></th>
+        <th>年度</th>
+        <th style="min-width: 50px;">優先<br>順序</th>
+        <th style="min-width: 50px;">縣市</th>
+        <th style="min-width: 50px;">漁港<br>(養殖區)</th>
+        <th style="min-width: 50px;">計畫</th>
+        <th style="min-width: 50px;">工程名稱</th>
+        <th style="min-width: 100px;">承辦方式<br>工程屬性分類<br>工程屬性別</th>
+        <th style="min-width: 50px;">核定數</th>
+        <th style="min-width: 50px;">預算別<br>採購類別</th>
+        <th style="min-width: 50px;">主管機關</th>
+
+        <th style="min-width: 50px;" title="(請填主要工作項目之明細及數量，如疏浚土方量、碼頭改善長度、加拋消波塊數量等)">主要工作內容</th>
+        <th style="min-width: 50px;" title="(請填優先順序及理由)">初審結果</th>
+        <th colspan="2">
+            概算經費(元)<br>
+            <table border="1" style="border-collapse: collapse">
+                <tr align="center">
+                    <td width="60">中央</td>
+                    <td width="60">地方<br>配合款</td>
+                </tr>
+            </table>
+        </th>
+        <th style="min-width: 50px;" title="(請填報是否已完成設計及是否已報漁業署同意在案)">設計準備情形</th>
+        <th style="min-width: 80px;" title="(請填報前年計畫名稱及工作項目)">是否為前年延續性計畫</th>
+        <th style="min-width: 50px;" title="(最新之設籍各噸級船筏數)">設籍漁船資料</th>
+        <th style="min-width: 50px;" title="(平均每日進出漁船筏資料)">實際作業漁船數</th>
+        <th style="min-width: 50px;" title="(如該港之漁產量/值、魚市場交易資料、設施使用情形)">其他補充說明</th>
+        <th style="min-width: 50px;">工程預期效益</th>
+        <th style="min-width: 50px;">備註</th>
+    </tr>
+    <!--<tr bgcolor='#BBFFDD' align="center">
+        <th style="min-width: 40px;"></th>
+        <th style="min-width: 40px;"></th>
+    </tr>-->
+    </thead>
+    <tbody>
+        {% for p in projects %}
+            <tr id="tr_project_{{ p.id }}" align="left" class="{% cycle 'odd' 'even' %}">
+                <td>
+                    {% if power %}
+                        {% ifequal p.type.value '縣市提案草稿' %}
+                        <img width="18" class="update_type_Draft_Project" project_name="{{ p.name }}" draft_project_id="{{ p.id }}" src="/media/images/arrow_up.png" title="轉移到漁業署提案區"><br>
+                        {% endifequal %}
+                        {% ifequal p.type.value '漁業署草稿' %}
+                        <img width="18" class="add_New_Project_From_Draft" project_name="{{ p.name }}" draft_project_id="{{ p.id }}" src="/media/project/image/plan_add_plan.png" title="新增工程案"><br>
+                        {% endifequal %}
+                    {% endif %}
+                    <img class="edit_Draft_Project" draft_project_id="{{ p.id }}" src="/media/images/edit.png" title="重新編輯此提案"><br>
+                    <img class="delete_Draft_Project" draft_project_id="{{ p.id }}" src="/media/images/delete.png" title="刪除此提案">
+                </td>
+                <td>{{ p.year }}</td>
+                <td align="center">{{ p.get_sort_num }}</td>
+                <td>{{ p.place.name }}</td>
+                <td>
+                    {% for port in p.port %}
+                        {{ port.name }}
+                    {% endfor %}
+                </td>
+                <td>{{ p.plan.name }}</td>
+                <td>{{ p.name }}</td>
+                <td>
+                    {{ p.undertake_type }}<br>
+                    {{ p.project_type }}<br>
+                    {{ p.project_sub_type }}
+                </td>
+                <td align="right">{{ p.capital_ratify_budget|cutzero|intcomma }}</td>
+                <td>
+                    {{ p.budget_sub_type }}<br>
+                    {{ p.purchase_type }}
+                </td>
+                <td>{{ p.unit.name }}</td>
+
+                <td>{{ p.info }}</td>
+                <td>{{ p.review_results }}</td>
+                <td width="60" align="right">{{ p.self_money|cutzero|intcomma }}</td>
+                <td width="60" align="right">{{ p.local_money|cutzero|intcomma }}</td>
+                <td>{{ p.design }}</td>
+                <td>{{ p.project.name }}</td>
+                <td>{{ p.fish_boat }}</td>
+                <td>{{ p.real_fish_boat }}</td>
+                <td>{{ p.other_memo }}</td>
+                <td>{{ p.fect }}</td>
+                <td>{{ p.memo }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+
+
+
+{% endblock %}
+

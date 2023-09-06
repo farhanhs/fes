@@ -1,0 +1,125 @@
+{% load humanize %}
+{% load dailyreport_tags %}
+<tr need_right_click="True" top_dir="{{ item.read_top_dir_in_list }}" id="tr_item_{{ item.id }}" class="{% ifequal item.kind.value '目錄' %}yellow{% else %}white{% endifequal %} tr_hover" uplevel_id="{{ item.uplevel.id }}" kind="{{ item.kind.value }}">
+    <td id="td_item_symbol_{{ item.id }}" class="{% if edit %}right_click_menu{% endif %}" row_id="{{ item.id }}">
+        <span>{{ item.read_level_symbol }}</span>
+    </td>
+    <td class="padding_{{ item.read_level_num }} ClickShowInfo {% if edit %}right_click_menu{% endif %}" row_id="{{ item.id }}" id="td_item_name_{{ item.id }}" field_name="name" title="前版本名稱：{% if item.pre_item %}{{ item.pre_item.name }}{% else %}無前版本{% endif %}">
+        {% if item.uplevel %}
+            <img src="/media/dailyreport/images/T.png" width="20">
+        {% endif %}
+        {% ifequal item.kind.value "目錄" %}
+            <img src="/media/dailyreport/images/dir.png" width="20">
+        {% else %}
+            <img src="/media/dailyreport/images/item.png" width="15">
+        {% endifequal %}
+        {% if edit %}
+            {% if item.uplevel %}
+                <a id="show_part_name_{{ item.id }}" class="style_title">
+                    {{ item.name|default_if_none:"" }}
+                </a>
+                <input
+                    id="edit_part_name_{{ item.id }}"
+                    type="text" class="BlurUpdateInfo needExist" style="display: none;"
+                    field_type="str"
+                    row_id="{{ item.id }}"
+                    placeholder="請輸入項目名稱"
+                    field_name="name"
+                    table_name="item"
+                    module_name='dailyreport'
+                    old_value="{{ item.name|default_if_none:"" }}"
+                    value="{{ item.name|default_if_none:"" }}"/>
+            {% else %}
+                <span>(工程名稱){{ item.name|default_if_none:"" }}</span>
+            {% endif %}
+        {% else %}
+            <span>{{ item.name|default_if_none:"" }}</span>
+        {% endif %}
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="{{ item.id }}" field_name="unit_name">
+        {% ifequal item.kind.value "目錄" %}
+            式
+        {% else %}
+            {% if edit %}
+                <input
+                    id="edit_part_unit_name_{{ item.id }}"
+                    type="text" class="BlurUpdateInfo needExist arrow_keys_to_detect" style="text-align: center;"
+                    field_type="str"
+                    no_change="true"
+                    tabindex="{{ forloop.counter }}1"
+                    placeholder="請輸入單位"
+                    row_id="{{ item.id }}"
+                    field_name="unit_name"
+                    table_name="item"
+                    module_name='dailyreport'
+                    old_value="{{ item.unit_name|default_if_none:"" }}"
+                    value="{{ item.unit_name|default_if_none:"" }}"/>
+            {% else %}
+                <span>{{ item.unit_name|default_if_none:"" }}</span>
+            {% endif %}
+        {% endifequal %}
+    </td>
+    <td id="td_item_unit_num_{{ item.id }}" style="text-align: right;" class="ClickShowInfo" row_id="{{ item.id }}" field_name="unit_num" title="前版本設計數量：{% if item.pre_item %}{{ item.pre_item.unit_num }}{% else %}無前版本{% endif %}">
+        {% ifequal item.kind.value "目錄" %}
+            1
+        {% else %}
+            {% if edit %}
+                <input
+                    id="edit_part_unit_num_{{ item.id }}"
+                    type="text" class="recount_price BlurUpdateInfo needExist arrow_keys_to_detect" style="text-align: right;"
+                    field_type="float"
+                    no_change="true"
+                    tabindex="{{ forloop.counter }}3"
+                    row_id="{{ item.id }}"
+                    field_name="unit_num"
+                    table_name="item"
+                    module_name='dailyreport'
+                    old_value="{{ item.unit_num|default_if_none:""|cutzero }}"
+                    value="{{ item.unit_num|default_if_none:""|cutzero }}"/>
+            {% else %}
+                <span>{{ item.unit_num|floatformat:3|intcomma|default_if_none:""|cutzero }}</span>
+            {% endif %}
+        {% endifequal %}
+    </td>
+    <td id="td_item_unit_price_{{ item.id }}" style="text-align: right;" class="ClickShowInfo" row_id="{{ item.id }}" field_name="unit_price" real_price="{{ item.read_dir_price_by_realprice }}" title="前版本單價：{% if item.pre_item %}{{ item.pre_item.unit_price }}{% else %}無前版本{% endif %}">
+        {% ifequal item.kind.value "目錄" %}
+                {{ item.read_dir_price_by_roundkind|floatformat:3|intcomma|cutzero }}
+        {% else %}
+            {% if edit %}
+                <input
+                    id="edit_part_unit_price_{{ item.id }}"
+                    type="text" class="recount_price BlurUpdateInfo needExist arrow_keys_to_detect" style="text-align: right;"
+                    field_type="float"
+                    no_change="true"
+                    tabindex="{{ forloop.counter }}2"
+                    row_id="{{ item.id }}"
+                    field_name="unit_price"
+                    table_name="item"
+                    module_name='dailyreport'
+                    old_value="{{ item.unit_price|default_if_none:""|cutzero }}"
+                    value="{{ item.unit_price|default_if_none:""|cutzero }}"/>
+            {% else %}
+                <span>{{ item.unit_price|floatformat:3|intcomma|default_if_none:""|cutzero }}</span>
+            {% endif %}
+        {% endifequal %}
+    </td>
+    <td id="td_item_memo_{{ item.id }}" class="ClickShowInfo" row_id="{{ item.id }}" field_name="memo" title="前版本備註：{% if item.memo %}{{ item.memo }}{% else %}無前版本{% endif %}">
+        {% if edit %}
+            <a id="show_part_memo_{{ item.id }}" class="style_title">
+                {{ item.memo|default_if_none:"" }}
+            </a>
+            <input
+                id="edit_part_memo_{{ item.id }}"
+                type="text" class="BlurUpdateInfo" style="display: none;"
+                field_type="str"
+                row_id="{{ item.id }}"
+                field_name="memo"
+                table_name="item"
+                module_name='dailyreport'
+                old_value="{{ item.memo|default_if_none:"" }}"
+                value="{{ item.memo|default_if_none:"" }}"/>
+        {% else %}
+            <span>{{ item.memo|default_if_none:"" }}</span>
+        {% endif %}
+    </td>
+</tr>

@@ -1,0 +1,46 @@
+{% load i18n %}
+{% load utiltags %}
+{% load humanize %}
+
+<h3 class="text-primary">進度資訊<br><small>(來源為工程會標案系統同步，工程會標案編號：{% if project.pcc_no %}{{ project.pcc_no }}{% else %}未填寫{% endif %})</small></h3>
+<table class="table table-bordered" style="font-size: 14px; text-align: center;" total_width="860">
+    <tr class="success">
+        <td width="10%">年度/月份</td>
+        <td width="15%">累計預定進度</td>
+        <td width="15%">累計實際進度</td>
+        <td width="15%">日報表進度</td>
+        <td width="35%">執行狀態</td>
+    </tr>
+    {% for p in progresss %}
+        <tr>
+            <td class="active">{{ p.date.year }}/{{ p.date.month }}</td>
+            <td>
+                <div class="input-group">
+                    <input
+                        type="text" class="form-control" disabled
+                        field_type="float" style="text-align: right;"
+                        old_value="{{ p.schedul_percent|default_if_none:''|cutzero }}"
+                        value="{{ p.schedul_percent|default_if_none:''|cutzero }}"/>
+                    <span class="input-group-addon">%</span>
+                </div>
+            </td>
+            <td>
+                <div class="input-group">
+                    <input
+                        type="text" class="form-control" disabled
+                        field_type="float" style="text-align: right;"
+                        old_value="{{ p.actual_percent|default_if_none:''|cutzero }}"
+                        value="{{ p.actual_percent|default_if_none:''|cutzero }}"/>
+                    <span class="input-group-addon">%</span>
+                </div>
+            </td>
+            <td align="left">
+                監造：{{ p.i_dailyreport_percent|default_if_none:''|cutzero }} % <br>
+                施工：{{ p.c_dailyreport_percent|default_if_none:''|cutzero }} %
+            </td>
+            <td align="left">
+                {{ p.memo|linebreaks|default_if_none:"" }}
+            </td>
+        </tr>
+    {% endfor %}
+</table>

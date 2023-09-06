@@ -1,0 +1,72 @@
+{% extends 'harbor/editmemu.html' %}
+
+{% block sidecontent %}
+<a id="location" class="obva"></a><br>
+
+<form enctype="multipart/form-data" action="./" method="POST">
+{% include 'harbor/obvaeditmenu.html' %}
+<h2>
+<table>
+    <tr>
+        <td>平均氣壓說明</td>
+        <td><textarea cols="30" rows="2" name="new__memo"></textarea></td>
+    </tr>
+    <tr>
+        <td>月 份</td>
+        <td><input type="text" name="new__month" class="integer requisite" value=""></td>
+    </tr>
+    <tr>
+        <td>測站最低氣壓</td>
+        <td><input type="text" name="new__min" class="float" value=""></td>
+    </tr>
+    <tr>
+        <td>測站最高氣壓</td>
+        <td><input type="text" name="new__max" class="float" value=""></td>
+    </tr>
+    <tr>
+        <td>測站平均氣壓</td>
+        <td><input type="text" name="new__average" class="float" value=""></td>
+    </tr>
+	<tr>
+        <td>海平面平均氣壓</td>
+        <td><input type="text" name="new__sea_average" class="float" value=""></td>
+    </tr>
+</table>
+</h2>
+<br>
+<input type="submit" id="submit" name="submit" class="submit" value="--------確定新增--------" onClick="submiting(this)">
+<font id="caution" color="#E100F0" size="2.8">請檢查必填欄位！</font><br><br><br>
+<hr width="800" color="#ff8000" noshade title="這不是分隔線">
+<br><br>
+<h3>
+<table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+    <tr align="center" bgcolor="#FFFF99">
+        <td></td>
+        <td>平均氣壓說明</td>
+		<td>月 份</td>
+        <td>測站最低氣壓</td>
+        <td>測站最高氣壓</td>
+        <td>測站平均氣壓</td>
+        <td>海平面平均氣壓</td>
+        <td></td>
+    </tr>
+    {% for averagepressure in list %}
+    <tr id="averagepressure_{{ averagepressure.id }}">
+        <td>{{ forloop.counter }}</td>
+        <td><textarea cols="30" rows="2" name="averagepressure__memo__{{ averagepressure.id }}">{% if averagepressure.memo %}{{ averagepressure.memo }}{% endif %}</textarea></td>
+        <td><input size="5" type="text" class="integer requisite" name="averagepressure__month__{{ averagepressure.id }}" value="{% if averagepressure.month %}{{ averagepressure.month }}{% else %}0{% endif %}"></td>
+        <td><input size="12" type="text" class="float" name="averagepressure__min__{{ averagepressure.id }}" value="{% if averagepressure.min %}{{ averagepressure.min }}{% endif %}"></td>
+        <td><input size="12" type="text" class="float" name="averagepressure__max__{{ averagepressure.id }}" value="{% if averagepressure.max %}{{ averagepressure.max }}{% endif %}"></td>
+        <td><input size="14" type="text" class="float" name="averagepressure__average__{{ averagepressure.id }}" value="{% if averagepressure.average %}{{ averagepressure.average }}{% endif %}"></td>
+        <td><input size="14" type="text" class="float" name="averagepressure__sea_average__{{ averagepressure.id }}" value="{% if averagepressure.sea_average %}{{ averagepressure.sea_average }}{% endif %}"></td>
+        <td><button id="del_averagepressure_{{ averagepressure.id }}" class="delRow">刪除紀錄</button></td>
+    </tr>
+    {% endfor %}
+</table>
+</h3>
+<br>
+<input type="submit" id="submit" name="submit" value="--------確定修改--------" onClick="submiting(this)">
+
+</form>
+
+{% endblock %}

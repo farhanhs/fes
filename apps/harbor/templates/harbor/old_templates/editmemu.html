@@ -1,0 +1,180 @@
+{% extends 'harbor/index.html' %}
+{% block menu %}
+    <ul id="menu" value ="/harbor/editinfo"></ul>
+{% endblock %}
+{% block content %}
+
+
+<table width="980">
+<tr valign="top">
+<td width="160">
+    {% ifequal writer 'PI' %}
+    <table>
+        <tr>
+            <td align="left">
+                <H2><a id="lay_port" class="switch">漁港資料</a></H2>
+                <H2><a id="gather_port" class="switch" style="display: none;">漁港資料</a></H2>
+            </td>
+        </tr>
+        <tr id="port_table" style="display: none;" align="left">
+            <td><h2>
+                <table align="left">
+                    <tr>
+                        <td align="left">
+                            <a href="/harbor/port/add/">＋ 新增漁港</a><br>
+                        </td>
+                    </tr>
+                    {% for city in city_list %}
+                    <tr>
+                        <td id="lay_{{ city.place.id }}" dn="{{ city.place.id }}" class="gal lay point" align="left">
+                            <img title="展開" width="20" height="20" src="/media/harbor/image/close.png">
+                            <span class="point">{{ city.place.name }}</span>
+                        </td>
+                        <td id="gather_{{ city.place.id }}" dn="{{ city.place.id }}" class="gal gather point" style="display: none;" align="left">
+                            <img title="收合" width="20" height="20" src="/media/harbor/image/open.png">
+                            <span class="point">{{ city.place.name }}</span>
+                        </td>
+                    </tr>
+                    <tr id="loca_{{ city.place.id }}" class="shut" style="display: none;">
+                        <td align="left">
+                            {% for port in city.fishingport %}
+                            <h5>-----<a id="port_{{ port.id }}" href="/harbor/port/{{ port.id }}/">{{ port.name }}</a> <br></h5>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </h2></td>
+        </tr>
+        <tr>
+            <td align="left">
+                <H2><a id="lay_obva" class="switch">觀測站資料</a></H2>
+                <H2><a id="gather_obva" class="switch" style="display: none;">觀測站資料</a></H2>
+            </td>
+        </tr>
+        <tr id="obva_table" style="display: none;">
+            <td align="left"><h2>
+                <table>
+                    <tr>
+                        <td align="left">
+                            <a href="/harbor/observatory/add/">＋ 新增觀測站</a><br>
+                        </td>
+                    </tr>
+                    {% for ob in observatory_list %}
+                    <tr>
+                        <td align="left">
+                            -----<a id="obva_{{ ob.id }}" href="/harbor/observatory/{{ ob.id }}/">{{ ob.name }}</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </h2></td>
+        </tr>
+        <tr>
+            <td align="left">
+                <H2><a id="lay_city" class="switch">縣市資料</a></H2>
+                <H2><a id="gather_city" class="switch" style="display: none;">縣市資料</a></H2>
+
+            </td>
+        </tr>
+        <tr id="city_table" style="display: none;">
+            <td align="left"><h2>
+                <table>
+                    {% for city in city_list %}
+                    <tr>
+                        <td align="left">
+                            ---<a id="city_{{ city.place.id }}" href="/harbor/city/{{ city.place.id }}/">{{ city.place.name }}</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </h2></td>
+        </tr>
+
+        <tr>
+            <td align="left">
+                <H2><a id="lay_cam" class="switch">攝影機資料</a></H2>
+                <H2><a id="gather_cam" class="switch" style="display: none;">攝影機資料</a></H2>
+            </td>
+        </tr>
+        <tr id="cam_table" style="display: none;" align="left">
+            <td><h2>
+                <table align="left">
+                    <tr>
+                        <td align="left">
+                            <a href="/harbor/cam/add/">＋ 新增攝影機</a><br>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="left">
+                            ---<a href="/harbor/cam/edit/">編輯攝影機</a><br>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="left">
+                            ---<a href="/harbor/cam/show_password/">攝影機帳密</a><br>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="left">
+                            ---<a href="http://live.nchu-cm.com/cruise/">攝影機巡航啟動</a><br>
+                        </td>
+                    </tr>
+                </table>
+            </h2></td>
+        </tr>
+    </table>
+    {% endifequal %}
+    
+    {% ifequal writer 'BI' %}
+    <table>
+        <tr>
+            <td align="left">
+                <H2><a id="lay_port" class="switch">選擇漁港</a></H2>
+                <H2><a id="gather_port" class="switch" style="display: none;">選擇漁港</a></H2>
+            </td>
+        </tr>
+        <tr id="port_table" style="display: none;" align="left">
+            <td><h2>
+                <table align="left">
+                    {% for city in city_list %}
+                    <tr>
+                        <td id="lay_{{ city.place.id }}" dn="{{ city.place.id }}" class="gal lay point" align="left">
+                            <img title="展開" width="20" height="20" src="/media/harbor/image/close.png">
+                            <span class="point">{{ city.place.name }}</span>
+                        </td>
+                        <td id="gather_{{ city.place.id }}" dn="{{ city.place.id }}" class="gal gather point" style="display: none;" align="left">
+                            <img title="收合" width="20" height="20" src="/media/harbor/image/open.png">
+                            <span class="point">{{ city.place.name }}</span>
+                        </td>
+                    </tr>
+                    <tr id="loca_{{ city.place.id }}" class="shut" style="display: none;">
+                        <td align="left">
+                            {% for port in city.fishingport %}
+                            <h5>-----<a id="port_{{ port.id }}" href="/harbor/portinstallation/new/{{ port.id }}/">{{ port.name }}</a> <br></h5>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </h2></td>
+        </tr>
+    </table>
+    {% endifequal %}
+</td>
+<td>
+    <table>
+        <tr>
+            <td align="left">
+                {% block sidecontent%}
+                
+                {% endblock %}
+            </td>
+        </tr>
+    </table>
+</td>
+</tr>
+</table>
+
+
+{% endblock %}

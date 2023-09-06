@@ -1,0 +1,66 @@
+{% extends 'project/readandeditcountychase.html' %}
+{% load utiltags %}
+{% load project_tags %}
+
+{% block search %}
+
+<a href="/project/epcounty_chase/">←回上一頁</a>
+
+<br><hr width="900" color="#ff8000" noshade title="這不是分隔線">
+
+<table class="sortable" border="1" style="border-collapse: collapse">
+    <thead bgcolor='#BBFFDD'>
+        <tr>
+        <th></th>
+        <th>確認已填寫完畢</th>
+        <th></th>
+        <th width="40px">年度</th>
+        <th width="100px">計畫編號</th>
+        <th width="50px">縣市</th>
+        <th>漁港</th>
+        <th width="260px">工作名稱</th>
+        <th width="60px">承辦方式</th>
+        <th width="90px">執行機關</th>
+        <th width="60px">執行單位<br>聯絡窗口</th>
+        <th width="60px">遠端匯入</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in projects %}
+            <tr id="tr_project_{{ p.id }}" align="left" class="{% cycle "odd" "even" %}">
+                <td>{{ forloop.counter }}</td>
+                <td id="td_setCheckForComplete_{{ p.chase.id }}" bgcolor="{% if p.chase.check %}#91FF92{% else %}#FFB0AF{% endif %}">
+                    <button type="button" class="setCheckForComplete" id="setCheckForComplete_{{ p.chase.id }}" chase_id="{{ p.chase.id }}">
+                        {% if p.chase.check %}
+                            已確定
+                        {% else %}
+                            點擊確定
+                        {% endif %}
+                    </button>
+                </td>
+                <td>
+                    {% if p.chase.complete %}
+                        <button type="button" class="setFalseForComplete" id="setFalseForComplete_{{ p.chase.id }}" chase_id="{{ p.chase.id }}"
+                                {% if p.chase.check %}style="display:none;"{% endif %}>駁回申請</button>
+                    {% endif %}
+                </td>
+                <td>{{ p.year }}</td>
+                <td title="{{ p.plan.no }}">{{ p.work_no|default_if_none:'' }}</td>
+                <td align="center">{{ p.place.name|default_if_none:'' }}</td>
+                <td>{% for port in p.rSubLocation %}{{ port.name }}<br>{% endfor %}</td>
+                <td><a href="/project/reproject/{{ p.id }}/" target="_blank">{{ p.name }}</a></td>
+                <td title="{{ p.undertake_type.value }}" align="center">{{ p.undertake_type.value|default_if_none:'' }}</td>
+                <td>{{ p.unit.name|default_if_none:'' }}</td>
+                <td>{{ p.self_contacter|default_if_none:'' }}</td>
+                <td>
+                    {% if p.frcmuser %}
+                        <a href="/frcm/{{ p.id }}/profile/" target="_blank">{{ p.frcmuser.user_profile.rName }}</a>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    <tbody>
+</table>
+
+
+{% endblock %}

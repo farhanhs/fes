@@ -1,0 +1,117 @@
+{% load humanize %}
+{% load dailyreport_tags %}
+<tr need_right_click="True" top_dir="{{ item.read_top_dir_in_list }}" id="tr_item_{{ item.id }}" class="{% ifequal item.kind.value '目錄' %}yellow{% else %}white{% endifequal %} tr_hover" uplevel_id="{{ item.uplevel.id }}" kind="{{ item.kind.value }}">
+    <td id="td_item_symbol_{{ item.id }}" class="{% if edit %}right_click_menu{% endif %}" row_id="{{ item.id }}">
+        <span>{{ item.read_level_symbol }}</span>
+    </td>
+    <td class="padding_{{ item.read_level_num }} ClickShowInfo {% if edit %}right_click_menu{% endif %}" row_id="{{ item.id }}" id="td_item_name_{{ item.id }}" field_name="name" title="前版本名稱：{% if item.pre_item %}{{ item.pre_item.name }}{% else %}無前版本{% endif %}">
+        {% if item.uplevel %}
+            <img src="/media/dailyreport/images/T.png" width="20">
+        {% endif %}
+        {% ifequal item.kind.value "目錄" %}
+            <img src="/media/dailyreport/images/dir.png" width="20">
+        {% else %}
+            <img src="/media/dailyreport/images/item.png" width="15">
+        {% endifequal %}
+        {% if edit %}
+            {% if item.uplevel %}
+                <a id="show_part_name_{{ item.id }}" class="style_title">
+                    {{ item.name|default_if_none:"" }}
+                </a>
+                <input
+                    id="edit_part_name_{{ item.id }}"
+                    type="text" class="BlurUpdateInfo needExist" style="display: none;"
+                    field_type="str"
+                    row_id="{{ item.id }}"
+                    placeholder="請輸入項目名稱"
+                    field_name="name"
+                    table_name="scheduleitem"
+                    module_name='dailyreport'
+                    old_value="{{ item.name|default_if_none:"" }}"
+                    value="{{ item.name|default_if_none:"" }}"/>
+            {% else %}
+                <span>(工程名稱){{ item.name|default_if_none:"" }}</span>
+            {% endif %}
+        {% else %}
+            <span>{{ item.name|default_if_none:"" }}</span>
+        {% endif %}
+    </td>
+    <td id="td_item_es_{{ item.id }}" style="text-align: center;" class="ClickShowInfo" row_id="{{ item.id }}" field_name="es">
+        <div class="input-prepend input-append">
+            {% ifequal item.kind.value "目錄" %}
+                <span class="add-on">第</span>
+                <span class="add-on" id="span_part_es_{{ item.id }}">{{ item.read_es }}</span>
+                <span class="add-on">天</span>
+            {% else %}
+                <span class="add-on">第</span>
+                {% if edit %}
+                    <input
+                        id="edit_part_es_{{ item.id }}"
+                        type="text" class="BlurUpdateInfo recount_day needExist span1 arrow_keys_to_detect" style="text-align: center;"
+                        field_type="int"
+                        no_change="true"
+                        tabindex="{{ forloop.counter }}1"
+                        row_id="{{ item.id }}"
+                        field_name="es"
+                        table_name="scheduleitem"
+                        module_name='dailyreport'
+                        old_value="{{ item.es }}"
+                        value="{{ item.es }}"/>
+                {% else %}
+                    <span class="add-on">{{ item.es }}</span>
+                {% endif %}
+                <span class="add-on">天</span>
+            {% endifequal %}
+        </div>
+    </td>
+    <td style="text-align: center;" style="text-align: center;" class="ClickShowInfo" row_id="{{ item.id }}" field_name="ef">
+        <div class="input-prepend input-append">
+            {% ifequal item.kind.value "目錄" %}
+                <span class="add-on">第</span>
+                <span class="add-on" id="span_part_ef_{{ item.id }}">{{ item.read_ef }}</span>
+                <span class="add-on">天</span>
+            {% else %}
+                <span class="add-on">第</span>
+                {% if edit %}
+                    <input
+                        id="edit_part_ef_{{ item.id }}"
+                        type="text" class="BlurUpdateInfo recount_day needExist span1 arrow_keys_to_detect" style="text-align: center;"
+                        field_type="int"
+                        no_change="true"
+                        tabindex="{{ forloop.counter }}2"
+                        row_id="{{ item.id }}"
+                        field_name="ef"
+                        table_name="scheduleitem"
+                        module_name='dailyreport'
+                        old_value="{{ item.ef }}"
+                        value="{{ item.ef }}"/>
+                {% else %}
+                    <span class="add-on">{{ item.ef }}</span>
+                {% endif %}
+                <span class="add-on">天</span>
+            {% endifequal %}
+        </div>
+    </td>
+    <td id="td_item_unit_price_{{ item.id }}" style="text-align: right;" class="ClickShowInfo" row_id="{{ item.id }}" field_name="unit_price" real_price="{{ item.read_dir_price }}">
+        {% ifequal item.kind.value "目錄" %}
+            {{ item.read_dir_price|floatformat:3|intcomma|cutzero }}
+        {% else %}
+            {% if edit %}
+                <input
+                    id="edit_part_unit_price_{{ item.id }}"
+                    type="text" class="recount_price BlurUpdateInfo needExist arrow_keys_to_detect" style="text-align: right;"
+                    field_type="int"
+                    no_change="true"
+                    tabindex="{{ forloop.counter }}3"
+                    row_id="{{ item.id }}"
+                    field_name="unit_price"
+                    table_name="scheduleitem"
+                    module_name='dailyreport'
+                    old_value="{{ item.unit_price|cutzero|default_if_none:"" }}"
+                    value="{{ item.unit_price|cutzero|default_if_none:"" }}"/>
+            {% else %}
+                <span>{{ item.unit_price|floatformat:3|intcomma|cutzero }}</span>
+            {% endif %}
+        {% endifequal %}
+    </td>
+</tr>

@@ -1,0 +1,122 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>FES Weblive Monitor System</title>
+        <link rel=stylesheet type="text/css" href="/media/weblive/js/jquery-ui-1.8.6.custom/css/smoothness/jquery-ui-1.8.6.custom.css">
+        <script type="text/javascript" src="/media/weblive/js/jquery-ui-1.8.6.custom/js/jquery-1.4.2.min.js"></script>
+        <script type="text/javascript" src="/media/weblive/js/jquery-ui-1.8.6.custom/js/jquery-ui-1.8.6.custom.min.js"></script>
+
+        <link rel=stylesheet type="text/css" href="/media/replay/jquery.treeview.css">
+        <script type="text/javascript" src="/media/replay/jquery.cookie.js"></script>
+        <script type="text/javascript" src="/media/replay/jquery.treeview.js"></script>
+
+        <script type="text/javascript" src="/media/weblive/weblive.js"></script>
+		<script type="text/javascript" src="/media/weblive/js/jquery.mousewheel.js"></script>
+        <link rel=stylesheet type="text/css" href="/media/weblive/weblive.css">
+
+        <link rel=stylesheet type="text/css" href="/media/weblive/jQuery-Timepicker-Addon/jquery-ui-timepicker-addon.css">
+        <script type="text/javascript" src="/media/weblive/jQuery-Timepicker-Addon/jquery-ui-timepicker-addon.js"></script>
+        <script type="text/javascript" src="/media/replay/jquery-ui-timepicker-zh_TW.js"></script>
+
+		<script type="text/javascript" src="/weblive/show_alive_count/"></script>
+        {% block extra_css %}{% endblock %}
+    </head>
+
+    <body>
+        {% csrf_token %}
+        <div style="float:right; z-index: 30000;">
+            <a href="/replay/{{ site_id }}/">錄影系統</a>
+            {% block weblive_url %}監控系統{% endblock %}[ <a href="/weblive/show_alive_log/">線上人數：<span id="alive_count">1+</span></a> ]
+            <a href="http://fes.fa.gov.tw/">FES首頁</a>
+        </div><br/>
+        <div id="container">
+            <div id="title_board">
+                <div id="left_top"></div><div id="mid_top"></div><div id="right_top"></div>
+                <div id="left_bottom"></div><div id="mid_bottom"></div><div id="right_bottom"></div>
+                <div id="logo"><img src="/media/weblive/image/fa_logo.png" width="120" alt=""></div>
+                <div id="main_title">漁業署港區監控系統</div>
+                <div id="sub_title">Fisheries Agency Weblive Monitor System</div>
+            </div>
+            {% block main_content %}
+            <div id="menu_board">
+                <div id="menu">
+                    <!--<div>
+                        {% ifequal site_id '1' %}
+                            <span style="color: red; background-color: #E5E5E5; border-radius: 5px;">站台1</span>
+                        {% else %}
+                            <a href="/weblive/1/">站台1</a>
+                        {% endifequal %}
+                        <span>(署內電腦適用)</span>
+                    </div>
+                    <div>
+                        {% ifequal site_id '2' %}
+                            <span style="color: red; background-color: #E5E5E5; border-radius: 5px;">站台2</span>
+                        {% else %}
+                            <a href="/weblive/2/">站台2</a>
+                        {% endifequal %}
+                        <span>(署外電腦適用)</span>
+                    </div>-->
+                </div>
+                <div id="select_cam" style="background-color: #FFFFFF; overflow-y: auto; height: 240px;">
+                    <ul id="tree" class="treeview-red">
+                {% if not hash %}
+                <li>您的縣市並無配置攝影機</li>
+                {% endif %}
+                        {% for city, ports in hash.list_sorted_key_and_value %}
+                            <li class="opened">
+                                <span>{{ city }}</span>
+                                <ul>
+                                    {% for port, monitors in ports.list_sorted_key_and_value %}
+                                        <li class="opened">
+                                            <span>{{ port }}</span>
+                                            <ul>
+                                                {% for monitor in monitors %}
+                                                    <li><a class="live_monitor_name"
+                                                           machine_no="{{ monitor.machine_no }}"
+                                                           live_monitor_id="{{ monitor.id }}"
+                                                           fes_id="{{ monitor.fes_id }}"
+                                                           href="#">{{ monitor.name }}</a></li>
+                                                {% endfor %}
+                                            </ul>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div id="ctrpanel">{% include 'weblive/ctrpanel.html' %}</div>
+            </div>
+            <div id="screen_board">
+                <iframe id="cam_img" src="{% url 'weblive_camimg' browser='init' cam_id=cam_id %}" width="640" height="430" frameborder="0" scrolling="no" align="center"></iframe>
+                <div id="cam_note"></div>
+            </div>
+			<div id="ctr_layer" class="pointer"></div>
+            {% endblock %}
+        </div>
+
+        <div id="footer">
+            <p>
+                Copyright &copy; 2009 ~ 2011 <a href="http://www.fa.gov.tw/chnn/" target="_blank">行政院農業部漁業署</a><br>
+                Designed by <a href="http://www.tfm.org.tw/" target="_blank">財團法人臺灣漁業及海洋技術顧問社</a>
+            </p>
+        </div>
+        <script type="text/javascript">
+
+          var _gaq = _gaq || [];
+          _gaq.push(['_setAccount', 'UA-12194145-3']);
+          _gaq.push(['_setDomainName', 'fes.fa.gov.tw']);
+          _gaq.push(['_setAllowLinker', true]);
+          _gaq.push(['_trackPageview']);
+
+          (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+          })();
+
+        </script>
+        <img id="iamalive" src="/favicon.ico" style="display: none;">
+    </body>
+</html>

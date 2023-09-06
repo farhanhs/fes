@@ -1,0 +1,238 @@
+{% extends "fishuser/zh-tw/base.html" %}
+{% load humanize %}
+{% load project_tags %}
+{% load url from future %}
+
+{% block script %}
+    <script src="/media/fishuser/v2/plupload/jquery.plupload.queue/jquery.plupload.queue.js{{ settings.SV_ }}"></script>
+    <script src="/media/fishuser/v2/plupload/js/plupload.full.js{{ settings.SV_ }}"></script>
+    <style>
+        .content-wrapper{
+            margin-left:0px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="flexs flex-column">
+    <div class="flex-box-1">
+        <form action="" class="orb-form">
+            <table class="table">
+                <tr>
+                    <td width="15%" align="right">發佈者：</td>
+                    <td width="85%">{{ request.user.last_name_name }}{{ request.user.first_name }}(帳號：{{ request.user.username }})</td>
+                </tr>
+                <tr>
+                    <td align="right">發佈日期：</td>
+                    <td>
+                        <input name="start_date" id="start_date" class="form-control datepicker" do_nothing="true" placeholder="" type="text" value="">
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">顯示在首頁：</td>
+                    <td>
+                        <select name="start_date" class="form-control" id="on_login_page">
+                            <option value="false" selected>登入不顯示</option>
+                            <option value="true">登入顯示</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">短公告：</td>
+                    <td>
+                        <textarea type="textarea" class="form-control" id="title" placeholder=""></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">長公告：</td>
+                    <td>
+                        請寫HTML (圖片寬度不要超過860)
+                        <button class="btn btn-xs btn-info" type="button" onclick="$('#div_memo').html($('#memo').val());$('#div_memo').show();$('#memo').hide();">預覽</button>
+                        <button class="btn btn-xs btn-warning" type="button" onclick="$('#div_memo').hide();$('#memo').show();">結束預覽</button>
+                        <div class="well well-lg" id="div_memo" style="display:none;">
+                        </div>
+                            <textarea style="height: 350px;" type="textarea" class="form-control" id="memo" placeholder="請寫HTML。"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">附　件：</td>
+                    <td>
+                        <button table_name="SystemInformationFile" type="button" class="btn btn-primary uploader" id="new_file">上傳輔助說明圖片/檔案</button>(可多選)
+                        <ol id="waitting_for_upload"></ol>
+                        <ol id="upload_files"></ol>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right"></td>
+                    <td>
+                        <button class="btn btn-success btn-lg" type="button" id="set_information" align="left">確定</button>
+                    </td>
+                </tr>
+            </table>
+
+        </form>
+    </div>
+</div>
+
+<script type="text/x-jquery-tmpl" id="li_file">
+    <li id="li_systeminformationfile_${id}" row_id="${id}" class="files">
+        <button class="deleteRow btn btn-danger btn-xs"
+            type="button"
+            row_id="${id}"
+            message="你確定要刪除「${name}.${ext}」嗎？"
+            module_name="fishuser"
+            table_name="systeminformationfile"
+            remove_target="li_systeminformationfile_${id}"
+            title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+        <a href="/fishuser/download_file/systeminformationfile/${id}/">${name}.${ext}</a>(下載：/fishuser/download_file/systeminformationfile/${id}/)(顯示圖：/fishuser/get_image/${id}/)
+    </li>
+</script>
+
+
+<script type="text/javascript">
+    function set_information() {
+        var $obj = $(this);
+        var start_date = $('#start_date').val();
+        if (!start_date){
+            alert('請至少告訴我哪一天要公告吧？');
+            return false;
+        }
+        var on_login_page = $('#on_login_page').val();
+        var title = $('#title').val();
+        if (!title){
+            alert('請至少寫個短公告吧？');
+            return false;
+        }
+        var memo = $('#memo').val();
+        if (!memo){
+            memo = title;
+        }
+
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            start_date: start_date,
+            on_login_page: on_login_page,
+            title: title,
+            memo: memo
+        };
+
+        $.ajax({
+            url: '/fishuser/set_information/',
+            type: 'POST',
+            data: data,
+            dataType: 'json',
+            success: function (json, text, xhr) {
+                window.location = "/fishuser/system_edit/";
+            },
+            error: function () {
+            },
+        })
+    }
+    
+    function NewFileUploader($buttom){
+        var buttom_id = $buttom.attr('id');
+        var table_name = $buttom.attr('table_name');
+
+        var uploader = new plupload.Uploader({
+            runtimes: 'html5',
+            browse_button: buttom_id,
+            url: '/fishuser/new_file_upload/',
+            multi_selection: true,
+            max_file_size : '100mb',
+            multipart: true,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            multipart_params : {
+                csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                table_name: table_name
+            },
+            init:{
+                FilesAdded:function(up, files){
+                    var file_num = files.length;
+                    if (confirm('確定上傳這' + file_num + '個檔案?，按下確定後，上傳進度將顯示在下方，尚未結束前請勿關閉視窗!!!')){
+                        for (i=0;i<file_num;i++){
+                            $('#waitting_for_upload').append('<li id="li_fileupload_' + files[i].id + '">' + files[i].name + '，上傳進度：<br><div class="progress progress-striped active"><div class="progress-bar"  role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" id="file_percent_' + files[i].id + '" style="width: 0%"></div></div></li>');
+                        }
+                        up.start();
+                    }else{
+                        return false
+                    }
+                },
+                
+                UploadProgress:function(up, file) {
+                    $('#file_percent_' + file.id).attr('style', 'width: ' + file.percent + "%");
+                    $('#file_percent_' + file.id).html(file.percent + "%");
+                },
+                FileUploaded:function(up, file, res){
+                    var json = $.parseJSON(res.response);
+                    var data = {
+                        'id': json["id"],
+                        'name': json['name']
+                    };
+                    var $col = $('#li_file').tmpl(data).appendTo($('#upload_files'));
+                    $('#li_fileupload_' + file.id).remove();
+                    $(".deleteRow").unbind('click');
+                    $(".deleteRow").click(deleteRow);
+                }
+            }
+        });
+        uploader.init();
+    }
+
+    function deleteRow(){
+        var $obj = $(this);
+        var row_name = $obj.attr('row_name');
+        var module_name = $obj.attr('module_name');
+        var table_name = $obj.attr('table_name');
+        var remove_target = $obj.attr('remove_target'); //刪除完畢後要移除的物件
+        var row_id = $obj.attr('row_id');
+        var message = $obj.attr('message');
+        Lobibox.confirm({
+            msg: message,
+            buttons: {
+                accept: {
+                    'class': 'lobibox-btn lobibox-btn-yes',
+                    text: '確定',
+                    closeOnClick: true
+                },
+                cancel: {
+                    'class': 'lobibox-btn lobibox-btn-no',
+                    text: '取消',
+                    closeOnClick: true
+                },
+            },
+            callback: function ($this, type, ev) {
+                if(type=="accept"){
+                    $.ajax({
+                        url: '/' + module_name + '/api/v2/' + table_name + '/' + row_id + '/',
+                        type: 'DELETE',
+                        contentType: 'application/json',
+                        dataType: 'json',
+                        success: function (json, text, xhr) {
+                            if (remove_target != '' && remove_target != undefined) {
+                                $('#' + remove_target).remove();
+                            }
+                        },
+                        error: function(json){
+                            alert(json)
+                        }
+                    })
+                }else{
+                    return false;
+                }
+            }
+        });
+    }
+
+    $(document).ready(function(){
+        $('#set_information').click(set_information);
+        $(".uploader").each(function(){
+            var $obj = $(this);
+            NewFileUploader($obj);
+        });
+    });
+
+</script>
+
+{% endblock body %}

@@ -1,0 +1,56 @@
+{% load utiltags %}
+{% load humanize %}
+<tr id="progress_{{ p.id }}" class="hightlightRow" title="建立人：{{ p.editer.user_profile.rName }}">
+    <!--　可更動日期
+    {% if edit %}
+    <td id="date_{{ p.id }}" class="redaction">
+        <a class="show_date_{{ p.id }}">{{ p.date|default_if_none:'' }}</a>
+        <input editing="date_{{ p.id }}" category="Progress" row="{{ p.id }}" class="edit_date_{{ p.id }} updateRedaction setMonth" size="10" type="text" value="{{ p.date|default_if_none:'' }}" old_value="{{ p.date|default_if_none:'' }}" style="display: none;">
+    </td>
+    {% else %}
+    <td>{{ p.date.year }}／{{ p.date.month }}</td>
+    {% endif %}-->
+    <td title="建立日期：{{ p.record_date }}" style=" padding-left: 25px;" align="left">{{ p.date.year }}／{{ p.date.month }}</td>
+
+    {% if edit %}
+    <td id="schedul_progress_percent_{{ p.id }}" class="redaction" style=" padding-right: 55px;" align="right">
+        <a class="show_schedul_progress_percent_{{ p.id }}">{{ p.schedul_progress_percent|default_if_none:'' }}</a>
+        <input editing="schedul_progress_percent_{{ p.id }}" category="Progress" row="{{ p.id }}" class="edit_schedul_progress_percent_{{ p.id }} updateRedaction" size="7" type="text" value="{{ p.schedul_progress_percent|default_if_none:'' }}" old_value="{{ p.schedul_progress_percent|default_if_none:'' }}" style="display: none; text-align:right;">
+    </td>
+    {% else %}
+    <td style=" padding-right: 55px;" align="right">{{ p.schedul_progress_percent|default_if_none:'' }}</td>
+    {% endif %}
+
+    {% if edit %}
+    <td id="actual_progress_percent_{{ p.id }}" class="redaction" style=" padding-right: 55px;" align="right">
+        <a class="show_actual_progress_percent_{{ p.id }}">{{ p.actual_progress_percent|default_if_none:'' }}</a>
+        <input editing="actual_progress_percent_{{ p.id }}" category="Progress" row="{{ p.id }}" class="edit_actual_progress_percent_{{ p.id }} updateRedaction" size="7" type="text" value="{{ p.actual_progress_percent|default_if_none:'' }}" old_value="{{ p.actual_progress_percent|default_if_none:'' }}" style="display: none; text-align:right;">
+    </td>
+    {% else %}
+    <td style=" padding-right: 55px;" align="right">{{ p.actual_progress_percent|default_if_none:'' }}</td>
+    {% endif %}
+
+
+    <td title="計算基準：{{ p.date }}" style=" padding-right: 55px;" align="right">{{ p.rDailyReportProgress }}</td>
+    
+    {% if edit %}
+    <td id="status_{{ p.id }}" class="redaction" align="center">
+        <a class="show_status_{{ p.id }}">{{ p.status|default_if_none:'' }}</a>
+        <select editing="status_{{ p.id }}" category="Progress" row="{{ p.id }}" class="edit_status_{{ p.id }} updateRedaction" value="{{ p.status.id }}" old_value="{{ p.status.id }}" style="display: none;">
+            <option value=""></option>
+            {% for status in option.project_status %}
+                    <option value="{{ status.id }}" {% ifequal p.status.id status.id %}selected{% endifequal %}>{{ status.value }}</option>
+            {% endfor %}
+        </select>
+    </td>
+    {% else %}
+    <td>{{ p.status|default_if_none:'' }}</td>
+    {% endif %}
+
+    {% if edit %}
+    <td align="center">
+        <img id="delete_{{ p.id }}" src="/media/images/delete.png" title="刪除紀錄" progress_id="{{ p.id }}" stage="{{ p.date.year }}／{{ p.date.month }}" class="deleteProjectProgress">
+    </td>
+    {% endif %}
+    
+</tr>

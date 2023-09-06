@@ -1,0 +1,48 @@
+{% extends "fishuser/zh-tw/base.html" %}
+{% load i18n %}
+{% load humanize %}
+{% load utiltags %}
+{% load guardian_tags %}
+
+{% block body %}
+
+<div class="alert alert-success" align="left" style="padding: 0 15 5 15;">
+    <h2>{{ place.name }}　<small>擁有{{ place.fishingport_set.all.count }}座漁港</small></h2>
+</div>
+<ul class="nav nav-pills nav-justified" id="nav">
+    <li class="active change_page_tab" page_name="page_based"><a>基本資料</a></li>
+    <li class="change_page_tab"  page_name="page_fishery"><a>歷年漁業產量</a></li>
+    <li class="change_page_tab"  page_name="page_project"><a>養殖漁業公共工程</a></li>
+</ul>
+
+<input id="place" type="hidden" value="/fishuser/api/v2/place/{{ place.id }}/">
+
+<div id="page_based" class="pages" align="left">
+    {% include "harbor/zh-tw/place_page_based.html" %}
+</div>
+<div id="page_fishery" class="pages" align="left" style="display: none;">
+    {% include "harbor/zh-tw/place_page_fishery.html" %}
+</div>
+<div id="page_project" class="pages" align="left" style="display: none;">
+    {% include "harbor/zh-tw/place_page_project.html" %}
+</div>
+
+
+
+
+<script type="text/javascript">
+    function change_page_tab() {
+        var $obj = $(this);
+        var page_name = $obj.attr('page_name');
+        $('.change_page_tab').attr('class', 'change_page_tab');
+        $obj.attr('class', 'change_page_tab active');
+        $('.pages').hide();
+        $('#' + page_name).show();
+    }
+
+    $(document).ready(function(){
+        $('.change_page_tab').click(change_page_tab);//切換分頁
+    });
+
+</script>
+{% endblock %}

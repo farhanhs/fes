@@ -1,0 +1,29 @@
+<div align="center">
+    {% for page in image_list %}
+    <h3 align="center">施工照片</h3>
+    <div style="width: 600px;" align="left">工程名稱：{{ project_name }}<div>
+    <div style="width: 600px;" align="left">承包廠商：{{ contractor_name }}<div>
+
+    <table class="preview_table" align="center" border="1" style="width: 600px; border-collapse:collapse;">
+        {% for photo in page %}
+        <tr>
+            <td align="center" style="width: 400px; height: 300px;">
+                <img src="/gallery/api/v1/image/view/{{ photo.id }}/?v={{ photo.rDTVersion }}&size=document">
+            </td>
+            <td style="vertical-align: top; width: 150px">
+                <p>施工項目：</p>
+                <p>{{ photo.node.rPath }}</p>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <hr style="margin-top: 30px; margin-bottom: 30px;">
+    {% endfor %}
+
+    <form id="preview_form_{{ doc }}" method="post" action="/gallery/api/v1/photo/image_docx/">
+        {% csrf_token %}
+        <section class="inputs"></section>
+        <input name="doc_type" value="{{ doc }}" style="display: none;">
+        <input class="download" name="submit" type="submit" value="下載" style="display: none;" />
+    </form>
+</div>

@@ -1,0 +1,78 @@
+{% load humanize %}
+{% load dailyreport_tags %}
+<tr top_dir="{{ item.read_top_dir_in_list }}" id="tr_item_{{ item.id }}" class="{% ifequal item.kind.value '目錄' %}yellow{% else %}white{% endifequal %} tr_hover" uplevel_id="{{ item.uplevel.id }}" kind="{{ item.kind.value }}">
+    <td id="td_item_symbol_{{ item.id }}" row_id="{{ item.id }}">
+        <span>{{ item.read_level_symbol }}</span>
+    </td>
+    <td class="padding_{{ item.read_level_num }} ClickShowInfo" row_id="{{ item.id }}" field_name="name" title="前版本名稱：{% if item.pre_item %}{{ item.pre_item.name }}{% else %}無前版本{% endif %}">
+        {% if item.uplevel %}
+            <img src="/media/dailyreport/images/T.png" width="20">
+        {% endif %}
+        {% ifequal item.kind.value "目錄" %}
+            <img src="/media/dailyreport/images/dir.png" width="20">
+        {% else %}
+            <img src="/media/dailyreport/images/item.png" width="15">
+        {% endifequal %}
+        <span>{{ item.name|default_if_none:"" }}</span>
+    </td>
+    <td style="text-align: center;" class="ClickShowInfo" row_id="{{ item.id }}" field_name="unit_name">
+        {% ifequal item.kind.value "目錄" %}
+            式
+        {% else %}
+            <span>{{ item.unit_name|default_if_none:"" }}</span>
+        {% endifequal %}
+    </td>
+    <td id="td_item_unit_price_{{ item.id }}" style="text-align: right;" class="ClickShowInfo" row_id="{{ item.id }}" field_name="unit_price" value={{ item.unit_num }} title="前版本設計單價：{% if item.pre_item %}{{ item.pre_item.unit_price }}{% else %}無前版本{% endif %}">
+        {% ifequal item.kind.value "目錄" %}
+            <span></span>
+        {% else %}
+            {{ item.unit_price|floatformat:3|intcomma|default_if_none:""|cutzero }}
+        {% endifequal %}
+    </td>
+    <td id="td_item_unit_num_{{ item.id }}" style="text-align: right;" class="ClickShowInfo" row_id="{{ item.id }}" field_name="unit_num" value={{ item.unit_num }} title="前版本設計數量：{% if item.pre_item %}{{ item.pre_item.unit_num }}{% else %}無前版本{% endif %}">
+        {% ifequal item.kind.value "目錄" %}
+            1
+        {% else %}
+            {{ item.unit_num|floatformat:3|intcomma|default_if_none:""|cutzero }}
+        {% endifequal %}
+    </td>
+    {% ifnotequal item.kind.value "目錄" %}
+        <td style="text-align: right;">
+            {% if edit %}
+                <input id="item_num_{{ item.id }}" item_id="{{ item.id }}" style="text-align: right;" type="text"
+                class="check_over_sumnum arrow_keys_to_detect" tabindex="{{ forloop.counter }}1" value="">
+            {% else %}
+                <span id="span_item_num_{{ item.id }}"></span>
+            {% endif %}
+        </td>
+        <td id="item_another_num_{{ item.id }}" style="text-align: right;" bgcolor="#668BB2">
+            {% ifequal report_type 'contractor' %}
+                {% if 'edit_contractor_report' in user_perms %}
+                    {% if not engprofile.contractor_read_inspectorReport %}
+                        <span></span>
+                    {% else %}
+                        <span id="span_item_another_num_{{ item.id }}"></span>
+                    {% endif %}
+                {% else %}
+                    <span id="span_item_another_num_{{ item.id }}"></span>
+                {% endif %}
+            {% else %}
+                <span id="span_item_another_num_{{ item.id }}"></span>
+            {% endifequal %}
+        </td>
+        <td id="item_sum_num_{{ item.id }}" value="{{ item.pre_sum_num }}" style="text-align: right;" title="累積完成數量">
+            <span id="span_item_sum_num_{{ item.id }}" class="get_item_sum" item_id="{{ item.id }}">
+                <button class="btn btn-info btn-small">顯示</button>
+            </span>
+        </td>
+        <td>
+            {% if edit %}
+                <input id="item_note_{{ item.id }}" type="text" value="" tabindex='{{ forloop.counter }}2' class="arrow_keys_to_detect">
+            {% else %}
+                <span id="span_item_note_{{ item.id }}"></span>
+            {% endif %}
+        </td>
+    {% else %}
+        <td colspan="4"><span></span></td>
+    {% endifnotequal %}
+</tr>

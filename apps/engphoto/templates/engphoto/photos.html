@@ -1,0 +1,168 @@
+{% load utiltags %}
+<link rel="stylesheet" type="text/css" href="/media/style/style.css"/>
+{% for photo in photos %}
+    <table width="97%" align="center" border="1" id="photo_{{ photo.id }}"
+    style="border-color:#D4D0C8; line-height:1.5; border-collapse:collapse;">
+        <tr>
+            <td style="background: rgb(102, 102, 102) none repeat scroll 0% 0%; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">&nbsp;</td>
+            <td style="background: rgb(102, 102, 102) none repeat scroll 0% 0%; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">&nbsp;</td>
+            <td style="background: rgb(102, 102, 102) none repeat scroll 0% 0%; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">&nbsp;</td>
+            <td width="200" style="background: rgb(102, 102, 102) none repeat scroll 0% 0%; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">&nbsp;</td>
+            <td style="background: rgb(102, 102, 102) none repeat scroll 0% 0%; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">&nbsp;</td>
+        </tr>
+        <tr class="odd">
+            <td>&nbsp;</td>
+            <td colspan="4" width="750">
+                <div><span class="order" id="order_{{ photo.id }}">#{{ forloop.counter }}</span>,
+                <span id="checkpoint_{{ photo.id }}">{{ photo.checkpoint }}</span>/<span
+                id="position_{{ photo.id }}" class="{{ edit.position }}">{{ photo.position }}</span>{% if edit.position %}<button>儲存相片名稱</button>{% endif %}
+                <!--有全形空白-->　　　監造人員已檢視：
+                <span id="inspector_check_{{ photo.id }}" 
+                class="{% ifequal edit.comment "監造廠商" %}{{ edit.inspector_check }}{% endifequal %}{% ifequal edit.comment "自辦主辦工程師" %}{{ edit.inspector_check }}{% endifequal %}"
+                >{% if photo.inspector_check %}是{% else %}否{% endif %}</span></div>
+                
+                <div>
+                {% if not photo.file and edit.upfilebutton and not edit.intrash and not edit.indefect %}
+                    {% comment %}
+                        未上傳相片，且擁有上傳權限，且頁面不在待改善及資源回收筒中
+                    {% endcomment %}
+                    上傳相片：<span id="upfile_{{ photo.id }}">
+                        <input type="file" size="20" id="file_{{ photo.id }}"
+                        onChange="return ajaxFileUpload(this, 'file_{{photo.id}}');"
+                        name="file_{{ photo.id }}"/>
+                    </span>
+                {% endif %}
+                {% if photo.file and edit.upfilebutton and not edit.intrash and not edit.indefect %}
+                    {% ifequal request.user.id photo.owner.id %}
+                        {% comment %}
+                            已上傳相片，且擁有上傳權限，且頁面不在待改善及資源回收筒中
+                            且上傳者與目前瀏覽網頁者是同一個人繼續上傳此張相片
+                        {% endcomment %}
+                        上傳相片：<span id="upfile_{{ photo.id }}">
+                            <input type="file" size="20" id="file_{{ photo.id }}"
+                            onChange="return ajaxFileUpload(this, 'file_{{photo.id}}');"
+                            name="file_{{ photo.id }}"/>
+                        </span>
+                    {% endifequal %}
+                {% endif %}
+                {% if photo.file and edit.upfilebutton and not edit.indefect %}
+                    {% ifequal request.user.id photo.owner.id %}
+                        {% comment %}
+                            已上傳相片，且擁有上傳權限，且頁面不在待改善
+                            且上傳者與目前瀏覽網頁者是同一個人才可以移動相片或是把相片丟到資源回收筒
+                        {% endcomment %}
+                        <span id="movebutton_{{ photo.id }}">
+                                <button
+                                class="movebutton"
+                                onclick="moveToElseButton({{ photo.id }})" title="移動至其他查驗點">移動</button>
+                        </span>
+
+                        <span id="trashbutton_{{ photo.id }}">
+                            <button onclick="deletePhoto('資源回收筒', {{photo.checkpoint.id}}, {{photo.id}})"
+                            class="trashbutton"
+                            title="可移至資源回收筒中，此區相片將保留半年時間，半年後由系統自動刪除">移至資源回收筒</button>
+                        </span>
+                    {% else %}
+                        <span id="movebutton_{{ photo.id }}">
+                                <button
+                                class="hidden"
+                                onclick="moveToElseButton({{ photo.id }})" title="移動至其他查驗點">移動</button>
+                        </span>
+
+                        <span id="trashbutton_{{ photo.id }}">
+                            <button onclick="deletePhoto('資源回收筒', {{photo.checkpoint.id}}, {{photo.id}})"
+                            class="hidden"
+                            title="可移至資源回收筒中，此區相片將保留半年時間，半年後由系統自動刪除">移至資源回收筒</button>
+                        </span>
+                    {% endifequal %}
+                {% else %}
+                    <span id="movebutton_{{ photo.id }}">
+                            <button class="hidden"
+                            onclick="moveToElseButton({{ photo.id }})" title="移動至其他查驗點">移動</button>
+                    </span>
+
+                    <span id="trashbutton_{{ photo.id }}">
+                        <button onclick="deletePhoto('資源回收筒', {{photo.checkpoint.id}}, {{photo.id}})"
+                        class="hidden"
+                        title="若上傳相片錯誤可移至資源回收筒中，此區相片將保留半年時間，半年後由系統自動刪除">移至資源回收筒</button>
+                    </span>
+                {% endif %}
+                {% if edit.defectbutton and not edit.indefect %}
+                    <span id="deletebutton_{{ photo.id }}">
+                        <button onclick="deletePhoto('待改善相簿', {{photo.checkpoint.id}}, {{photo.id}})"
+                        class="{% if photo.file and edit.defectbutton %}deletebutton{%else%}hidden{% endif %}"
+                        title="若上傳相片具有缺失可移至待改善相簿中，此區相片將保留半年時間，半年後由系統自動刪除">移至待改善相簿
+                    </span>
+                {% endif %}
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td height="150">&nbsp;</td>
+            <td colspan="2" rowspan="2" width="400" align="center" valign="middle">
+            <span id="showfile_{{ photo.id }}">
+            {% if photo.file %}
+                {% ifequal photo.duplicatetype.value "系統判斷重複" %}
+                    <script type="text/javascript">makeDuplicateButton({{ photo.id }})</script>
+                {% else %}
+                    {% ifequal photo.enoughtype.value "未達要求大小的相片" %}
+                        <script type="text/javascript">makeNotEnoughButton({{ photo.id }})</script>
+                    {% else %}
+                        <a href="/engphoto/bigpicture/{{ photo.id }}/{{ type }}"
+                        target="photo_{{ photo.project.id }}" onmouseover="style.cursor='pointer'">
+                        <img width="400" height="300" class="engphoto"
+                        src='/engphoto/getpic/{{ photo.file.name|thumb:"width=400,height=300,error=apps/engphoto/static/engphoto/images/errorpicture.png" }}'>
+                        </img></a>
+                    {% endifequal %}
+                {% endifequal %}
+            {% else %}
+                <img width="400" height="300" src="/media/engphoto/images/nopicture.png"></img>
+            {% endif %}
+            </span></td>
+            <td colspan="2" rowspan="3" width="100%" valign="top">
+                {% if edit.comment %}
+                    {% ifnotequal edit.comment "上層管理者" %}
+                    填寫意見： <button class="id_updatePhotoInfo" photo_id="{{ photo.id }}">意見送出</button><br/>
+                    {% endifnotequal %}
+                    {% ifequal edit.comment "營造廠商" %}
+                        <textarea id="id_comment" cols="28">{{ photo.note_con }}</textarea>
+                    {% endifequal %}
+                    {% ifequal edit.comment "監造廠商" %}
+                        <textarea id="id_comment" cols="28">{{ photo.note_ins }}</textarea>
+                    {% endifequal %}
+                    {% ifequal edit.comment "負責主辦工程師" %}
+                        <textarea id="id_comment" cols="28">{{ photo.note_eng }}</textarea>
+                    {% endifequal %}
+                    {% ifequal edit.comment "協同主辦工程師" %}
+                        <textarea id="id_comment" cols="28">{{ photo.note_eng }}</textarea>
+                    {% endifequal %}
+                    {% ifequal edit.comment "自辦主辦工程師" %}
+                        <textarea id="id_comment" cols="28">{{ photo.note_eng }}</textarea>
+                    {% endifequal %}
+                {% endif %}
+                <div>主辦意見：<br><span id="id_note_eng_{{ photo.id }}">{{ photo.note_eng|linebreaks }}</span></div><br/>
+                <div>監造意見：<br><span id="id_note_ins_{{ photo.id }}">{{ photo.note_ins|linebreaks }}</span></div><br/>
+                <div>營造意見：<br><span id="id_note_con_{{ photo.id }}">{{ photo.note_con|linebreaks }}</span></div>
+            </td>
+        </tr>
+        <tr>
+            <td height="150">&nbsp;</td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td width="200">
+                <div id="uploader_{{ photo.id }}"
+                    title="{% if photo.owner.username %}帳號: {{ photo.owner.username }}{% endif %}">
+                    {% if photo.owner.username %}上傳者:{{ photo.owner.user_profile.rName }}{% endif %}
+                </div>
+                <span title="相片上傳時間" id="uploadtime_{{ photo.id }}">
+                    {% if photo.uploadtime %}{{ photo.uploadtime }}{% endif %}</span>
+                <span title="相片資訊最後更新時間" id="updatetime_{{ photo.id }}">{{ photo.updatetime }}</span>
+            </td>
+            <td width="200">
+            拍照日期:<span id="photodate_{{ photo.id }}" class="{{ edit.photodate }}">{% if photo.photodate %}{{ photo.photodate }}{% else %}{% endif %}</span><br/>
+            檔案大小: <span id="size_{{ photo.id }}">{{ photo.calSize }}</span></td>
+        </tr>
+    </table>
+    <br>
+{% endfor %}

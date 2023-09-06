@@ -1,0 +1,35 @@
+{% extends 'supervise/statisticstable_01.html' %}
+{% load utiltags %}
+
+{% block table %}
+
+		
+<h1>{{ title }}-<span style="font-size: 16px;">({{ year }} 年度共 {{ all_case_num }} 件)</span></h1>
+<hr align="left" width="800" size="1" style="color: #FFC991;">
+<br>
+
+<table border="1" style="border-collapse: collapse">
+	{% for i in data %}
+		<tr align="center" valign="middle">
+			{% for j in i %}
+				<td {% ifequal j.bgcolor 1 %}bgcolor="#CDE5FF"{% endifequal %}
+				{% ifequal j.bgcolor 2 %}bgcolor="#E5FFCD"{% endifequal %}
+				{% ifequal i data.0 %}bgcolor="#FFE7CD"{% endifequal %}
+				ids="{{ j.cases_id }}" {% if j.num %}class="showFilterCases"{% endif %}
+				title="{{ j.introduction }}" search_condition="{{ j.no }}({{ j.num }}次)({{ j.introduction }})"
+				>
+					{% if not j.num %}
+						{{ j }}
+					{% else %}
+						{{ j.no }}
+						<br>
+						({{ j.num }})
+					{% endif %}
+				</td>
+			{% endfor %}
+		</tr>
+
+	{% endfor %}
+</table>
+<br>
+{% endblock %}

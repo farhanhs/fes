@@ -1,0 +1,110 @@
+{% extends "fishuser/zh-tw/base.html" %}
+{% load i18n %}
+{% load humanize %}
+{% load utiltags %}
+{% load project_tags %}
+{% load guardian_tags %}
+
+{% block style %}
+    .col-xs-1, .col-sm-1, .col-md-1, .col-lg-1, .col-xs-2, .col-sm-2, .col-md-2, .col-lg-2, .col-xs-3, .col-sm-3, .col-md-3, .col-lg-3, .col-xs-4, .col-sm-4, .col-md-4, .col-lg-4, .col-xs-5, .col-sm-5, .col-md-5, .col-lg-5, .col-xs-6, .col-sm-6, .col-md-6, .col-lg-6, .col-xs-7, .col-sm-7, .col-md-7, .col-lg-7, .col-xs-8, .col-sm-8, .col-md-8, .col-lg-8, .col-xs-9, .col-sm-9, .col-md-9, .col-lg-9, .col-xs-10, .col-sm-10, .col-md-10, .col-lg-10, .col-xs-11, .col-sm-11, .col-md-11, .col-lg-11, .col-xs-12, .col-sm-12, .col-md-12, .col-lg-12 {
+        padding-right: 0px !important;
+    }
+    td {
+        padding: 2px !important;
+    }
+{% endblock %}
+
+{% block body %}
+<h2>編輯計畫類別</h2>
+<hr>
+    <table id="container">{{type}}
+        {% for type in types %}
+        <tr>
+            <td width="100%">
+                <input
+                    type="text" 
+                    class="BlurUpdateInfo"
+                    field_type="text"
+                    row_id="{{type.id}}"
+                    field_name="value"
+                    table_name="option"
+                    module_name='fishuser'
+                    style="height:35px"
+                    id="{{type}}"
+                    name="{{type}}"
+                    value="{{type.value}}"/>
+            </td>
+            
+            <td> 
+                <span class="btn btn-danger" onclick="del('{{type}}')">
+                    刪除
+                </span>
+            </td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td width="100%">
+                <input id="create" type="text" style="height: 35px">
+            </td>
+            <td> 
+                <span class="btn btn-info" onclick="create()">
+                    新增
+                </span>
+            </td>
+        </tr>
+    </table>
+    
+<script type="text/javascript">
+    function create(){
+        var value = document.getElementById('create').value;
+        if(value==''){
+            return false;
+        }
+        $.ajax({
+            url: '/project/create_plan_type/'+value+'/',
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function(data){
+                if(data['status']=='success'){
+                    alert('新增成功')
+                }
+                else if(data['status']=='類別已存在'){
+                    alert('類別已存在')
+                }
+            },
+            error:function(data){
+            },
+        })
+        location.reload();
+    }
+
+    function del(v){
+        $.ajax({
+            url: '/project/delete_plan_type/'+v+'/',
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function(data){
+                if(data['status']=='success'){
+                    alert('刪除成功')
+                    location.reload();
+                }
+                else if(data['status']=='有使用中的計畫'){
+                    msg = '';
+                    for(i=0; i<data['plans'].length; i++){
+                        msg += data['plans'][i] + '\n'
+                    }
+                    alert('錯誤！以下計畫使用該類別:\n'+msg)
+
+                }
+            },
+            error: function(data){
+            }
+        })
+        
+    }
+
+</script>
+{% endblock%}
+

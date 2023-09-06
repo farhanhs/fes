@@ -1,0 +1,69 @@
+{% extends 'harbor/editmemu.html' %}
+
+{% block sidecontent %}
+<a id="location" class="city"></a><br>
+
+<form enctype="multipart/form-data" action="./" method="POST">
+{% include 'harbor/cityeditmenu.html' %}
+<h2>
+<table>
+    <tr>
+        <td>年度</td>
+        <td><input type="text" class="integer requisite" name="new__year" value=""></td>
+    </tr>
+    <tr>
+        <td>工程名稱</td>
+        <td><input type="text" class="requisite" name="new__project_name" value=""></td>
+    </tr>
+    <tr>
+        <td>工程經費(萬元)</td>
+        <td><input type="text" class="float" name="new__value" value=""></td>
+    </tr>
+    <tr>
+        <td colspan="2">工程內容</td>
+    </tr>
+    <tr>
+        <td colspan="2"><textarea cols="70" rows="5" name="new__contents"></textarea></td>
+    </tr>
+    <tr>
+        <td colspan="2">備註</td>
+    </tr>
+    <tr>
+        <td colspan="2"><textarea cols="70" rows="5" name="new__memo"></textarea></td>
+    </tr>
+</table>
+<br>
+<input type="submit" id="submit" name="submit" class="submit" value="--------確定新增--------" onClick="submiting(this)">
+<font id="caution" color="#E100F0" size="2.8">請檢查必填欄位！</font><br><br><br>
+<hr width="800" color="#ff8000" noshade title="這不是分隔線">
+<br><br>
+<h3>
+<table table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+    <tr align="center" bgcolor="#FFFF99">
+        <td></td>
+        <td>年度</td>
+        <td>工程名稱</td>
+        <td>工程經費(萬元)</td>
+        <td>工程內容</td>
+        <td>備註</td>
+        <td></td>
+    </tr>
+    {% for aquapubrec in list %}
+    <tr id="aquapubrec_{{ aquapubrec.id }}">
+        <td>{{ forloop.counter }}</td>
+        <td><input size="10" type="text" class="requisite" name="aquapubrec__year__{{ aquapubrec.id }}" value="{% if aquapubrec.year %}{{ aquapubrec.year }}{% else %}0{% endif %}"></td>
+        <td><input size="16" type="text" class="requisite" name="aquapubrec__project_name__{{ aquapubrec.id }}" value="{% if aquapubrec.project_name %}{{ aquapubrec.project_name }}{% else %}0{% endif %}"></td>
+        <td><input size="16" type="text" class="float" name="aquapubrec__value__{{ aquapubrec.id }}" value="{% if aquapubrec.value %}{{ aquapubrec.value }}{% else %}0{% endif %}"></td>
+        <td><textarea cols="20" rows="2" name="aquapubrec__contents__{{ aquapubrec.id }}">{% if aquapubrec.contents %}{{ aquapubrec.contents }}{% endif %}</textarea></td>
+        <td><textarea cols="20" rows="2" name="aquapubrec__memo__{{ aquapubrec.id }}">{% if aquapubrec.memo %}{{ aquapubrec.memo }}{% endif %}</textarea></td>
+        <td><button id="del_aquapubrec_{{ aquapubrec.id }}" class="delRow">刪除紀錄</button></td>
+    </tr>
+    {% endfor %}
+</table>
+</h3>
+<br>
+<input type="submit" id="submit" name="submit" value="--------確定修改--------" onClick="submiting(this)">
+
+</form>
+
+{% endblock %}

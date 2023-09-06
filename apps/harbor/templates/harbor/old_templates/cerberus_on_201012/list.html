@@ -1,0 +1,54 @@
+{% extends 'harbor/mainmemu.html' %}
+
+{% block sidecontent %}
+
+<!-- my code -->
+        <form action="/harbor/fish_pool/create/">
+            <table>
+                <tr>
+                    <td><input type="text" name="name" /></td>
+                    <td><select name="place_id">
+                            {% for place in places %}
+                                <option value="{{ place.id }}"> {{ place.name }} </option>
+                            {% endfor %}
+                        </select></td>
+                    <td><input type="submit" value="新增魚塭" /></td>
+                </tr>
+                <tr>
+                    <td><hr /></td>
+                    <td><hr /></td>
+                    <td><hr /></td>
+                </tr>
+            </table>
+            <br>
+            {% for p in places %}
+                {% if p.aquacultures %}
+                <table bordercolor="#CAD7E4" border="1" style="border-collapse: collapse">
+                    <tr>
+                        <td colspan="4" style="font-size: 26px;" bgcolor="#AFFEFF">{{ p.name }}</td>
+                    </tr>
+                    {% for aq4 in p.aquacultures %}
+                        {% if aq4.0.name %}
+                            <tr height="30">
+                                {% for aq in aq4 %}
+                                <td width="230">
+                                    {% if aq.name %}
+                                        <a href="/harbor/fish_pool/edit/?id={{ aq.id }}"><img src="/media/images/edit.png" /></a> <a href="/harbor/fish_pool/delete/?id={{ aq.id }}"><img src="/media/images/delete.png" /></a>
+                                        {{ aq.name }}
+                                        {% if aq.place %} {{ aq.place }} {% else %} - {% endif %}
+                                    {% endif %}
+                                </td>
+                                {% endfor %}
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </table>
+                <br><br>
+                {% endif %}
+            {% endfor %}
+            
+        </form>
+
+<!-- @my code-->
+
+{% endblock %}

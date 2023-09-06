@@ -1,0 +1,313 @@
+{% extends "fishuser/zh-tw/base.html" %}
+{% load humanize %}
+{% load project_tags %}
+{% load url from future %}
+
+
+{% block script %}
+    <script src="/media/fishuser/v2/plupload/jquery.plupload.queue/jquery.plupload.queue.js{{ settings.SV_ }}"></script>
+    <script src="/media/fishuser/v2/plupload/js/plupload.full.js{{ settings.SV_ }}"></script>
+    <style>
+        .content-wrapper{
+            margin-left:0px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<button class="btn btn-success btn-lg" onclick="window.location='/fishuser/system_create/'">新增公告</button>
+<br><br>
+<div class="panel-group" id="accordion">
+    {% for info in infos %}
+    <div class="panel panel-info" id="div_panel_{{ info.id }}">
+        <div class="panel-heading">
+            <h4 class="panel-title" align="left">
+                <div class="input-group">
+                    <span class="input-group-addon" align="left">
+                        <button class="deleteRow btn btn-danger btn-xs"
+                            row_id="{{ info.id }}"
+                            message="你確定要刪除嗎？"
+                            module_name="fishuser"
+                            table_name="systeminformation"
+                            remove_target="div_panel_{{ info.id }}"
+                            title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+                    </span>
+                    <span class="input-group-addon pointer" align="left" data-toggle="collapse" data-parent="#accordion" href="#systeminformation_{{ info.id }}" style="color: blue;">
+                        {{ info.user.username }}
+                    </span>
+                    <input
+                        row_id="{{ info.id }}"
+                        style="width: 15%; height: 50px;"
+                        table_name="systeminformation"
+                        module_name="fishuser"
+                        class="form-control needExist BlurUpdateInfo datepicker"
+                        field_type="date"
+                        field_name="start_date"
+                        value="{{ info.start_date }}"
+                        old_value="{{ info.start_date }}">
+                    <select
+                        row_id="{{ info.id }}"
+                        is_select="true"
+                        style="width: 15%; height: 50px;"
+                        table_name="systeminformation"
+                        module_name="fishuser"
+                        class="form-control BlurUpdateInfo form"
+                        field_type="str"
+                        field_name="on_login_page"
+                        old_value="{{ info.on_login_page }}">
+                        <option value="true" {% if info.on_login_page %}selected{% endif %}>登入顯示</option>
+                        <option value="false" {% if not info.on_login_page %}selected{% endif %}>登入不顯示</option>
+                    </select>
+                    <textarea
+                        row_id="{{ info.id }}"
+                        style="width: 70%; height: 50px;"
+                        table_name="systeminformation"
+                        module_name="fishuser"
+                        class="form-control BlurUpdateInfo"
+                        field_type="str"
+                        type="textarea"
+                        field_name="title"
+                        placeholder="請輸入"
+                        old_value="{{ info.title|default_if_none:"" }}"
+                        rows="2">{{ info.title|default_if_none:"" }}</textarea>
+                </div>
+            </h4>
+        </div>
+        <div id="systeminformation_{{ info.id }}" class="panel-collapse collapse" align="left">
+            <div class="panel-body">
+                請寫HTML (圖片寬度不要超過860)
+                <button class="btn btn-xs btn-info" onclick="$('#div_memo_{{ info.id }}').html($('#memo_{{ info.id }}').val());$('#div_memo_{{ info.id }}').show();$('#memo_{{ info.id }}').hide();">預覽</button>
+                <button class="btn btn-xs btn-warning" onclick="$('#div_memo_{{ info.id }}').hide();$('#memo_{{ info.id }}').show();">結束預覽</button>
+                <div class="well well-lg" id="div_memo_{{ info.id }}" style="display:none;">
+                </div>
+                <textarea
+                    id="memo_{{ info.id }}"
+                    row_id="{{ info.id }}"
+                    table_name="systeminformation"
+                    module_name="fishuser"
+                    class="form-control BlurUpdateInfo"
+                    field_type="str"
+                    type="textarea"
+                    field_name="memo"
+                    placeholder="請輸入"
+                    old_value="{{ info.memo|default_if_none:"" }}"
+                    rows="10">{{ info.memo|default_if_none:"" }}</textarea>
+                <br>
+                <button table_name="SystemInformationFile" class="btn btn-primary uploader" row_id="{{ info.id }}" id="new_file_{{ info.id }}">
+                    上傳輔助說明圖片/檔案
+                </button>(可多選)
+                <ol id="waitting_for_upload_{{ info.id }}"></ol>
+                附加檔案：<br>
+                <ol id="upload_files_{{ info.id }}">
+                    {% for f in info.systeminformationfile_set.all %}
+                        <li id="li_systeminformationfile_{{ f.id }}" row_id="{{ f.id }}" class="files">
+                            <button class="deleteRow btn btn-danger btn-xs"
+                                    row_id="{{ f.id }}"
+                                    message="你確定要刪除嗎？"
+                                    module_name="fishuser"
+                                    table_name="systeminformationfile"
+                                    remove_target="li_systeminformationfile_{{ f.id }}"
+                                    title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+                            <a href="/fishuser/download_file/{{ f.id }}/">{{ f.name }}.{{ f.rExt }}</a>
+                            (下載：/fishuser/download_file/systeminformationfile/{{ f.id }}/)
+                            (顯示圖：/fishuser/get_image/{{ f.id }}/)
+                        </li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+
+
+
+<script type="text/x-jquery-tmpl" id="li_file">
+    <li id="li_systeminformationfile_${id}" row_id="${id}" class="files">
+        <button class="deleteRow btn btn-danger btn-xs"
+            row_id="${id}"
+            message="你確定要刪除嗎？"
+            module_name = "fishuser"
+            table_name = "systeminformationfile"
+            remove_target = "li_systeminformationfile_${id}"
+            title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+        <a href="/fishuser/download_file/${id}/">${name}.${ext}</a>(下載：/fishuser/download_file/systeminformationfile/${id}/)(顯示圖：/fishuser/get_image/${id}/)
+    </li>
+</script>
+
+
+<script type="text/javascript">
+    function NewFileUploader($buttom, row_id){
+        var buttom_id = $buttom.attr('id');
+        var table_name = $buttom.attr('table_name');
+
+        var uploader = new plupload.Uploader({
+            runtimes: 'html5',
+            browse_button: buttom_id,
+            url: '/fishuser/new_file_upload/',
+            multi_selection: true,
+            max_file_size : '100mb',
+            multipart: true,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            multipart_params : {
+                csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                table_name: table_name,
+                row_id: row_id
+            },
+            init:{
+                FilesAdded:function(up, files){
+                    var file_num = files.length;
+                    if (confirm('確定上傳這' + file_num + '個檔案?，按下確定後，上傳進度將顯示在下方，尚未結束前請勿關閉視窗!!!')){
+                        for (i=0;i<file_num;i++){
+                            $('#waitting_for_upload_' + row_id).append('<li id="li_fileupload_' + files[i].id + '">' + files[i].name + '，上傳進度：<div class="progress progress-striped active"><div class="progress-bar"  role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" id="file_percent_' + files[i].id + '" style="width: 0%"></div></div></li>');
+                        }
+                        up.start();
+                    }else{
+                        return false
+                    }
+                },
+                FileUploaded:function(up, file, res){
+                    var json = $.parseJSON(res.response);
+                    var data = {
+                        'id': json["id"],
+                        'name': json['name'],
+                        'ext': json['ext']
+                    };
+                    var $col = $('#li_file').tmpl(data).appendTo($('#upload_files_' + row_id));
+                    
+                    $('#li_fileupload_' + file.id).remove();
+                    $(".deleteRow").unbind('click');
+                    $(".deleteRow").click(deleteRow);
+                },
+                UploadProgress:function(up, file) {
+                    $('#file_percent_' + file.id).attr('style', 'width: ' + file.percent + "%");
+                    $('#file_percent_' + file.id).html(file.percent + "%");
+                }
+            }
+        });
+        uploader.init();
+    }
+    
+    function deleteRow(){
+        var $obj = $(this);
+        var row_name = $obj.attr('row_name');
+        var module_name = $obj.attr('module_name');
+        var table_name = $obj.attr('table_name');
+        var remove_target = $obj.attr('remove_target'); //刪除完畢後要移除的物件
+        var row_id = $obj.attr('row_id');
+        var message = $obj.attr('message');
+        Lobibox.confirm({
+            msg: message,
+            buttons: {
+                accept: {
+                    'class': 'lobibox-btn lobibox-btn-yes',
+                    text: '確定',
+                    closeOnClick: true
+                },
+                cancel: {
+                    'class': 'lobibox-btn lobibox-btn-no',
+                    text: '取消',
+                    closeOnClick: true
+                },
+            },
+            callback: function ($this, type, ev) {
+                if(type=="accept"){
+                    $.ajax({
+                        url: '/' + module_name + '/api/v2/' + table_name + '/' + row_id + '/',
+                        type: 'DELETE',
+                        contentType: 'application/json',
+                        dataType: 'json',
+                        success: function (json, text, xhr) {
+                            if (remove_target != '' && remove_target != undefined) {
+                                $('#' + remove_target).remove();
+                            }
+                        },
+                        error: function(json){
+                            alert(json)
+                        }
+                    })
+                }else{
+                    return false;
+                }
+            }
+        });
+    }
+
+    //送資料
+    function BlurUpdateInfo(){
+        //整理欄位資訊
+        var $obj = $(this);
+        var row_id = $obj.attr('row_id');
+        var field_type = $obj.attr('field_type');
+        var field_name = $obj.attr('field_name');
+        var table_name = $obj.attr('table_name');
+        var module_name = $obj.attr('module_name');
+        var class_name = $obj.attr('class');
+        var value = $obj.val();
+        var old_value = $obj.attr('old_value');
+        var api_version = $obj.attr('api_version');
+        if (!api_version){
+            api_version = 'v2';
+        }
+        if (value == old_value){
+            return false;
+        }
+        var listname_field_name = 'listname_'+field_name;
+        if (field_type=='date' && value){
+            if(!(date_check.test(value))){
+                var message = field_name + '須為日期格式(如2016-01-19)！';
+                alert(message);
+                return false;
+            }
+        }
+        if (value == 'true'){
+            value = true;
+        } else if (value == 'false'){
+            value = false;
+        }
+
+        //送資料到進行修改
+        var url = '/'+module_name+'/api/' + api_version + '/'+table_name+'/'+row_id+'/';
+        if (value!=old_value){
+            var data = {
+                csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN
+            }
+            data[field_name] = value;
+            $.ajax({
+                url: url,
+                type: 'PUT',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function (json, text, xhr) {
+                    $('a[href="#collapseOne_' + row_id + '"]').find('span[name=' + field_name + ']').html(value);
+                },
+                error: function () {
+                    $obj.val(old_value);
+                    alert("SomeThing Wrong!!!");
+                },
+            })
+        }
+    }
+    $(document).ready(function(){
+        $(".uploader").each(function(){
+            var $obj = $(this);
+            var row_id = $obj.attr('row_id');
+            NewFileUploader($obj, row_id);
+        });
+        $('.deleteRow').click(deleteRow);
+        $('.BlurUpdateInfo').blur(BlurUpdateInfo);
+        $('.BlurUpdateInfo').keypress(function(event) {
+            var $obj = $(this);
+            if (!$obj.is("textarea") && event.which == 13){
+                $obj.blur();
+            }
+        });
+    });
+
+</script>
+
+{% endblock%}

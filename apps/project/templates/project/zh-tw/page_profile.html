@@ -1,0 +1,979 @@
+{% load i18n %}
+{% load utiltags %}
+{% load humanize %}
+<style>
+    td.info{
+        background-color: #25D986
+    }
+</style>
+<h3 class="text-primary">工程基本資料</h3>
+
+<!-- <table class="table table-bordered" style="font-size: 14px;">
+    <tr>
+        <td class="active" width="17%">
+            延續工程<br>
+            {% if edit %}
+                <button class="btn btn-info btn-xs" data-toggle="modal" data-target="#choose_fes_project_dialog">若為延續工程<br>請選擇前年度工程</button>
+            {% endif %}
+        </td>
+        <td align="left" colspan="3">
+            {% if project.ex_project %}
+                {{ project.ex_project.year }}年度-{{ project.ex_project.name }}
+            {% else %}
+                尚未選擇
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="active" width="17%">
+            相關延續工程列表
+        </td>
+        <td align="left" colspan="3">
+            <ul>
+                {% for p in project.connects %}
+                    <li><a href="/project/project_profile/{{ p.id }}/">{{ p.year }}年度-{{ p.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </td>
+    </tr>
+</table> -->
+
+<div class="modal fade" id="choose_fes_project_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style="width:800px; margin-left:-100px;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">選擇前年度對應工程案</h4>
+            </div>
+            <div class="modal-body">
+                <input id="create_plan_id" style="display: none;" value="">
+                <table class="table table-bordered">
+                    <tr>
+                        <td class="warning" width="20%" align="right">年度</td>
+                        <td width="80%">
+                            <select id="year" class="form-control input-sm">
+                                <option value="">全部</option>
+                                {% for y in years %}
+                                    <option value="{{ y }}" {% ifequal project.year y %}selected{% endifequal %}>{{ y }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="warning" align="right">
+                            工程名稱
+                        </td>
+                        <td>
+                            <input id="name" size="56" type="text" class="form-control input-sm"></td>
+                    </tr>
+                    <tr>
+                        <td class="warning" align="right">
+                            執行機關
+                        </td>
+                        <td>
+                            <select id="unit" class="form-control input-sm">
+                                <option value="">－ 全部 －</option>
+                                {% for unit in units %}
+                                    <option value="{{ unit.id }}">－ {{ unit.name }} －</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+                <button id="search_project" class="btn btn-info btn-lg" page=1 type="button">搜尋工程</button>
+
+                <div class="pages_list"></div>
+                <br>
+                <table id="SearchResultTable" class="sortable table table-bordered" style="text-align: center; display: none; font-size: 14px;">
+                    <thead>
+                        <tr class="success">
+                            <th width="5%" style="text-align: center;">序<br>號</th>
+                            <th width="10%" style="text-align: center;">選擇</th>
+                            <th width="60%">所屬計畫<br>年度-工程名稱</th>
+                            <th width="18%" style="text-align: center;">主辦機關</th>
+                            <th width="10%" style="text-align: center;">遠端系統<br>負責主辦</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <br>
+                <div class="pages_list"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<table class="table table-bordered" style="font-size: 14px;">
+    <tr>
+        <td class="active" width="17%">工作名稱</td>
+        <td align="left" colspan="3">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control needExist"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="name"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.name|default_if_none:'' }}"
+                    value="{{ project.name|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.bid_no|default_if_none:'' }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td width="17%" class="active">年度</td>
+        <td width="33%" align="left">
+            {% if edit %}
+                <select 
+                    row_id="{{ project.id }}"
+                    field_name="year"
+                    table_name="project"
+                    module_name="fishuser"
+                    is_select="true"
+                    class="form-control BlurUpdateInfo needExist" 
+                    field_ch_name="年度">
+                    {% for y in years %}
+                        <option value="{{ y }}" {% ifequal project.year y %}selected{% endifequal %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                {{ project.year|default_if_none:'' }}
+            {% endif %}
+        </td>
+        <td width="17%" class="active">縣市</td>
+        <td width="33%">
+            {% if edit %}
+                <select 
+                    row_id="{{ project.id }}"
+                    field_name="place"
+                    table_name="project"
+                    module_name="fishuser"
+                    is_select="true"
+                    class="form-control BlurUpdateInfo needExist" 
+                    field_ch_name="縣市">
+                    {% for p in places %}
+                        <option value="/fishuser/api/v2/place/{{ p.id }}/" {% ifequal project.place.id p.id %}selected{% endifequal %}>{{ p.name }}</option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                {{ project.place.name|default_if_none:'' }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="active">契約編號<span style="font-size:12px;">(署內案號)</span></td>
+        <td colspan="3">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="bid_no"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.bid_no|default_if_none:'' }}"
+                    value="{{ project.bid_no|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.bid_no|default_if_none:'' }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="active">計畫編號</td>
+        <td colspan="3">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="work_no"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.work_no|default_if_none:'' }}"
+                    value="{{ project.work_no|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.work_no|default_if_none:'' }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="active">採購類別<span style="font-size:12px;">(工程/勞務)</span></td>
+        <td>
+            {% if edit %}
+                <select
+                    row_id="{{ project.id }}"
+                    field_name="purchase_type"
+                    table_name="project"
+                    module_name="fishuser"
+                    is_select="true"
+                    class="form-control BlurUpdateInfo needExist" 
+                    field_ch_name="採購類別">
+                    {% for type in option.purchase_type %}
+                        <option value="/fishuser/api/v2/option/{{ type.id }}/" {% ifequal project.purchase_type type %}selected="selected"{% endifequal %}>{{ type.value }}</option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                {{ project.purchase_type.value }}
+            {% endif %}
+        </td>
+        <td class="active">經費種類<span style="font-size:12px;">(經常/資本)</span></td>
+        <td>
+            {% if edit %}
+                <select
+                    row_id="{{ project.id }}"
+                    field_name="budget_sub_type"
+                    table_name="project"
+                    module_name="fishuser"
+                    is_select="true"
+                    class="form-control BlurUpdateInfo needExist" 
+                    field_ch_name="經費種類">
+                    {% for type in option.budget_sub_type %}
+                        <option value="/fishuser/api/v2/option/{{ type.id }}/" {% ifequal project.budget_sub_type type %}selected="selected"{% endifequal %}>{{ type.value }}</option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                {{ project.budget_sub_type.value }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="active">承辦方式<span style="font-size:12px;">(自/委/補)</span></td>
+        <td>
+            {% if edit %}
+                <select
+                    row_id="{{ project.id }}"
+                    field_name="undertake_type"
+                    table_name="project"
+                    module_name="fishuser"
+                    is_select="true"
+                    class="form-control BlurUpdateInfo needExist" 
+                    field_ch_name="承辦方式">
+                    {% for type in option.undertake_type %}
+                        <option value="/fishuser/api/v2/option/{{ type.id }}/" {% ifequal project.undertake_type type %}selected="selected"{% endifequal %}>{{ type.value }}</option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                {{ project.undertake_type.value }}
+            {% endif %}
+        </td>
+        <td class="active">執行機關</td>
+        <td>
+            {% if edit %}
+                <select
+                    row_id="{{ project.id }}"
+                    field_name="unit"
+                    table_name="project"
+                    module_name="fishuser"
+                    is_select="true"
+                    class="form-control BlurUpdateInfo needExist" 
+                    field_ch_name="執行機關">
+                    {% for u in units %}
+                        <option value="/fishuser/api/v2/unit/{{ u.id }}/" {% ifequal project.unit u %}selected="selected"{% endifequal %}>{{ u.name }}</option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                {{ project.unit.name }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="active">工程屬性別</td>
+        <td colspan="3">
+            {% if edit %}
+                <div class="row">
+                    <div class="col-lg-6">
+                        <select
+                            id="project_type"
+                            row_id="{{ project.id }}"
+                            field_name="project_type"
+                            table_name="project"
+                            module_name="fishuser"
+                            is_select="true"
+                            class="form-control BlurUpdateInfo needExist" 
+                            field_ch_name="工程屬性別">
+                            {% for type in option.project_type_sort %}
+                                <option value="/fishuser/api/v2/option/{{ type.id }}/" {% ifequal project.project_type type %}selected="selected"{% endifequal %}>{{ type.value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-lg-6">
+                        <select
+                            row_id="{{ project.id }}"
+                            field_name="project_sub_type"
+                            table_name="project"
+                            module_name="fishuser"
+                            is_select="true"
+                            class="form-control BlurUpdateInfo needExist" 
+                            field_ch_name="工程屬性別">
+                            {% for type in option.port_type %}
+                                <option class="port_type" value="/fishuser/api/v2/option/{{ type.id }}/" {% ifequal project.project_sub_type type %}selected="selected"{% endifequal %}>{{ type.value }}</option>
+                            {% endfor %}
+                            {% for type in option.farm_type %}
+                                <option class="farm_type" value="/fishuser/api/v2/option/{{ type.id }}/" {% ifequal project.project_sub_type type %}selected="selected"{% endifequal %}>{{ type.value }}</option>
+                            {% endfor %}
+                            {% for type in option.reef_type %}
+                                <option class="reef_type" value="/fishuser/api/v2/option/{{ type.id }}/" {% ifequal project.project_sub_type type %}selected="selected"{% endifequal %}>{{ type.value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            {% else %}
+                <div class="row">
+                    <div class="col-lg-6">
+                        {{ project.project_type.value|default_if_none:"" }}
+                    </div>
+                    <div class="col-lg-6">
+                        {{ project.project_sub_type.value|default_if_none:"" }}
+                    </div>
+                </div>
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="active">X座標(M)<br>TWD97</td>
+        <td>
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="int"
+                    row_id="{{ project.id }}"
+                    field_name="x_coord"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.x_coord|default_if_none:'' }}"
+                    value="{{ project.x_coord|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.x_coord|default_if_none:'' }}
+            {% endif %}
+        </td>
+        <td rowspan="3">
+            漁港/養殖區 
+            <button class="btn btn-success btn-xs" data-toggle="modal" data-target="#add_fishing_port_dailog">
+                ＋
+            </button>
+        </td>
+        <td align="left" rowspan="3" style="vertical-align: top;">
+            {% for port in project.fishing_port.all %}
+                {% if edit %}
+                    <div class="input-group port_or_aquaculture_fishingport_{{ port.id }}">
+                        <select class="form-control fishing_port" disabled>
+                            <option value="/harbor/api/v2/fishingport/{{ port.id }}/">{{ port.place.name }} - {{ port.name }}</option>
+                        </select>
+                        <span class="input-group-addon">
+                            <button class="btn btn-danger btn-xs add_or_remove_fishing_port_or_aquaculture_for_draft_project"
+                            active="remove" remove_target="port_or_aquaculture_fishingport_{{ port.id }}" project_id="{{ project.id }}"
+                            row_id="{{ port.id }}">X</button>
+                        </span>
+                    </div>
+                {% else %}
+                    {{ port.name }}<br>
+                {% endif %}
+            {% endfor %}
+            {% for aqua in project.aquaculture.all %}
+                {% if edit %}
+                    <div class="input-group port_or_aquaculture_aquaculture_{{ aqua.id }}">
+                        <select class="form-control fishing_port" disabled>
+                            <option value="/harbor/api/v2/fishingport/{{ aqua.id }}/">{{ aqua.place.name }} - {{ aqua.name }}</option>
+                        </select>
+                        <span class="input-group-addon">
+                            <button class="btn btn-danger btn-xs add_or_remove_fishing_port_or_aquaculture_for_draft_project"
+                            active="remove" remove_target="port_or_aquaculture_aquaculture_{{ aqua.id }}" project_id="{{ project.id }}"
+                            row_id="{{ aqua.id }}">X</button>
+                        </span>
+                    </div>
+                {% else %}
+                    {{ aqua.name }}<br>
+                {% endif %}
+            {% endfor %}
+            <span id="insert_fishing_port"></span>     
+        </td>
+    </tr>
+    <tr>
+        <td class="active">Y座標(M)<br>TWD97</td>
+        <td>
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="int"
+                    row_id="{{ project.id }}"
+                    field_name="y_coord"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.y_coord|default_if_none:'' }}"
+                    value="{{ project.y_coord|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.y_coord|default_if_none:'' }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="active">工程施作地點</td>
+        <td>
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="location"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.location|default_if_none:'' }}"
+                    value="{{ project.location|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.x_coord|default_if_none:'' }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="active"></td>
+        <td>
+        </td>
+        <td class="active">署內負責人</td>
+        <td align="left">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="self_charge"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.self_charge|default_if_none:'' }}"
+                    value="{{ project.self_charge|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.self_charge|default_if_none:'' }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="info">
+            縣市主管
+        </td>
+        <td align="left">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="local_manager"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.local_manager|default_if_none:'' }}"
+                    value="{{ project.local_manager|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.local_manager|default_if_none:'' }}
+            {% endif %}
+        </td>
+        <td class="active">署內聯絡人</td>
+        <td align="left">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="self_contacter"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.self_contacter|default_if_none:'' }}"
+                    value="{{ project.self_contacter|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.self_contacter|default_if_none:'' }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="info">縣市主管電話</td>
+        <td align="left">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="local_manager_phone"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.local_manager_phone|default_if_none:'' }}"
+                    value="{{ project.local_manager_phone|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.local_manager_phone|default_if_none:'' }}
+            {% endif %}
+        </td>
+        <td class="active">署內聯絡人電話</td>
+        <td align="left">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="self_contacter_phone"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.self_contacter_phone|default_if_none:'' }}"
+                    value="{{ project.self_contacter_phone|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.self_contacter_phone|default_if_none:'' }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="info">縣市主管Email</td>
+        <td align="left">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="local_manager_email"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.local_manager_email|default_if_none:'' }}"
+                    value="{{ project.local_manager_email|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.local_manager_email|default_if_none:'' }}
+            {% endif %}
+        </td>
+        <td class="active">署內聯絡人Email</td>
+        <td align="left">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="self_contacter_email"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.self_contacter_email|default_if_none:'' }}"
+                    value="{{ project.self_contacter_email|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.self_contacter_email|default_if_none:'' }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#D6FFAF">縣市負責人</td>
+        <td align="left">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="local_charge"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.local_charge|default_if_none:'' }}"
+                    value="{{ project.local_charge|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.local_charge|default_if_none:'' }}
+            {% endif %}
+        </td>
+        <td bgcolor="#FFE7CD">廠商負責人</td>
+        <td align="left">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="contractor_charge"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.contractor_charge|default_if_none:'' }}"
+                    value="{{ project.contractor_charge|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.contractor_charge|default_if_none:'' }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#D6FFAF">
+            縣市聯絡人
+            {% if edit %}<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#search_account_info" data-field="local_contacter" onclick="$('#search_account').attr('data-field', $(this).attr('data-field'))"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>{% endif %}
+        </td>
+        <td align="left">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="local_contacter"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.local_contacter|default_if_none:'' }}"
+                    value="{{ project.local_contacter|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.local_contacter|default_if_none:'' }}
+            {% endif %}
+        </td>
+        <td bgcolor="#FFE7CD">廠商聯絡人</td>
+        <td align="left">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="contractor_contacter"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.contractor_contacter|default_if_none:'' }}"
+                    value="{{ project.contractor_contacter|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.contractor_contacter|default_if_none:'' }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#D6FFAF">縣市聯絡人電話</td>
+        <td align="left">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="local_contacter_phone"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.local_contacter_phone|default_if_none:'' }}"
+                    value="{{ project.local_contacter_phone|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.local_contacter_phone|default_if_none:'' }}
+            {% endif %}
+        </td>
+        <td bgcolor="#FFE7CD">廠商聯絡人電話</td>
+        <td align="left">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="contractor_contacter_phone"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.contractor_contacter_phone|default_if_none:'' }}"
+                    value="{{ project.contractor_contacter_phone|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.contractor_contacter_phone|default_if_none:'' }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#D6FFAF">縣市聯絡人Email</td>
+        <td align="left">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="local_contacter_email"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.local_contacter_email|default_if_none:'' }}"
+                    value="{{ project.local_contacter_email|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.local_contacter_phone|default_if_none:'' }}
+            {% endif %}
+        </td>
+        <td bgcolor="#FFE7CD">廠商聯絡人Email</td>
+        <td align="left">
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    row_id="{{ project.id }}"
+                    field_name="contractor_contacter_email"
+                    table_name="project"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="{{ project.contractor_contacter_email|default_if_none:'' }}"
+                    value="{{ project.contractor_contacter_email|default_if_none:'' }}"/>
+            {% else %}
+                {{ project.contractor_contacter_phone|default_if_none:'' }}
+            {% endif %}
+        </tr>
+    </tr>
+    <tr>
+        <td class="active" colspan="4" align="center">備註</td>
+    </tr>
+    <tr>
+        <td align="left" colspan="4">
+            {% if edit %}
+                <textarea
+                    row_id="{{ project.id }}"
+                    table_name="project"
+                    module_name="fishuser"
+                    class="form-control BlurUpdateInfo"
+                    field_type="str"
+                    type="textarea"
+                    field_name="project_memo"
+                    placeholder="請輸入"
+                    old_value="{{ project.project_memo|default_if_none:"" }}"
+                    rows="6">{{ project.project_memo|default_if_none:"" }}</textarea>
+            {% else %}
+                {{ project.project_memo|linebreaks|default_if_none:"" }}
+            {% endif %}
+        </td>
+    </tr>
+</table>
+
+
+
+<div class="modal fade" id="add_fishing_port_dailog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">請選擇漁港/養殖區</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-3">
+                        <select class="form-control" id="select_port_or_aquaculture">
+                            <option value="fishing_port_list" selected="selected">漁港</option>
+                            <option value="aquaculture_list">養殖區</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-3">
+                        <select class="form-control" id="select_place_for_fishing_port">
+                            <option value="" selected="selected">請選擇縣市區域</option>
+                            {% for p in places %}
+                                <option value="{{ p.id }}"> - {{ p.name }} - </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-lg-6" class="">
+                        <select class="form-control fishing_port_list">
+                            <option value="" selected="selected">請選擇漁港</option>
+                            {% for p in fishing_ports %}
+                                <option class="{{ p.place.id }} port" style="display: none;" value="/harbor/api/v2/fishingport/{{ p.id }}/">{{ p.place.name }} - {{ p.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <select class="form-control aquaculture_list" style="display: none;">
+                            <option value="" selected="selected">請選擇養殖區</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" project_id="{{ project.id }}" active="add"
+                    class="btn btn-primary add_or_remove_fishing_port_or_aquaculture_for_project">新增</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<script type="text/x-jquery-tmpl" id="HidePort_or_Aqua_div">
+    <div class="input-group port_or_aquaculture_${type}_${id}">
+        <select class="form-control fishing_port" disabled>
+            <option value="/harbor/api/v2/fishingport/${id}/">${text}</option>
+        </select>
+        <span class="input-group-addon">
+            <button class="btn btn-danger btn-xs add_or_remove_fishing_port_or_aquaculture_for_project"
+            active="remove" remove_target="port_or_aquaculture_${type}_${id}" project_id="${project_id}"
+            value="/harbor/api/v2/fishingport/${id}/"
+            row_id="${id}">X</button>
+        </span>
+    </div>
+</script>
+
+<script type="text/x-jquery-tmpl" id="HidePortOption">
+    <option class="${place__id} port" value="/harbor/api/v2/fishingport/${id}/">${place__name} - ${name}</option>
+</script>
+
+<script type="text/x-jquery-tmpl" id="HideAquaOption">
+    <option class="{{ p.place.id }} aqua" value="/harbor/api/v2/aquaculture/${id}/">${place__name} - ${name}</option>
+</script>
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="search_account_info" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>
+                <h4 class="modal-title" id="myModalLabel">搜尋帳號資訊</h4> </div>
+            <div class="modal-body">
+                <div class="form-inline">
+                  <div class="form-group">
+                    <label>姓</label>
+                    <input id="search_last_name" type="text" class="form-control" placeholder="">
+                  </div>
+                  <div class="form-group">
+                    <label">名</label>
+                    <input id="search_first_name" type="text" class="form-control" placeholder="">
+                  </div>
+                   <button type="button" class="btn btn-info" id="search_account">搜尋</button>
+                </div>
+                <table id="SearchResultUserTable" style="border-collapse: collapse;display: none;font-size: 12px;" border="1">
+                    <thead bgcolor='#FFAC55'>
+                        <tr>
+                            <th align="center" width="25">帶入</th>
+                            <th align="center" align="center" width="70">姓名</th>
+                            <th align="center" width="110">機關</th>
+                            <th align="center" width="110">職稱</th>
+                            <th align="center" width="90">電話</th>
+                            <th align="center" width="180">信箱</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <script type="text/x-jquery-tmpl" id="HideSearchUserTr">
+                    <tr height="38" align="center" row_id="${id}" class="${class_name}">
+                        <td>
+                            <button class="btn btn-info insert_user_info">帶入</button>
+                        </td>
+                        <td align="center" name="name">${last_name}${first_name}</td>
+                        <td align="center">${listname_unit}</td>
+                        <td align="center">${title}</td>
+                        <td align="center" name="phone">${phone}</td>
+                        <td name="email">${email}</td>
+                    </tr>
+                </script>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    function search_project(){
+        var $obj = $(this);
+
+        var string = 'year=' + $('#year').val();
+        string += '&name=' + $('#name').val();
+        string += '&unit=' + $('#unit').val();
+
+        $.ajax({
+            url: '/fishuser/api/v2/project/search/?limit=1000000000&' + string,
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                $('.resultTr').remove();
+                $('#SearchResultTable').show();
+                var ids = '';
+                for (var i=0; i<data.objects.length; i++){
+                    data.objects[i]['class_name'] = 'resultTr';
+                    data.objects[i]['sort'] = i+1;
+                    if (!data.objects[i]['importer']){
+                        data.objects[i]['importer'] = '→';
+                    }
+                    var $div = $('#HideSearchTr').tmpl(data.objects[i]).appendTo($('#SearchResultTable > tbody:last'));
+                }
+
+                $('.pages_list').html('共有' + data.objects.length + '筆資料');
+                $('.choose_fes_project_button').click(choose_fes_project_button);
+            },
+            error: REST_ERROR
+        })
+    }
+
+    function choose_fes_project_button() {
+        var $obj = $(this);
+        var fes_id = $obj.attr('row_id');
+        var year = $obj.attr('year');
+        var name = $obj.attr('name');
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            ex_project: '/fishuser/api/v2/project/' + fes_id + '/'
+        };
+        $.ajax({
+            url: '/fishuser/api/v2/project/{{ project.id }}/',
+            type: 'PUT',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (json, text, xhr) {
+                $('#choose_fes_project_dialog').modal('hide');
+                window.location.reload();
+            },
+            error: function (data) {
+                if (data.responseText){
+                    alert(data.responseText);
+                } else {
+                    alert('操作失敗，可能系統忙碌中，請稍候重試一次。');
+                }
+            },
+        })
+    }
+
+    function search_account(){
+        var $obj = $(this);
+        string = 'first_name=' + $('#search_first_name').val();
+        string += '&last_name=' + $('#search_last_name').val();
+        string += '&user_id={{ user.id }}';
+        string += '&limit=' + 0;
+        url = '/fishuser/api/v2/user/search/?' + string;
+        if (!$('#search_first_name').val() && !$('#search_last_name').val()){
+            alert('請輸入姓或名');
+        } else {
+            $.ajax({
+                url: url,
+                type: 'GET',
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function (data) {
+                    $('.resultUserTr').remove();
+                    $('#SearchResultUserTable').show();
+                    for (var i=0; i<data.objects.length; i++){
+                        data.objects[i]['class_name'] = 'resultUserTr';
+                        var $div = $('#HideSearchUserTr').tmpl(data.objects[i]).appendTo($('#SearchResultUserTable > tbody:last'));
+                    }
+
+                    $('.insert_user_info').click(insert_user_info);
+                },
+                error: function(json){
+                }
+            })
+        }
+    }
+
+    function insert_user_info(){
+        var $obj = $(this);
+        var field_name =  $('#search_account').attr('data-field');
+        var name = $obj.closest('tr').find('td[name="name"]').html();
+        var phone = $obj.closest('tr').find('td[name="phone"]').html();
+        var email = $obj.closest('tr').find('td[name="email"]').html();
+        $('input[field_name="' + field_name + '"]').val(name);
+        $('input[field_name="' + field_name + '"]').blur();
+        $('input[field_name="' + field_name + '_phone"]').val(phone);
+        $('input[field_name="' + field_name + '_phone"]').blur();
+        $('input[field_name="' + field_name + '_email"]').val(email);
+        $('input[field_name="' + field_name + '_email"]').blur();
+        $('#search_account_info').modal('hide');
+    }
+    $(document).ready(function(){
+        $('#search_project').click(search_project); //搜尋
+        $('#search_account').click(search_account); //搜尋
+    });
+</script>

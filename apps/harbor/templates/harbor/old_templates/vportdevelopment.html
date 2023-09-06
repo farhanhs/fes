@@ -1,0 +1,166 @@
+{% extends 'harbor/vport.html' %}
+
+{% block scriptlib %}
+    <script type="text/javascript" src="/media/harbor/js/lib.js"></script>
+{% endblock %}
+{% block menu %}
+    <ul id="menu" value ="/harbor/view"></ul>
+{% endblock %}
+{% block portinfocontent %}
+<table width="800">
+    <tr>
+        <td colspan="2" height="60" align="left">
+            <span class="HarborTitle">此漁港『目前現況』工程項目</span>
+        </td>
+    </tr>
+    <tr>
+        <td width="30"></td>
+        <td align="left">
+            <h2>
+            {% if fa_projects %}
+            <table border="1" style="border-collapse: collapse">
+                <thead align="center" bgcolor='#FFFF99'>
+                    <th>年度</th>
+                    <th>標案編號</th>
+                    <th>工作名稱</th>
+                    <th>計畫名稱</th>
+                    <!--<th>工程狀態</th>-->
+                    <th>執行<br>單位</th>
+                    <th>詳細資訊</th>
+                </thead>
+                <tbody>
+                    {% for p in fa_projects %}
+                        <tr align="left" class="{% cycle "odd" "even" %}">
+                            <td bgcolor="#87D2F0">{{ p.year }}</td>
+                            <td>{{ p.bid_no|default_if_none:'' }}</td>
+                            <td>{{ p.name }}</td>
+                            <td>{{ p.plan.name }}</td>
+                            <!--<td {% ifequal p.status.value '待審查' %}class='style2'{% endifequal %}>{{ p.status.value }}</td>-->
+                            <td>{% if p.unit %}{{ p.unit.name }}{% endif %}</td>
+                            <td bgcolor="#E1F0F0" align="center"><div class="infomemo" type="project" dn="{{ p.id }}" title="工程詳細資訊" is_infa="True">檢視</div></td>
+                        </tr>
+                    {% endfor %}
+                <tbody>
+            </table>
+            <br><br>
+            <br>
+            {% else %}
+            <h2>暫無資料</h2>
+            {% endif %}
+            </h2>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" height="60" align="left">
+            <span class="HarborTitle">歷年主要工程項目</span>
+        </td>
+    </tr>
+    <tr>
+        <td width="30"></td>
+        <td align="left">
+            <h2>
+            {% if mainproject %}
+            <table>
+                {% for year in mainproject_list %}
+                <tr valign="top">
+                    <td>
+                        <table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+                            <tr bgcolor="#FFFF99" align="center">
+                                <td rowspan="{{ year.1 }}" width="70" bgcolor="#87D2F0">
+                                    {{ year.0 }}
+                                </td>
+                                <td width="300">
+                                    項目
+                                </td>
+                                <td width="200">
+                                    數量
+                                </td>
+                                <td width="200">
+                                    備註
+                                </td>
+                            </tr>
+                            {% for item in year.2 %}
+                            <tr class="{% cycle "odd" "even" %}" align="center">
+                                <td align="left">
+                                    {% if item.item %}{{ item.item }}{% else %}暫無資訊{% endif %}
+                                </td>
+                                <td>
+                                    {% if item.num %}{{ item.num }}{% else %}----{% endif %}
+                                </td>
+                                <td>
+                                    {% if item.memo %}{{ item.memo }}{% else %}{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                        <br>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% else %}
+            <h2>暫無資料</h2>
+            {% endif %}
+            <br><br>
+            </h2>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" height="60" align="left">
+            <span class="HarborTitle">歷年工程計畫</span>
+        </td>
+    </tr>
+    <tr>
+        <td></td>
+        <td align="left">
+            <h2>
+            {% if project %}
+            {% for year in project_list %}
+            <table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+                <tr bgcolor="#FFFF99" align="center">
+                    <td rowspan="{{ year.1 }}" width="40" bgcolor="#87D2F0">
+                        {{ year.0 }}
+                    </td>
+                    <td width="300">
+                        工程名稱
+                    </td>
+                    <td width="180">
+                        計畫名稱
+                    </td>
+                    <td width="160">
+                        經費來源
+                    </td>
+                    <td width="90">
+                        詳細資料
+                    </td>
+                </tr>
+                {% for item in year.2 %}
+                <tr class="{% cycle "odd" "even" %}" align="left">
+                    <td>
+                        {% if item.name %}{{ item.name }}{% else %}<center>暫無資訊</center>{% endif %}
+                    </td>
+                    <td>
+                        {% if item.plan %}{{ item.plan }}{% else %}<center>暫無資訊</center>{% endif %}
+                    </td>
+                    <td>
+                        {% if item.funds_source %}{{ item.funds_source }}{% else %}<center>暫無資訊</center>{% endif %}
+                    </td>
+                    <td bgcolor="#E1F0F0" align="center">
+                        <div class="infomemo" type="project" dn="{{ item.id }}" title="工程詳細資訊">檢視</div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            <br>
+            {% endfor %}
+
+            {% else %}
+            <h2>暫無資料</h2>
+            {% endif %}
+            </h2>
+        </td>
+    </tr>
+</table>
+<br>
+
+{% endblock %}

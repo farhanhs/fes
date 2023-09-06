@@ -1,0 +1,56 @@
+{% extends 'harbor/editmemu.html' %}
+
+{% block sidecontent %}
+<a id="location" class="port" loca="{{ classification.place.id }}"></a><br>
+
+<form enctype="multipart/form-data" action="./" method="POST">
+{% include 'harbor/porteditmenu.html' %}
+<h2>
+<table>
+    <tr align="left">
+        <td>類別</td>
+        <td>波向</td>
+        <td>波高(M)</td>
+        <td>週期</td>
+    </tr>
+    <tr align="left">
+        <td><input type="text" name="new__type" class="requisite" value=""></td>
+        <td><input type="text" name="new__angle" value=""></td>
+        <td><input type="text" name="new__high" class="float requisite" value=""></td>
+        <td><input type="text" name="new__cycle" class="float requisite" value=""></td>
+    </tr>
+</table>
+</h2>
+<br>
+<input type="submit" id="submit" name="submit" class="submit" value="--------確定新增--------" onClick="submiting(this)">
+<font id="caution" color="#E100F0" size="2.8">請檢查必填欄位！</font><br><br><br>
+<hr width="800" color="#ff8000" noshade title="這不是分隔線">
+<br><br>
+<h3>
+<table>
+    <tr align="left">
+        <td></td>
+        <td>類別</td>
+        <td>波向</td>
+        <td>波高(M)</td>
+        <td>週期</td>
+        <td></td>
+    </tr>
+    {% for wave in list %}
+    <tr id="waves_{{ wave.id }}">
+        <td>{{ forloop.counter }}</td>
+        <td><input type="text" name="waves__type__{{ wave.id }}" class="requisite" value="{% if wave.type %}{{ wave.type }}{% endif %}"></td>
+        <td><input type="text" name="waves__angle__{{ wave.id }}" value="{% if wave.angle %}{{ wave.angle }}{% endif %}"></td>
+        <td><input type="text" name="waves__high__{{ wave.id }}" class="float requisite" value="{% if wave.high %}{{ wave.high }}{% endif %}"</td>
+        <td><input type="text" name="waves__cycle__{{ wave.id }}" class="float requisite" value="{% if wave.cycle %}{{ wave.cycle }}{% endif %}"></td>
+        <td><button id="del_waves_{{ wave.id }}" class="delRow">刪除紀錄</button></td>
+    </tr>
+    {% endfor %}
+</table>
+</h3>
+<br>
+<input type="submit" id="submit" name="submit" value="--------確定修改--------" onClick="submiting(this)">
+
+</form>
+
+{% endblock %}

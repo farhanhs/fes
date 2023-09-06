@@ -1,0 +1,299 @@
+{% load utiltags %}
+{% load humanize %}
+
+
+{% if chase_edit %}
+    {% if not chase_data.getOneByOne.check %}
+        {% if chase_data %}
+        <br><br>
+        <a class="NotImportant" id="Show_ChaseTable" action="Show" style="font-size: 24px; color: {% if chase_data.complete %}blue{% else %}red{% endif %};">
+
+            {% if chase_data.complete %}
+                <img src="/media/frcm/image/green_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/green_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/green_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/green_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/green_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/green_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/green_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/green_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/green_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/green_light.gif" title="請盡快填寫">
+                <br>(已填寫完畢但可繼續更新)
+            {% else %}
+                <img src="/media/frcm/image/red_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/red_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/red_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/red_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/red_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/red_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/red_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/red_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/red_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/red_light.gif" title="請盡快填寫">
+            {% endif %}<br>
+            ※此工程已開始進行週期性進度調查，請點選紅色閃燈並詳細填寫資料※
+            <br>
+            {% if chase_data.complete %}
+                <img src="/media/frcm/image/green_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/green_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/green_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/green_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/green_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/green_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/green_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/green_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/green_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/green_light.gif" title="請盡快填寫">
+            {% else %}
+                <img src="/media/frcm/image/red_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/red_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/red_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/red_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/red_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/red_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/red_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/red_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/red_light.gif" title="請盡快填寫">
+                <img src="/media/frcm/image/red_light.gif" title="請盡快填寫">
+            {% endif %}<br>
+        </a>
+        <span id="ChaseTable" style="display: none;">
+            {% if not chase_data.complete %}
+                <br><span style="font-size: 24px; color: red;">填寫完後按下"我已填寫完畢按鈕"</span>
+            {% endif %}<br>
+            {% if chase_data.getOneByOne.check %}(已確認工程結案){% else %}
+            <button class="NotImportant" id="setChaseProjectClose" project_id="{{ project.id }}" chase_id="{{ chase_data.id }}"
+                        close="{% if chase_data.getOneByOne.close %}True{% else %}False{% endif %}"
+                        >{% if chase_data.getOneByOne.close %}取消通知本工程已結案{% else %}通知本工程已結案，不須繼續追蹤進度{% endif %}</button>
+            {% endif %}
+            <table width="780">
+                <tr>
+                    <td align="left" style="font-size: 20px;color: red;">
+                        最後更新時間：{{ chase_data.update_time|default_if_none:'尚無資料' }}
+                    </td>
+                </tr>
+            </table>
+            <table border="1" style="border-collapse: collapse">
+                <tr align="center" valign="middle">
+                    <td width="160" bgcolor="#CDE5FF">調查日期</td>
+                    <td width="200">{{ chase_data.countychasetime.chase_date }}(已開始 {{ chase_data.pastDay }} 天)</td>
+                    <td width="160" bgcolor="#CDE5FF">是否填寫完成</td>
+                    <td width="200" id="Td_Chase_Complete" style="font-size: 18px;">
+                        <span style="color: green;">
+                        {% if chase_data.check %}已確認填寫完畢
+                        {% else %}
+                            {% if chase_data.complete %}
+                            <button id="setChaseComplete" style="width:150px;height:50px;font-size:18px;" project_id="{{ project.id }}" chase_id="{{ chase_data.id }}">取消申請，我尚未填完!!</button>
+                            {% else %}
+                            <button id="setChaseComplete" style="width:150px;height:50px;font-size:18px;" project_id="{{ project.id }}" chase_id="{{ chase_data.id }}">我已填寫完畢!!</button>
+                            <br>按下後可繼續更新
+                            {% endif %}
+                        {% endif %}
+                        </span>
+                    </td>
+                </tr>
+                <tr align="center" valign="middle">
+                    <td bgcolor="#CDE5FF">預計進度百分比(%)</td>
+                    <td class="Show_Chase_Info" chase_id="{{ chase_data.id }}" field_name="schedul_progress_percent">
+                        <a id="Show_Chase_Info_schedul_progress_percent_{{ chase_data.id }}">
+                            {{ chase_data.schedul_progress_percent|default_if_none:''|cutzero }}
+                        </a>
+                        <input class="Hide_Chase_Info " chase_id="{{ chase_data.id }}" field_name="schedul_progress_percent" table_name="CountyChaseProjectOneToMany"
+                               input_type="float" style="text-align: right; display: none;" id="Edit_Chase_Info_schedul_progress_percent_{{ chase_data.id }}"
+                               type="text" name="schedul_progress_percent" maxlength="20" size="10"
+                               value="{{ chase_data.schedul_progress_percent|default_if_none:''|cutzero }}"
+                               old_value="{{ chase_data.schedul_progress_percent|default_if_none:''|cutzero }}"/>
+                        %<br><span style="color:gray;">(上次：{{ last_chase_data.schedul_progress_percent|default_if_none:''|cutzero }}%)</span>
+                    </td>
+                    <td bgcolor="#CDE5FF" rowspan="3">計畫執行情形說明<br>(若有執行落後者，請詳細說明預定完成日期及因應措施)</td>
+                    <td rowspan="3" align="left" class="Show_Chase_Info" chase_id="{{ chase_data.id }}" field_name="memo">
+                        <a id="Show_Chase_Info_memo_{{ chase_data.id }}">{{ chase_data.memo|default_if_none:''|linebreaks }}</a>
+                        <textarea class="Hide_Chase_Info" chase_id="{{ chase_data.id }}" field_name="memo" table_name="CountyChaseProjectOneToMany"
+                                   style="display: none;" id="Edit_Chase_Info_memo_{{ chase_data.id }}"
+                                   old_value="{{ chase_data.memo|default_if_none:'' }}"
+                                   name="note" cols="15" rows="4">{{ chase_data.memo|default_if_none:'' }}</textarea>
+                        <hr width="170">
+                        <span style="color:gray;">上次填寫：<br>{{ last_chase_data.memo }}</span>
+                    </td>
+                </tr>
+                <tr align="center" valign="middle">
+                    <td bgcolor="#CDE5FF">實際進度百分比(%)</td>
+                    <td class="Show_Chase_Info" chase_id="{{ chase_data.id }}" field_name="actual_progress_percent">
+                        <a id="Show_Chase_Info_actual_progress_percent_{{ chase_data.id }}">
+                            {{ chase_data.actual_progress_percent|default_if_none:''|cutzero }}
+                        </a>
+                        <input class="Hide_Chase_Info " chase_id="{{ chase_data.id }}" field_name="actual_progress_percent" table_name="CountyChaseProjectOneToMany"
+                               input_type="float" style="text-align: right; display: none;" id="Edit_Chase_Info_actual_progress_percent_{{ chase_data.id }}"
+                               type="text" name="actual_progress_percent" maxlength="20" size="10"
+                               value="{{ chase_data.actual_progress_percent|default_if_none:''|cutzero }}"
+                               old_value="{{ chase_data.actual_progress_percent|default_if_none:''|cutzero }}"/>
+                        %<br><span style="color:gray;">(上次：{{ last_chase_data.actual_progress_percent|default_if_none:''|cutzero }}%)</span>
+                    </td>
+                </tr>
+                <tr align="center" valign="middle">
+                    <td bgcolor="#CDE5FF">預計至年底執行率(%)</td>
+                    <td class="Show_Chase_Info" chase_id="{{ chase_data.id }}" field_name="expected_to_end_percent">
+                        <a id="Show_Chase_Info_expected_to_end_percent_{{ chase_data.id }}">
+                            {{ chase_data.expected_to_end_percent|default_if_none:''|cutzero }}
+                        </a>
+                        <input class="Hide_Chase_Info " chase_id="{{ chase_data.id }}" field_name="expected_to_end_percent" table_name="CountyChaseProjectOneToMany"
+                               input_type="float" style="text-align: right; display: none;" id="Edit_Chase_Info_expected_to_end_percent_{{ chase_data.id }}"
+                               type="text" name="expected_to_end_percent" maxlength="20" size="10"
+                               value="{{ chase_data.expected_to_end_percent|default_if_none:''|cutzero }}"
+                               old_value="{{ chase_data.expected_to_end_percent|default_if_none:''|cutzero }}"/>
+                        %<br><span style="color:gray;">(上次：{{ last_chase_data.expected_to_end_percent|default_if_none:''|cutzero }}%)</span>
+                    </td>
+                </tr>
+                <tr align="left" valign="middle">
+                    <td colspan="4">
+                        #以下欄位需"重新整理"頁面後會自動更新
+                        <table border="1" style="border-collapse: collapse" align="center" valign="middle">
+                            <tr align="center" valign="middle" bgcolor="#CAD7E4">
+                                <td bgcolor="#FFEBF5">計畫經費<br>(核定數總計)<a title="核定數 + 地方核定數">(註)</a></td>
+                                <td>{{ chase_data.getFirstBudget.rPlanMoney|default_if_none:''|intcomma|cutzero }}</td>
+                                <td bgcolor="#FFE7CD">累計分配數<a title="由下方分配數表格填寫金額總計">(註)</a></td>
+                                <td>{{ fund.rAllocationToNow|default_if_none:''|intcomma|cutzero }}</td>
+                                <td width="120" bgcolor="#FFE7CD">本署負擔<br>(保留)數<a title="取小值   1.發包及其他費用(無值取核定數)*本署負擔比例  2.本署負擔上限金額">(註)</a></td>
+                                <td width="120">{{ chase_data.getFund.rSelfLoad|default_if_none:''|intcomma|cutzero }}</td>
+                                <td width="120" bgcolor="#FFE7CD">本署經費<br>執行數<a title="本署實支數 + 本署應付未付數 + 本署賸餘款">(註)</a></td>
+                                <td width="120">{{ chase_data.getSelfExecutionMoney|default_if_none:''|intcomma|cutzero }}</td>
+                            </tr>
+                            <tr align="center" valign="middle" bgcolor="#CAD7E4">
+                                <td width="120" bgcolor="#FFE7CD">核定數</td>
+                                <td width="120">{{ chase_data.getFirstBudget.capital_ratify_budget|default_if_none:''|intcomma|cutzero }}</td>
+                                 <td width="120" bgcolor="#FFE7CD">地方<br>核定數</td>
+                                <td width="120">{{ chase_data.getFirstBudget.capital_ratify_local_budget|default_if_none:''|intcomma|cutzero }}</td>
+                                <td bgcolor="#FFE7CD">地方配合款<a title="發包及其他費用 - 本署負擔數 (若無發包及其他費用，則地方配合款 = 核定地方配合款)">(註)</a></td>
+                                <td>{{ chase_data.getFund.rlocalMatchFund|default_if_none:''|intcomma|cutzero }}</td>
+                                <td bgcolor="#FFE7CD">執行率<a title="本署經費執行數 / 累計分配數">(註)</a></td>
+                                <td>{{ chase_data.getExecutionRate }} %</td>
+                            </tr>
+                            <tr align="center" valign="middle" bgcolor="#CAD7E4">
+                                <td bgcolor="#FFE7CD">修正核定數</td>
+                                <td>{{ chase_data.getFirstBudget.capital_ratify_revision|default_if_none:''|intcomma|cutzero }}</td>
+                                <td bgcolor="#FFE7CD">修正<br>地方核定數</td>
+                                <td>{{ chase_data.getFirstBudget.capital_ratify_local_revision|default_if_none:''|intcomma|cutzero }}</td>
+                                <td bgcolor="#FFE7CD">歷年</td>
+                                <td>{{ chase_data.getFirstBudget.over_the_year|default_if_none:''|intcomma|cutzero }}</td>
+                                <td bgcolor="#FFE7CD">達成率<a title="本署經費執行數 / 修正核定數(無值取核定數)">(註)</a></td>
+                                <td>{{ chase_data.getReachedRate }} %</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr align="center" valign="middle">
+                    <td bgcolor="#CDE5FF">發包及其他費用<br>(未發包以計畫經費代替)</td>
+                    <td bgcolor="#CAD7E4"><span id="total_money_value">{{ chase_data.getOneByOne.total_money|default_if_none:'0'|cutzero }}</span>元</td>
+                    <td colspan="2" align="left">
+                        <input type="button" name="total_money_radio" class="updateChaseTotalMoney" choose_value="useBudget" chase_id="{{ chase_data.getOneByOne.id }}" value="重新同步計畫經費"/><br>
+                        <hr>
+                        <input type="button" name="total_money_radio" class="updateChaseTotalMoney" choose_value="useTotalMoney" chase_id="{{ chase_data.getOneByOne.id }}" value="重新同步發包及其他費用"/><br><a href="#BidInfo">(與頁面下方『標案資訊』同步，請<span style="color:red;">"點我"</span>至下方填寫，填寫完畢後再按下重新同步)</a>
+                    </td>
+                </tr>
+                <tr align="center" valign="middle">
+                    <td colspan="4">
+                        <table border="1" style="border-collapse: collapse" align="center" valign="middle">
+                            <tr bgcolor="#AFFFD8" align="center" valign="middle">
+                                <td width="120" style="color: red;">(單位：元)</td>
+                                <td width="200">實支數  <span class="alertMSG" title="實際估驗支付廠商經費">(說明)</span></td>
+                                <td width="200">應付未付數  <span class="alertMSG" title="依工程實際進度核算實際已完成金額扣除實支數後所得經費">(說明)</span></td>
+                                <td width="200">賸餘款<a title="若本署負擔=本署負擔上限 或 無發包及其他費用，則賸餘款為0, 否則 = (計畫經費 - 發包及其他費用) * 本署負擔比例">(註)</a>  <span class="alertMSG" title="計畫經費扣除發包後工程費(含設計、監造、工程管理費等)所得金額">(說明)</span></td>
+                            </tr>
+                            <tr align="center" valign="middle">
+                                <td bgcolor="#FFE7CD">本署</td>
+                                <td class="Show_Chase_Info" chase_id="{{ chase_data.id }}" field_name="self_payout">
+                                    <a id="Show_Chase_Info_self_payout_{{ chase_data.id }}">
+                                        {{ chase_data.self_payout|default_if_none:'0'|intcomma|cutzero }}
+                                    </a>
+                                    <input class="Hide_Chase_Info " chase_id="{{ chase_data.id }}" field_name="self_payout" table_name="CountyChaseProjectOneToMany"
+                                           input_type="float" style="text-align: right; display: none;" id="Edit_Chase_Info_self_payout_{{ chase_data.id }}"
+                                           type="text" name="self_payout" maxlength="20" size="10"
+                                           value="{{ chase_data.self_payout|default_if_none:'0'|cutzero }}"
+                                           old_value="{{ chase_data.self_payout|default_if_none:'0'|cutzero }}"/>
+                                    <span style="color:gray;">(上次：{{ last_chase_data.self_payout|default_if_none:''|intcomma|cutzero }})</span>
+                                </td>
+                                <td class="Show_Chase_Info" chase_id="{{ chase_data.id }}" field_name="self_unpay">
+                                    <a id="Show_Chase_Info_self_unpay_{{ chase_data.id }}">
+                                        {{ chase_data.self_unpay|default_if_none:'0'|intcomma|cutzero }}
+                                    </a>
+                                    <input class="Hide_Chase_Info " chase_id="{{ chase_data.id }}" field_name="self_unpay" table_name="CountyChaseProjectOneToMany"
+                                           input_type="float" style="text-align: right; display: none;" id="Edit_Chase_Info_self_unpay_{{ chase_data.id }}"
+                                           type="text" name="self_unpay" maxlength="20" size="10"
+                                           value="{{ chase_data.self_unpay|default_if_none:'0'|cutzero }}"
+                                           old_value="{{ chase_data.self_unpay|default_if_none:'0'|cutzero }}"/>
+                                    <span style="color:gray;">(上次：{{ last_chase_data.self_unpay|default_if_none:''|intcomma|cutzero }})</span>
+                                </td>
+                                <td class="Show_Chase_Info" chase_id="{{ chase_data.id }}" field_name="self_surplus" title="此欄位系統自動計算，重新整理後會自動更新">
+                                    {{ chase_data.rSelf_Surplus|default_if_none:'0'|intcomma|cutzero }}
+                                    <!--<a id="Show_Chase_Info_self_surplus_{{ chase_data.id }}">
+                                        {{ chase_data.self_surplus|default_if_none:'0'|intcomma|cutzero }}
+                                    </a>
+                                    <input class="Hide_Chase_Info " chase_id="{{ chase_data.id }}" field_name="self_surplus" table_name="CountyChaseProjectOneToMany"
+                                           input_type="float" style="text-align: right; display: none;" id="Edit_Chase_Info_self_surplus_{{ chase_data.id }}"
+                                           type="text" name="self_surplus" maxlength="20" size="10"
+                                           value="{{ chase_data.self_surplus|default_if_none:'0'|cutzero }}"
+                                           old_value="{{ chase_data.self_surplus|default_if_none:'0'|cutzero }}"/>
+                                    <span style="color:gray;">(上次：{{ last_chase_data.self_surplus|default_if_none:''|intcomma|cutzero }})</span>-->
+                                </td>
+                            </tr>
+                            <tr align="center" valign="middle">
+                                <td bgcolor="#FFE7CD">地方</td>
+                                <td class="Show_Chase_Info" chase_id="{{ chase_data.id }}" field_name="local_payout">
+                                    <a id="Show_Chase_Info_local_payout_{{ chase_data.id }}">
+                                        {{ chase_data.local_payout|default_if_none:'0'|intcomma|cutzero }}
+                                    </a>
+                                    <input class="Hide_Chase_Info " chase_id="{{ chase_data.id }}" field_name="local_payout" table_name="CountyChaseProjectOneToMany"
+                                           input_type="float" style="text-align: right; display: none;" id="Edit_Chase_Info_local_payout_{{ chase_data.id }}"
+                                           type="text" name="local_payout" maxlength="20" size="10"
+                                           value="{{ chase_data.local_payout|default_if_none:'0'|cutzero }}"
+                                           old_value="{{ chase_data.local_payout|default_if_none:'0'|cutzero }}"/>
+                                    <span style="color:gray;">(上次：{{ last_chase_data.local_payout|default_if_none:''|intcomma|cutzero }})</span>
+                                </td>
+                                <td class="Show_Chase_Info" chase_id="{{ chase_data.id }}" field_name="local_unpay">
+                                    <a id="Show_Chase_Info_local_unpay_{{ chase_data.id }}">
+                                        {{ chase_data.local_unpay|default_if_none:'0'|intcomma|cutzero }}
+                                    </a>
+                                    <input class="Hide_Chase_Info " chase_id="{{ chase_data.id }}" field_name="local_unpay" table_name="CountyChaseProjectOneToMany"
+                                           input_type="float" style="text-align: right; display: none;" id="Edit_Chase_Info_local_unpay_{{ chase_data.id }}"
+                                           type="text" name="local_unpay" maxlength="20" size="10"
+                                           value="{{ chase_data.local_unpay|default_if_none:'0'|cutzero }}"
+                                           old_value="{{ chase_data.local_unpay|default_if_none:'0'|cutzero }}"/>
+                                    <span style="color:gray;">(上次：{{ last_chase_data.local_unpay|default_if_none:''|intcomma|cutzero }})</span>
+                                </td>
+                                <td class="Show_Chase_Info" chase_id="{{ chase_data.id }}" field_name="local_surplus" title="此欄位系統自動計算，重新整理後會自動更新">
+                                    <!--{{ chase_data.rLocal_Surplus|default_if_none:'0'|intcomma|cutzero }}-->
+                                    <!--<a id="Show_Chase_Info_local_surplus_{{ chase_data.id }}">
+                                        {{ chase_data.local_surplus|default_if_none:'0'|intcomma|cutzero }}
+                                    </a>
+                                    <input class="Hide_Chase_Info " chase_id="{{ chase_data.id }}" field_name="local_surplus" table_name="CountyChaseProjectOneToMany"
+                                           input_type="float" style="text-align: right; display: none;" id="Edit_Chase_Info_local_surplus_{{ chase_data.id }}"
+                                           type="text" name="local_surplus" maxlength="20" size="10"
+                                           value="{{ chase_data.local_surplus|default_if_none:'0'|cutzero }}"
+                                           old_value="{{ chase_data.local_surplus|default_if_none:'0'|cutzero }}"/>
+                                    <span style="color:gray;">(上次：{{ last_chase_data.local_surplus|default_if_none:''|intcomma|cutzero }})</span>-->
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="left" colspan="4">
+                        <a style="font-size: 20px;text-decoration: none;" href="#MileSton">
+                            ※※※ 重要 ※※※<br>
+                            　　　1.期程資訊已與下方『里程碑』整合，務必詳細填寫完整資訊。<br>
+                            　　　2.里程碑中所有『預定日期』必須填寫完整。<br>
+                            　　　3.里程碑中『實際日期』依現況填報。<br>
+                            　　　4.若工程中如無此項期程項目，請在該項期程之備註填寫相關資訊。<br>
+                            　　　5.請<span style="color:red;">"點我"</span>至下方填寫
+                        </a>
+                    </td>
+                </tr>
+            </table>
+            <br><br>
+        </span>
+            <br><hr width="800" style="color:orange"><hr width="800" style="color:orange"><br>
+        {% endif %}'
+    {% endif %}
+{% endif %}
+

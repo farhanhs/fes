@@ -1,0 +1,46 @@
+{% load utiltags %}
+{% load humanize %}
+{% if not pcc_record %}
+<h3>
+    <span>此工程尚未與工程會標案管理系統同步。</span><br>
+    <span>請至工程基本資料填寫工程會編號以讀取標案管理系統資訊。</span>
+</h3>
+{% else %}
+<table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+    <thead bgcolor="#EEEEEE">
+        <tr>
+            <th colspan="6">
+                標案系統工程名稱：{{ pcc_record.name }}
+            </th>
+        </tr>
+        <tr>
+            <th colspan="6" aligh="left">
+                決標金額：{{ pcc_record.decide_tenders_price }}
+            </th>
+        </tr>
+        <tr align="center">
+            <th width="70">年度</th>
+            <th width="70">月份</th>
+            <th width="150">年累計預定金額<br>(累計分配數)</th>
+            <th width="150">累計估驗計價金額<br>(累計實支數)</th>
+            <th width="50"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for fund in pcc_fund %}
+        <tr class="hightlightRow" align="center" height="30">
+            <td>{{ fund.year }}</td>
+            <td>{{ fund.month }}</td>
+            <td>{{ fund.total_s_money|intcomma|cutzero }}</td>
+            <td>{{ fund.total_pay|intcomma|cutzero }}</td>
+            <td>{% if not fund.new_fund_pcc_source.get %}<button class="syncFund" relay_fund_id="{{ fund.id }}" style="font-size: 12px;">同步</button>{% else %}<span style="font-size: 12px;">已同步</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="6" align="right">
+                最後更新時間：{{ pcc_record.lastsync }}
+            </td>
+        </tr>
+    </tbody>
+</table>
+{% endif %}

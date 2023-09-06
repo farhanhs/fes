@@ -1,0 +1,615 @@
+{% extends 'dailyreport/zh-tw/base.html' %}
+{% load humanize %}
+{% load dailyreport_tags %}
+{% load guardian_tags %}
+{% load i18n %}
+
+{% block js_in_compress %}
+    <script src="/media/dailyreport/plupload/jquery.plupload.queue/jquery.plupload.queue.js{{ settings.SV_ }}"></script>
+    <script src="/media/dailyreport/plupload/js/plupload.full.js{{ settings.SV_ }}"></script>
+{% endblock %}
+
+{% block body %}
+    {% include 'dailyreport/zh-tw/menu.html' %}
+    <h3>
+        {% if version.read_pre_version %}
+            <a href="/dailyreport/item/{{ report_type }}/{{ version.read_pre_version.id }}/" role="button" class="btn btn-info" data-toggle="modal"><i class="icon-backward"></i> 到上一個變更版本</a>
+        {% endif %}
+        編輯工項：此版本包含期間為{{ version.start_date }} ~ 
+        {% if version.read_next_version %}{{ version.read_next_version.start_date }}
+            <a href="/dailyreport/item/{{ report_type }}/{{ version.read_next_version.id }}/" role="button" class="btn btn-info" data-toggle="modal">到下一個變更版本 <i class="icon-forward"></i></a>
+        {% else %}
+            至今
+        {% endif %}
+    </h3>
+
+    <h4>目前總計方式為：{{ engprofile.round_type.value }}
+        {% if edit %}
+            <a href="#select_round_round_type" role="button" class="btn btn-success" data-toggle="modal">總價計算錯誤嗎？</a>
+        {% endif %}
+    </h4>
+    <input id="round_type" value="{{ engprofile.round_type.value }}" type="hidden">
+    <input id="engprofile_id" value="{{ engprofile.id }}" type="hidden">
+    <input id="project_id" value="{{ engprofile.project.id }}" type="hidden">
+    <input id="report_type" value="{{ report_type }}" type="hidden">
+    
+    {% if edit %}
+    <div align="left">
+        <a href="#addItem_Explanation" role="button" class="btn btn-warning" data-toggle="modal" style="color: black;"><i class="icon-info-sign"></i>教學：新增項目</a>
+        <a href="#upordown_Explanation" role="button" class="btn btn-warning" data-toggle="modal" style="color: black;"><i class="icon-info-sign"></i>教學：移動上下排序</a>
+        <a href="#outtendorintent_Explanation" role="button" class="btn btn-warning" data-toggle="modal" style="color: black;"><i class="icon-info-sign"></i>教學：切換前後階層</a>
+        <a href="#delete_Explanation" role="button" class="btn btn-warning" data-toggle="modal" style="color: black;"><i class="icon-info-sign"></i>教學：刪除說明</a>
+        <br><br>
+        <span style="font-size: 16px; color: blue;">請使用滑鼠右鍵進行編輯<img src="/media/dailyreport/images/right_click.png"></span>
+    </div>
+    {% else %}
+        <div align="left">
+            <div class="alert alert-error">
+                <h4>您目前沒有編輯權限! 若您為施工廠商，可能為監造鎖定編輯，請通知監造開放編輯權限</h4>
+            </div>
+        </div>
+    {% endif %}
+    <div align="right">
+        <h3 style="color: blue;">
+        契約金額：
+        <div class="input-append">
+            {% if edit %}
+                <input
+                    id="appendedInput"
+                    type="text" class="BlurUpdateInfo span3 needExist inputcomma"
+                    field_type="int" style="text-align: right; font-size: 22px;"
+                    row_id="{{ version.id }}"
+                    field_name="engs_price"
+                    table_name="version"
+                    module_name='dailyreport'
+                    placeholder="請務必輸入契約金額"
+                    old_value="{% if version.engs_price %}{{ version.engs_price|cutzero }}{% endif %}"
+                    value="{% if version.engs_price %}{{ version.engs_price|cutzero }}{% endif %}"/>
+            {% else %}
+                <input
+                    id="appendedInput"
+                    type="text" class="span3 needExist inputcomma"
+                    field_type="int" style="text-align: right; font-size: 22px;"
+                    placeholder="尚未輸入契約金額"
+                    value="{% if version.engs_price %}{{ version.engs_price|cutzero }}{% endif %}"/>
+            {% endif %}
+            <span class="add-on"> 元 </span>
+        </div>
+        </h3>
+    </div>
+    <table class="table table-bordered" align="center">
+        <col width="5%">
+        <col width="60%">
+        <col width="5%">
+        <col width="10%">
+        <col width="10%">
+        <col width="10%">
+        <tr class="info">
+            <td style="text-align: center;">
+                項次
+                <a class="pointer" onclick="window.location.reload();" title="按一下可重新整理項次">
+                    <img src="/media/dailyreport/images/renew.png">
+                <a>
+            </td>
+            <td style="text-align: center;">
+                工項名稱 　
+                <button id="show_or_hide_item" class="btn btn-small btn-success" now="show" style="color: black;" type="button">
+                    <i class="icon-folder-close"></i><span id="show_or_hide_item_info">僅顯示資料夾</span>
+                </button>
+            </td>
+            <td style="text-align: center;">單位</td>
+            <td style="text-align: center;">契約數量</td>
+            <td style="text-align: center;">單價</td>
+            <td style="text-align: center;">備註</td>
+        </tr>
+        {% for item in items %}
+            {% include 'dailyreport/zh-tw/tr_item.html' %}
+        {% endfor %}
+        </tbody>
+    </table>
+    <br><br>
+
+    {% if edit %}
+        <div class="alert alert-info" style="text-align:left;">
+            直接匯入 PCCES 預算檔 
+            <button class="uploaderPCCES" project_id="{{ engprofile.project.id }}" id="createItemByPCCES">請選擇欲上傳的XML檔案</button>
+        </div>
+    {% endif %}
+
+    {% if edit %}
+        <div class="alert alert-info" style="text-align:left;">
+            匯入 EXCEL轉出CSV 檔案<br>
+            1. <a href="/media/dailyreport/import_example_for_dailyreport.xlsx">
+                (下載至EXCEL制式範例檔案，含說明)
+            </a><br>
+            2. 上傳CSV檔案
+            <button class="uploaderCSV" project_id="{{ engprofile.project.id }}" id="createItemByCSV">請選擇欲上傳的CSV檔案</button>
+        </div>
+    {% endif %}
+
+    <div class="alert alert-success" style="text-align:left;">
+        <a href="#create_version_dialog" role="button" class="btn btn-success" data-toggle="modal">增加變更設計</a>
+        <br>
+        所有版本列表：
+        <br>
+        <ol>
+            {% for ver in engprofile.read_version_in_list %}
+                <li>
+                    <a href="/dailyreport/item/{{ report_type }}/{{ ver.id }}/" role="button" class="btn btn-info" data-toggle="modal">{{ ver.start_date }}</a>
+                    {% if ver.read_pre_version %}
+                    <a id="delete_version_{{ ver.id }}" style="{% if ver.read_next_version %}display:none{% endif %}"
+                        href="#delete_version_dialog"
+                        data-toggle="modal"
+                        row_id="{{ ver.id }}"
+                        role="button" class="btn btn-danger">刪除此版本</a>
+                    {% endif %}
+                    此版本日報表共填報了： {{ ver.read_report_days }} 天
+                </li>
+            {% endfor %}
+        </ol>
+    </div>
+    
+    <br><br><br><br><br><br>
+
+<div id="success_message" style="position:fixed;top:40%;left:35%;visibility:visible;display: none;">
+    <span style="font-size: 20px;" class="btn btn-large btn-primary"><br>資料處理中，請稍候<br>完成後頁面將自動重新整理<br>________________</span>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    {% if edit %}
+        <!-- 右鍵選單內容 -->
+        <div class="contextMenu" id="reset_right_menu" row_id="" table_name="item" kind="">
+            <ul>
+                <li id="create_same_dir" style="text-align: left;" title="可以新增一個與我同一階層的資料夾">
+                    <img src="/media/dailyreport/images/dir_add.png" width="25">
+                    新增『同層』資料夾
+                </li>
+                <li id="create_sub_dir" style="text-align: left;" title="可以新增一個在我之下的資料夾">
+                    <img src="/media/dailyreport/images/dir_add_sub.png" width="25">
+                    新增『下層』資料夾
+                </li>
+                <li id="create_item" style="text-align: left;" title="可以新增一個工作項目">
+                    <img src="/media/dailyreport/images/item_add.png" width="25">
+                    新增工項
+                </li>
+                <li id="update_priority_up" style="text-align: left;" title="序位向上調整，若為資料夾則會連動所有項目">
+                    <img src="/media/dailyreport/images/up.png" width="25">
+                    向上移動
+                </li>
+                <li id="update_priority_down" style="text-align: left;" title="序位向下調整，若為資料夾則會連動所有項目">
+                    <img src="/media/dailyreport/images/down.png" width="25">
+                    向下移動
+                </li>
+                <li id="update_priority_outdent" style="text-align: left;" title="向前凸排，若為資料夾則會連動所有項目">
+                    <img src="/media/dailyreport/images/outdent.png" width="25">
+                    到前一層(向前凸排)
+                </li>
+                <li id="update_priority_indent" style="text-align: left;" title="向後縮排，若為資料夾則會連動所有項目">
+                    <img src="/media/dailyreport/images/indent.png" width="25">
+                    到後一層(向後縮排)
+                </li>
+                <li id="delete_item" style="text-align: left;" title="刪除這個項目，若為資料夾，則所屬項目會一併刪除">
+                    <img src="/media/dailyreport/images/delete.png" width="25">
+                    刪除此項目
+                </li>
+            </ul>
+        </div>
+
+
+        <!-- 選擇round_type的dialog -->
+        <div id="select_round_round_type" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="myModalLabel">總價計算錯誤嗎？</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <p> 
+                    <table class="table table-bordered" align="center">
+                        <col width="10%">
+                        <col width="30%">
+                        <col width="60%">
+                        <tr class="info">
+                            <td><span></span></td>
+                            <td>類型</td>
+                            <td>解說</td>
+                        </tr>
+                        {% for type in choose.round_type %}
+                            <tr>
+                                <td><input type="radio" name="round_type" value="{{ type.id }}"
+                                    {% ifequal engprofile.round_type.value type.value %}checked{% endifequal %}></td>
+                                <td>{{ type.value }}</td>
+                                <td>
+                                    {% ifequal type.value "總價四捨五入" %}
+                                        所有項目小計加總後才作四捨五入
+                                    {% endifequal %}
+                                    {% ifequal type.value "目錄四捨五入" %}
+                                        對所有目錄類型作四捨五入
+                                    {% endifequal %}
+                                    {% ifequal type.value "項目四捨五入" %}
+                                        對每個項目皆先作四捨五入
+                                    {% endifequal %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-primary" id="change_round_type">請幫我重新計算</button>
+            </div>
+        </div>
+        
+        <!-- 新增變更設計的dialog -->
+        <div id="create_version_dialog" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="myModalLabel">新增變更設計？</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <p> 
+                    <input type="hidden" value="{{ engprofile.readLatestVersion.start_date }}" id="last_version_start_date">
+                    請選擇變更日期：
+                    <input type="text" class="datepicker" value="" id="new_version_start_date" placeholder="請輸入變更日期">
+                    <br>日期必須於{{ engprofile.readLatestVersion.start_date }}之後
+                    <div class="alert alert-error" style="text-align:left;">
+                        <h4>非常重要：</h4>系統現在會自動轉換變更設計日期後的填報紀錄，不會刪除紀錄，請耐心等待轉換結束，請勿關閉視窗。
+                        <img src="/static/dailyreport/images/loading.gif" width="50" style="display: none;" class="create_version_image">
+                    </div>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-primary" id="creat_version">確定新增變更設計</button>
+            </div>
+        </div>
+
+
+        <!-- 刪除變更設計的dialog -->
+        <div id="delete_version_dialog" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="myModalLabel">刪除變更設計？再次確認!!!</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <p> 
+                    <input type="hidden" value="{{ engprofile.readLatestVersion.id }}" id="delete_version_id">
+                    <input type="hidden" value="{{ engprofile.readLatestVersion.read_pre_version.id }}" id="pre_version_id">
+                    <div class="alert alert-error" style="text-align:left;">
+                        <h4>非常重要：</h4>系統現在會自動轉換變更設計日期後的填報紀錄，不會刪除紀錄，請耐心等待轉換結束，請勿關閉視窗。
+                        <img src="/static/dailyreport/images/loading.gif" width="50" style="display: none;" class="create_version_image">
+                    </div>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-primary" id="delete_version">確定刪除變更設計</button>
+            </div>
+        </div>
+        
+        {% include 'dailyreport/zh-tw/explanation.html' %}
+
+    {% endif %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- JavaScript -->
+    <script type="text/javascript">
+        var float_check = /^[+|-]?\d*\.?\d*$/;
+
+        function recount_price(){
+            //用來更新 變更後的目錄類型總價
+            var round_type = $('#round_type').val();
+            var $obj = $(this);
+            var row_id = $obj.attr('row_id');
+            var price = $('#edit_part_unit_price_' + row_id).val();
+            var old_price = $('#edit_part_unit_price_' + row_id).attr('old_value');
+            var num = $('#edit_part_unit_num_' + row_id).val();
+            var old_num = $('#edit_part_unit_num_' + row_id).attr('old_value');
+            var A = FloatMul(old_price, old_num);
+            var B = FloatMul(price, num);
+            var dulta = FloatSubtraction(B, A);
+            if (!float_check.test(dulta)){
+                return false;
+            }
+            var dir_list = $('#tr_item_' + row_id).attr('top_dir').split('.');
+
+            if (round_type=='目錄四捨五入'){
+                for (i=0;i<dir_list.length;i++){
+                    var dir_price = parseFloat($('#td_item_unit_price_' + dir_list[i]).attr('real_price'));
+                    $('#td_item_unit_price_' + dir_list[i]).html(TransformThousands(Math.round(FloatAdd(dir_price, dulta))));
+                    $('#td_item_unit_price_' + dir_list[i]).attr('real_price', Math.round(FloatAdd(dir_price, dulta)));
+                }
+            } else if (round_type=='總價四捨五入'){
+                for (i=0;i<dir_list.length-1;i++){
+                    var dir_price = parseFloat($('#td_item_unit_price_' + dir_list[i]).attr('real_price'));
+                    var money = Math.round(FloatAdd(dir_price, dulta) * 1000) / 1000;
+                    $('#td_item_unit_price_' + dir_list[i]).html(TransformThousands(money));
+                    $('#td_item_unit_price_' + dir_list[i]).attr('real_price', money);
+                }
+                var dir_price = parseFloat($('#td_item_unit_price_' + dir_list[dir_list.length-1]).attr('real_price'));
+                var money = Math.round(FloatAdd(dir_price, dulta));
+                $('#td_item_unit_price_' + dir_list[dir_list.length-1]).html(TransformThousands(money));
+                $('#td_item_unit_price_' + dir_list[dir_list.length-1]).attr('real_price', FloatAdd(dir_price, dulta));
+            } else if (round_type=='項目四捨五入'){
+                for (i=0;i<dir_list.length;i++){
+                    var dir_price = parseFloat($('#td_item_unit_price_' + dir_list[i]).attr('real_price'));
+                    var money = Math.round(FloatAdd(dir_price, dulta));
+                    $('#td_item_unit_price_' + dir_list[i]).html(TransformThousands(money));
+                    $('#td_item_unit_price_' + dir_list[i]).attr('real_price', FloatAdd(dir_price, dulta));
+                }
+            }
+        }
+
+        function change_round_type(){
+            var value = $('input[name=round_type]:checked').val();
+            var engprofile_id =  $('#engprofile_id').val();
+            var data = {
+                csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                round_type: '/dailyreport/api/v1/option/' + value + '/'
+            };
+            $.ajax({
+                url: '/dailyreport/api/v1/engprofile/' + engprofile_id + '/',
+                type: 'PUT',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function (json, text, xhr) {
+                    window.location.reload();
+                },
+                error: function () {
+                    alert("BAD PUT DATA didn't Success, SomeThing Wrong!!!");
+                },
+            })
+        }
+
+        function createItemByPCCES($buttom, project_id){
+            var buttom_id = $buttom.attr('id');
+            var uploader = new plupload.Uploader({
+                runtimes: 'html5',
+                browse_button: buttom_id,
+                url: '/dailyreport/create_item_by_pcces/',
+                multi_selection: false,
+                max_file_size : '100mb',
+                multipart: true,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                multipart_params : {
+                    csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                    project_id: project_id
+                },
+                init:{
+                    FilesAdded:function(up, file){
+                        var file_name = file[0].name.split('.');
+                        if (file_name[file_name.length-1] != 'xml' && file_name[file_name.length-1] != 'XML'){
+                            alert('此功能只支援PCCES所匯出的『xml』類型檔案');
+                            return false;
+                        }
+                        if (confirm('確定上傳這' + file[0].name + '個檔案嗎?')){
+                            up.start();
+                            $("#success_message").css('z-index', 10000).show();
+                        }else{
+                            return false;
+                        }
+                    },
+                    FileUploaded:function(up, file, res){
+                        var json = $.parseJSON(res.response);
+                        if (!json['status']){
+                            $("#success_message").css('z-index', 10000).hide();
+                            alert(json['msg']);
+                        } else {
+                            window.location.reload();
+                        }
+                    }
+                }
+            });
+            uploader.init();
+        }
+
+        function createItemByCSV($buttom, project_id){
+            var buttom_id = $buttom.attr('id');
+            var uploader = new plupload.Uploader({
+                runtimes: 'html5',
+                browse_button: buttom_id,
+                url: '/dailyreport/create_item_by_csv/',
+                multi_selection: false,
+                max_file_size : '100mb',
+                multipart: true,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                multipart_params : {
+                    csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                    project_id: project_id
+                },
+                init:{
+                    FilesAdded:function(up, file){
+                        var file_name = file[0].name.split('.');
+                        if (file_name[file_name.length-1] != 'csv' && file_name[file_name.length-1] != 'CSV'){
+                            alert('此功能只支援『csv』類型檔案');
+                            return false;
+                        }
+                        if (confirm('確定上傳這' + file[0].name + '個檔案嗎?')){
+                            up.start();
+                        }else{
+                            return false;
+                        }
+                    },
+                    FileUploaded:function(up, file, res){
+                        var json = $.parseJSON(res.response);
+                        if (!json['status']){
+                            alert(json['msg']);
+                        } else {
+                            window.location.reload();
+                        }
+                    }
+                }
+            });
+            uploader.init();
+        }
+
+        function creat_version(){
+            var new_version_start_date = $('#new_version_start_date').val();
+            var last_version_start_date = $('#last_version_start_date').val();
+            var cut_new = new_version_start_date.split('-');
+            var cut_last = last_version_start_date.split('-');
+            var report_type = $('#report_type').val();
+            var A = new Date(cut_new[0], cut_new[1], cut_new[2]);
+            var B = new Date(cut_last[0], cut_last[1], cut_last[2]);
+            if (A <= B){
+                alert('輸入日期必須大於' + last_version_start_date);
+                return false;
+            }
+            var project_id = $('#project_id').val();
+            var data = {
+                csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                project_id: project_id,
+                start_date: new_version_start_date
+            };
+            if (confirm('確定要新增變更設計嗎？ 若您變更設計日之後有填報紀錄，系統現在會自動轉換版本，不會刪除紀錄，但請耐心等待轉換結束，請勿關閉視窗!!!')){
+                $('.create_version_image').show();
+                $.ajax({
+                    url: '/dailyreport/api/v1/version/',
+                    type: 'POST',
+                    data: JSON.stringify(data),
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    success: function (json, text, xhr) {
+                        alert('新增變更成功，按下確定後導入到新版本頁面，您可以開始編輯您新版本的工項了。');
+                        var $url = $.url(xhr.getResponseHeader('Location'));
+                        var id = $url.segment(-1);
+                        $('#create_version_dialog').modal('hide');
+                        window.location = '/dailyreport/item/' + report_type + '/' + id + '/';
+                    },
+                    error: function (json, text, xhr) {
+                        console.log(json);
+                    },
+                })
+            }
+        }
+
+        function delete_version(){
+            var $obj = $(this);
+            var pre_version_id = $('#pre_version_id').val();
+            var delete_version_id = $('#delete_version_id').val();
+            var report_type = $('#report_type').val();
+            var data = {
+                csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            };
+            if (confirm('確定要刪除變更設計嗎？ 若您此變更設計日之後有填報紀錄，系統現在會自動轉換版本，不會刪除紀錄，但請耐心等待轉換結束，請勿關閉視窗!!!')){
+                $('.create_version_image').show();
+                $.ajax({
+                    url: '/dailyreport/api/v1/version/' + delete_version_id + '/',
+                    type: 'DELETE',
+                    data: JSON.stringify(data),
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    success: function (json, text, xhr) {
+                        alert('刪除變更成功，按下確定後重新整理頁面。');
+                        window.location = '/dailyreport/item/' + report_type + '/' + pre_version_id + '/';
+                    },
+                    error: function () {
+                        alert("BAD PUT DATA didn't Success, SomeThing Wrong!!!");
+                    },
+                })
+            }
+        }
+        
+        function show_or_hide_item(){
+            var $obj = $(this);
+            var now = $obj.attr('now');
+            if (now=='show'){
+                $obj.attr('now', 'hide');
+                $('#show_or_hide_item_info').html('顯示所有工項');
+                $('.icon-folder-close').attr('class', 'icon-folder-open');
+                $('tr[kind=工項]').hide();
+            } else {
+                $obj.attr('now', 'show');
+                $('#show_or_hide_item_info').html('僅顯示資料夾');
+                $('.icon-folder-open').attr('class', 'icon-folder-close');
+                $('tr[kind=工項]').show();
+            }
+        }
+
+
+
+        $(document).ready(function(){
+
+            $('.right_click_menu').contextMenu('reset_right_menu', {
+                onContextMenu: function(e) {
+                    return true;
+                },
+                onShowMenu: function(e, menu) {
+                    var row_id = $(e.target).attr('row_id');
+                    var need_right_click = $('#tr_item_' + row_id).attr('need_right_click');
+                    var uplevel_id = $('#tr_item_' + row_id).attr('uplevel_id');
+                    var kind = $('#tr_item_' + row_id).attr('kind');
+                    $('#reset_right_menu').attr('row_id', row_id);
+                    $('#reset_right_menu').attr('kind', kind);
+                    if (!need_right_click){
+                        $('#create_same_dir, #create_sub_dir, #create_item, #update_priority_up, #update_priority_down, #update_priority_outdent, #update_priority_indent, #delete_item', menu).remove();
+                    } else if (!uplevel_id) {
+                        $('#create_same_dir, #update_priority_up, #update_priority_down, #update_priority_outdent, #update_priority_indent, #delete_item', menu).remove();
+                    } else if (kind != '目錄'){
+                        $('#create_same_dir, #create_sub_dir', menu).remove();
+                    }
+                return menu;
+                }
+            });
+            $('td').on('contextmenu', 'input', function(e){e.stopPropagation()});
+            $('.recount_price').change(recount_price);
+            $('#change_round_type').click(change_round_type);
+            $('#creat_version').click(creat_version);
+            $('#delete_version').click(delete_version);
+            $('#show_or_hide_item').click(show_or_hide_item);
+            $(".uploaderPCCES").each(function(){
+                var $obj = $(this);
+                var project_id = $obj.attr("project_id");
+                createItemByPCCES($obj, project_id);
+            });
+            $(".uploaderCSV").each(function(){
+                var $obj = $(this);
+                var project_id = $obj.attr("project_id");
+                createItemByCSV($obj, project_id);
+            });
+            {% if edit %}
+                {% if need_confirm %}
+                    alert('您工項中名稱有包含"小計、合計、總計"之工項( {{ need_confirm }} 個 )，請確認移除此類工項，以確保工程金額計算正確。');
+                {% endif %}
+            {% endif %}
+        });
+    </script>
+{% endblock body %}

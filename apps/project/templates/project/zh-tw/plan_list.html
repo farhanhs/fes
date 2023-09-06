@@ -1,0 +1,715 @@
+{% extends "fishuser/zh-tw/base.html" %}
+{% load i18n %}
+{% load humanize %}
+{% load utiltags %}
+{% load project_tags %}
+{% load guardian_tags %}
+
+{% block style %}
+    .col-xs-1, .col-sm-1, .col-md-1, .col-lg-1, .col-xs-2, .col-sm-2, .col-md-2, .col-lg-2, .col-xs-3, .col-sm-3, .col-md-3, .col-lg-3, .col-xs-4, .col-sm-4, .col-md-4, .col-lg-4, .col-xs-5, .col-sm-5, .col-md-5, .col-lg-5, .col-xs-6, .col-sm-6, .col-md-6, .col-lg-6, .col-xs-7, .col-sm-7, .col-md-7, .col-lg-7, .col-xs-8, .col-sm-8, .col-md-8, .col-lg-8, .col-xs-9, .col-sm-9, .col-md-9, .col-lg-9, .col-xs-10, .col-sm-10, .col-md-10, .col-lg-10, .col-xs-11, .col-sm-11, .col-md-11, .col-lg-11, .col-xs-12, .col-sm-12, .col-md-12, .col-lg-12 {
+        padding-right: 0px !important;
+    }
+    td {
+        padding: 2px !important;
+    }
+{% endblock %}
+
+{% block body %}
+
+<h2>工程進度管控表</h2>
+<table class="table">
+    <tr>
+        <td width="25%" align="right">年度</td>
+        <td width="15%">
+            <select id="select_year" class="form-control get_control_info get_work_no_info">
+                <option value="">請選擇</option>
+                {% for year in engineering_year %}
+                    {{ year }}
+                    <option value="{{ year }}">{{ year }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td width="5%" align="right">月份</td>
+        <td width="15%">
+            <select id="select_month" class="form-control get_control_info get_work_no_info">
+            </select>
+        </td>
+        <td>
+            <a class="download_excel" style="margin-left: 20px">
+                <button class="btn btn-success" type="button">
+                    匯出<span style="color: blue;">工程進度管控表</span>
+                </button>
+            </a>
+        </td>
+    </tr>
+</table>
+<a class="make_excel" style="margin-left: 20px">
+    <button class="btn btn-success" type="button">
+        匯出<span style="color: red;">目前</span>工程進度管控表
+    </button>
+</a>
+
+<hr>
+
+<h2>計畫列表</h2>
+<table class="">
+    <tr>
+        <td width="20%" align="right">年度</td>
+        <td width="15%">
+            <select id="year_query" class="form-control get_control_info get_work_no_info">
+                <option value="0">請選擇</option>
+                {% for y in years %}
+                    {{ y }}
+                    <option value="{{ y }}">{{ y }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td width="10%" align="right">上層計畫</td>
+        <td width="30%">
+            <select id="plan_query" class="form-control get_control_info get_work_no_info">
+                <option value="0">請選擇</option>
+                {% for p in plans %}
+                {% if p.front_tag <= 1 %}
+                    {{ p }}
+                    <option value="{{ p.id }}">{{ p }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </td>
+        <td>
+            <a class="" style="margin-left: 20px">
+                <button class="btn btn-success" type="button" onclick="search()">
+                    搜尋
+                </button>
+                <input id="last_plan_query" value="" style="display:none">
+                <input id="last_year_query" value="" style="display:none">
+                <input id="last_info" value="" style="display:none;">
+            </a>
+        </td>
+    </tr>
+</table>
+<br/>
+
+{% for p in plans %}
+    {% if p.front_tag <= 1 %}
+    {% include 'project/zh-tw/plan_list_create.html' %}
+    {% else %}
+    {% include 'project/zh-tw/plan_list_create2.html' %}
+    {% endif %}
+{% endfor %}
+
+
+{% if edit %}
+<div class="modal fade" id="create_plan_budget_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">新增年度預算</h4>
+            </div>
+            <div class="modal-body">
+                <input id="create_plan_id" style="display: none;" value="">
+                <table class="table table-bordered">
+                    <tr>
+                        <td class="success" width="20%">年度</td>
+                        <td width="80%">
+                            <select
+                                id="new_plan_budget_year"
+                                is_select="true"
+                                class="form-control">
+                                {% for year in years %}
+                                    <option value="{{ year }}" {% ifequal year this_year %}selected="selected"{% endifequal %}>{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="warning">資本門 自辦</td>
+                        <td>
+                            <div class="input-group">
+                                <input
+                                    id="new_plan_budget_capital_self"
+                                    class="form-control"
+                                    style="text-align: right;"
+                                    placeholder="待輸入"
+                                    value="0">
+                                <span class="input-group-addon">元</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="warning">資本門 委辦</td>
+                        <td>
+                            <div class="input-group">
+                                <input
+                                    id="new_plan_budget_capital_trust"
+                                    class="form-control"
+                                    style="text-align: right;"
+                                    placeholder="待輸入"
+                                    value="0">
+                                <span class="input-group-addon">元</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="warning">資本門 補助</td>
+                        <td>
+                            <div class="input-group">
+                                <input
+                                    id="new_plan_budget_capital_grant"
+                                    class="form-control"
+                                    style="text-align: right;"
+                                    placeholder="待輸入"
+                                    value="0">
+                                <span class="input-group-addon">元</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="danger">經常門 自辦</td>
+                        <td>
+                            <div class="input-group">
+                                <input
+                                    id="new_plan_budget_regular_self"
+                                    class="form-control"
+                                    style="text-align: right;"
+                                    placeholder="待輸入"
+                                    value="0">
+                                <span class="input-group-addon">元</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="danger">經常門 委辦</td>
+                        <td>
+                            <div class="input-group">
+                                <input
+                                    id="new_plan_budget_regular_trust"
+                                    class="form-control"
+                                    style="text-align: right;"
+                                    placeholder="待輸入"
+                                    value="0">
+                                <span class="input-group-addon">元</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="danger">經常門 補助</td>
+                        <td>
+                            <div class="input-group">
+                                <input
+                                    id="new_plan_budget_regular_grant"
+                                    class="form-control"
+                                    style="text-align: right;"
+                                    placeholder="待輸入"
+                                    value="0">
+                                <span class="input-group-addon">元</span>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="create_plan_budget">新增年度預算</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="create_plan_reserve_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">新增年度保留數</h4>
+            </div>
+            <div class="modal-body">
+                <input id="reserve_plan_id" style="display: none;" value="">
+                <table class="table table-bordered">
+                    <tr>
+                        <td class="success" width="20%">保留至年度</td>
+                        <td width="80%">
+                            <select
+                                id="new_plan_reserve_year"
+                                is_select="true"
+                                class="form-control">
+                                {% for year in years %}
+                                    <option value="{{ year }}" {% ifequal year this_year %}selected="selected"{% endifequal %}>{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="warning">保留金額</td>
+                        <td>
+                            <div class="input-group">
+                                <input
+                                    id="new_plan_reserve_value"
+                                    class="form-control"
+                                    style="text-align: right;"
+                                    placeholder="待輸入"
+                                    value="0">
+                                <span class="input-group-addon">元</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="warning">備註</td>
+                        <td>
+                            <input
+                                id="new_plan_reserve_memo"
+                                class="form-control"
+                                placeholder="待輸入"
+                                value="">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="create_plan_reserve">新增年度保留數</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="sort_plan_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style="width:900px; margin-left:-200px;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">階層調整</h4>
+            </div>
+            <div class="modal-body">
+                <input type="text" style="display:none;" value="" id="want_sort_plan_id">
+                請選擇欲調整的位置
+                <table class="table table-bordered" id="select_sort_place_table">
+                    
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script type="text/javascript">
+    let year_month = {{ year_month|safe }}.sort();
+    $('#select_year').on('change', function() {
+        const year = $(this).val();
+        let month_list = '<option value="">請選擇</option>';
+        year_month.forEach(element => {
+            if(element.indexOf(year) != -1) {
+                let month = element.replace(year + '_', '');
+                month_list += `<option value="${month}">${month}</option>`;
+            }
+        });
+        $('#select_month').html(month_list);
+    })
+
+
+    function budget_type() {
+        var $obj = $(this);
+        var value = $obj.find(":selected").text();
+        var row_id = $obj.attr('row_id');
+        $('#plan_budget_type_firststring_' + row_id).html('(' + value[0] + ')');
+    }
+    
+    function plan_name() {
+        var $obj = $(this);
+        var value = $obj.val();
+        var row_id = $obj.attr('row_id');
+        $('#plan_name_' + row_id).html(value);
+    }
+
+    function plan_row(){
+        var $obj = $(this);
+        var row_id = $obj.attr('row_id');
+        var info_status = $obj.attr('info_status');
+        if (info_status=='hide'){
+            var data = {
+                csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                row_id: row_id
+            };
+            $.ajax({
+                url: '/project/plan_list/get_plan_info/',
+                type: 'POST',
+                data: data,
+                dataType: 'json',
+                success: function (json, text, xhr) {
+                    //把上一個info關掉
+                    var last_info_id = document.getElementById('last_info').value;
+                    $('#row_plan_info_' + last_info_id).html('');
+                    $obj.attr('info_status', 'hide');
+
+                    $('#row_plan_info_' + row_id).html($(json['html']));
+                    $obj.attr('info_status', 'show');
+                    document.getElementById('last_info').value = row_id;
+                    // $('.ClickShowInfo').unbind('click');
+                    // $('.BlurUpdateInfo').unbind('blur');
+                    // $('.BlurUpdateInfo').unbind('keypress');
+                    $('.deleteRow').unbind('click');
+                    $('.inputcomma').unbind('blur');
+                    $('.inputcomma').unbind('click');
+                    $('.check_budget_num_over').unbind('change');
+                    $('.create_sub_plan').unbind('change');
+                    $('.budget_type').unbind('change');
+                    $('.plan_name').unbind('change');
+                    $('.make_sort_table').unbind('click');
+                    $('.make_sort_table').click(make_sort_table);
+                    $('.plan_name').change(plan_name);
+                    $('.budget_type').change(budget_type);
+                    $('.create_sub_plan').click(create_sub_plan);
+                    $.each($('.check_budget_num_over'), check_budget_num_over); //每一個input直接檢查是否超出已分配預算
+                    $('.check_budget_num_over').change(check_budget_num_over); //檢查是否超出已分配預算
+                    $.each($('.inputcomma'), inputcomma); // 每一個input直接變換千分位
+                    $('.inputcomma').blur(inputcomma); // input 改變後的數字變換千分位
+                    $('.inputcomma').click(remove_inputcomma); // input 點擊時要先移除千分位符號
+                    // $('.ClickShowInfo').click(ClickShowInfo);
+                    // $('.BlurUpdateInfo').blur(BlurUpdateInfo);
+                    // $('.BlurUpdateInfo').keypress(function(event) {
+                    //     var $obj = $(this);
+                    //     if (!$obj.is("textarea") && event.which == 13){
+                    //         $obj.blur();
+                    //     }
+                    // });
+                    $('.deleteRow').click(deleteRow);
+                },
+                error: function (data) {
+                },
+            })
+        } else {
+            $('#row_plan_info_' + row_id).html('');
+            $obj.attr('info_status', 'hide');
+        }
+    }
+
+    function check_budget_num_over(){
+        var $obj = $(this);
+        var row_id = $obj.attr('row_id');
+        var field_name = $obj.attr('field_name');
+        var value = $obj.val();
+        if (value) {
+            value = remove_TransformThousands($obj.val());
+        } else {
+            value = 0;
+        }
+        var sum_value = $('#plan_budget_sum_' + field_name + '_' + row_id).val();
+        if (sum_value){
+            sum_value = remove_TransformThousands($('#plan_budget_sum_' + field_name + '_' + row_id).val());
+        } else {
+            sum_value = 0;
+        }
+        if (FloatAdd(value, 0) < FloatAdd(sum_value, 0)){
+            $('#plan_budget_sum_' + field_name + '_' + row_id).css('border-color', 'red');
+        } else {
+            $('#plan_budget_sum_' + field_name + '_' + row_id).css('border-color', '');
+        }
+    }
+
+    function create_plan_budget(){
+        var row_id = $('#create_plan_id').val();
+        var year = $('#new_plan_budget_year').val();
+        var capital_self = $('#new_plan_budget_capital_self').val();
+        var capital_trust = $('#new_plan_budget_capital_trust').val();
+        var capital_grant = $('#new_plan_budget_capital_grant').val();
+        var regular_self = $('#new_plan_budget_regular_self').val();
+        var regular_trust = $('#new_plan_budget_regular_trust').val();
+        var regular_grant = $('#new_plan_budget_regular_grant').val();
+        if (capital_self && !float_check.test(capital_self)){
+            alert('資本門 自辦 需為數字格式');
+            return false;
+        } else if (!capital_self){
+            capital_self = '0';
+        }
+        if (capital_trust && !float_check.test(capital_trust)){
+            alert('資本門 委辦 需為數字格式');
+            return false;
+        } else if (!capital_trust){
+            capital_trust = '0';
+        }
+        if (capital_grant && !float_check.test(capital_grant)){
+            alert('資本門 補助 需為數字格式');
+            return false;
+        } else if (!capital_grant){
+            capital_grant = '0';
+        }
+        if (regular_self && !float_check.test(regular_self)){
+            alert('經常門 自辦 需為數字格式');
+            return false;
+        } else if (!regular_self){
+            regular_self = '0';
+        }
+        if (regular_trust && !float_check.test(regular_trust)){
+            alert('經常門 委辦 需為數字格式');
+            return false;
+        } else if (!regular_trust){
+            regular_trust = '0';
+        }
+        if (regular_grant && !float_check.test(regular_grant)){
+            alert('經常門 補助 需為數字格式');
+            return false;
+        } else if (!regular_grant){
+            regular_grant = '0';
+        }
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            plan: '/fishuser/api/v2/plan/' + row_id + '/',
+            year: year,
+            capital_self: capital_self,
+            capital_trust: capital_trust,
+            capital_grant: capital_grant,
+            regular_self: regular_self,
+            regular_trust: regular_trust,
+            regular_grant: regular_grant,
+        };
+        $.ajax({
+            url: '/fishuser/api/v2/planbudget/',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (json, text, xhr) {
+                $('#create_plan_budget_dialog').modal('hide');
+                $('#new_plan_budget_capital_self').val('');
+                $('#new_plan_budget_capital_trust').val('');
+                $('#new_plan_budget_capital_grant').val('');
+                $('#new_plan_budget_regular_self').val('');
+                $('#new_plan_budget_regular_trust').val('');
+                $('#new_plan_budget_regular_grant').val('');
+                
+                $('#row_plan_' + row_id).attr('info_status', 'hide');
+                $('#row_plan_' + row_id).click();
+            },
+            error: function (data) {
+                if (data.responseText){
+                    alert(data.responseText);
+                } else {
+                    alert('操作失敗，可能系統忙碌中，請稍候重試一次。');
+                }
+            },
+        })
+    }
+
+    function create_plan_reserve(){
+        var row_id = $('#reserve_plan_id').val();
+        var year = $('#new_plan_reserve_year').val();
+        var value = $('#new_plan_reserve_value').val();
+        var memo = $('#new_plan_reserve_memo').val();
+        if (value && !float_check.test(value)){
+            alert('保留數 需為數字格式');
+            return false;
+        } else if (!value){
+            value = '0';
+        }
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            plan: '/fishuser/api/v2/plan/' + row_id + '/',
+            year: year,
+            value: value,
+            memo: memo,
+        };
+        $.ajax({
+            url: '/fishuser/api/v2/planreserve/',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (json, text, xhr) {
+                $('#create_plan_reserve_dialog').modal('hide');
+                $('#new_plan_reserve_value').val('');
+                $('#new_plan_reserve_memo').val('');
+                $('#row_plan_' + row_id).attr('info_status', 'hide');
+                $('#row_plan_' + row_id).click();
+            },
+            error: function (data) {
+                if (data.responseText){
+                    alert(data.responseText);
+                } else {
+                    alert('操作失敗，可能系統忙碌中，請稍候重試一次。');
+                }
+            },
+        })
+    }
+
+    function create_sub_plan() {
+        var $obj = $(this);
+        var row_id = $obj.attr('row_id');
+        var name = prompt("請輸入欲新增的計畫名稱");
+        if (!name) {
+            alert('計畫名稱不能是空白');
+            return false;
+        }
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            row_id: row_id,
+            name: name
+        };
+        $.ajax({
+            url: '/project/plan_list/create_plan/',
+            type: 'POST',
+            data: data,
+            dataType: 'json',
+            success: function (json, text, xhr) {
+                $(json['html']).insertAfter($('#div_plan_' + json['insert_after']));
+                $.each($('.plan_row'), function(){
+                    var $obj = $(this);
+                    if ($obj.attr('info_status') == 'show'){
+                        $obj.click();
+                    }
+                });
+                $('.plan_row').unbind('click');
+                $('.plan_row').click(plan_row);
+                $('#row_plan_' + json['row_id']).click();
+            },
+            error: function (data) {
+                if (data.responseText){
+                    alert(data.responseText);
+                } else {
+                    alert('操作失敗，可能系統忙碌中，請稍候重試一次。');
+                }
+            },
+        })
+    }
+
+    function make_sort_table() {
+        var $obj = $(this);
+        var row_id = $obj.attr('row_id');
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            row_id: row_id
+        };
+        $.ajax({
+            url: '/project/plan_list/make_sort_table/',
+            type: 'POST',
+            data: data,
+            dataType: 'json',
+            success: function (json, text, xhr) {
+                $('#select_sort_place_table').html(json['html']);
+                $('.update_sort').click(update_sort);
+            },
+            error: function (data) {
+                if (data.responseText){
+                    alert(data.responseText);
+                } else {
+                    alert('操作失敗，可能系統忙碌中，請稍候重試一次。');
+                }
+            },
+        })
+    }
+
+    function update_sort() {
+        var $obj = $(this);
+        var row_id = $obj.attr('row_id');
+        var site = $obj.attr('site');
+        var want_sort_plan_id = $('#want_sort_plan_id').val();
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            sort: 10000,
+            row_id: row_id,
+            site: site,
+            submit: 'update_sort',
+        };
+        $.ajax({
+            url: '/fishuser/api/v2/plan/' + want_sort_plan_id + '/',
+            type: 'PUT',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (json, text, xhr) {
+                window.location = '/project/plan_list';
+                $('#row_plan_' + want_sort_plan_id).click();
+            },
+            error: function (data) {
+                if (data.responseText){
+                    alert(data.responseText);
+                } else {
+                    alert('操作失敗，可能系統忙碌中，請稍候重試一次。');
+                }
+            },
+        })
+    }
+    
+    function make_excel() {
+        let today = new Date();
+        const year = today.getFullYear() - 1911;
+        window.open(`/project/port_engineering_make_excel/${year}`);
+    }
+
+    function download_excel(){
+        const year = $('#select_year').val();
+        const month = $('#select_month').val();
+        if(year == ''){
+            alert('請選擇年度');
+            return false;
+        }
+        if(month == ''){
+            alert('請選擇月份');
+            return false
+        }
+        window.open(`/project/port_engineering_download_excel/${year}/${month}`)
+    }
+
+    function search(){
+        //確保info都關掉
+        var $obj = $(this);
+        $('#row_plan_info_' + document.getElementById('last_info').value).html('');
+        $obj.attr('info_status', 'hide');
+        var plan_query = document.getElementById('plan_query').value;
+        var last_plan_query = document.getElementById('last_plan_query').value;
+        var year = document.getElementById('year_query').value;
+        var last_year = document.getElementById('last_year_query').value;
+        
+        if(last_plan_query != ''){
+            url = '/project/plan_query/'+last_plan_query+'/'+last_year+'/';
+            $.ajax({
+                url: url,
+                type: 'GET',
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function (data) {
+                    
+                    for(var i=0; i<data['ids'].length; i++){
+                        $('#row_plan_'+data['ids'][i]).hide();
+                    }
+                },
+                error: function(data){
+                }
+                
+            })
+        }
+
+        url = '/project/plan_query/'+plan_query+'/'+year+'/';
+        $.ajax({
+            url: url,
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                for(var i=0; i<data['ids'].length; i++){
+                    $('#row_plan_'+data['ids'][i]).show();
+                }
+                document.getElementById('last_plan_query').value = plan_query  
+                document.getElementById('last_year_query').value = year;
+          
+            },
+            error: function(data){
+            }
+            
+        })
+    }
+
+    $(document).ready(function(){
+        $('.plan_row').click(plan_row);
+        $('#create_plan_budget').click(create_plan_budget);
+        $('#create_plan_reserve').click(create_plan_reserve);
+        $('.make_excel').click(make_excel);
+        $('.download_excel').click(download_excel);
+    });
+
+</script>
+{% endblock%}
+

@@ -1,0 +1,66 @@
+{% extends 'project/project.html' %}
+{% block menu %}
+    <div id="ProjectSubmenu1">
+		<ul>
+        {% for y in years %}
+            <li><a href="/project/refund/{{target_project.id}}/{{ y }}/" class="{% ifequal y target_year %}active{% endifequal %}">{{ y }}年度</a></li>
+        {% endfor %}
+            <li><a href="/project/refundhistory/{{target_project.id}}" class="active">會計歷程</a></li>
+		{% if edit %}
+            <li><a href="/project/reserve/{{target_project.id}}" class="">跨年度申請</a></li>
+        {% endif %}
+        </ul>
+	</div>
+{% endblock %}
+{% block style %}
+.style0 {
+	font-size: 16px;
+}
+.style1 {
+	color: 570;
+}
+.style3 {
+	font-size: 15px;
+}
+{% endblock %}
+{% block title %}<title id="title">{{ target_project }} 工程資訊</title>{% endblock %}
+
+
+{% block content %}
+        <span style="font-size: 18px">
+        <br><a id="{{ target_project.id }}" class="target_project" name="FundRecode" year='{{ target_year }}' dn="{{ dn }}"></a>
+        {% if annual %}
+        <table rules="cols">
+            <tr>
+                <td width="200" valign="top" align="center">
+                    <select id="fundrecord_year_list" class="style0">
+                        {% for year in annual %}
+                                <option value="{{ year }}" {% ifequal target_year year %}selected{% endifequal %}>　　{{ year }}年度　　</option>
+                        {% endfor %}
+                    </select>
+                    <table id="fundrecord_year_table">
+                        {% for record in records %}
+                        <tr>
+                            <td>
+                                <a id="record_{{ record.id }}" href="/project/refundhistory/{{target_project.id}}/{{ record.id }}">{% ifequal record.id dn %}<font color="#FF0000">{% else %}{% endifequal %}{{ record.title }}{% ifequal record.id dn %}</font>{% else %}{% endifequal %}</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </td>
+                <td width="600" height="400" valign="top" align="center">
+                    <br>
+                    {% block fundrecord %}
+                    {% endblock %}
+                </td>
+            </tr>
+        </table>
+        {% else %}
+        <center>此工程目前並無記錄</center>
+        {% endif %}
+        <br>
+        </span>
+        
+
+
+{% endblock %}

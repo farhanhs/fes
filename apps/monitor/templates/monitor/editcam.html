@@ -1,0 +1,119 @@
+<script type="text/javascript" src="/media/monitor/js/lib.js"></script>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript">
+    var map;
+    function initialize() {
+        var myLatlng = new google.maps.LatLng(23.740097900696778, 120.95123303515625);
+        var map = new google.maps.Map(document.getElementById('map_canvas'), {
+            zoom: 7,
+            center: myLatlng,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        });
+        initializeEditPage();
+    }
+
+    function resetMap(lat, lng, cams) {
+        var newLatlng = new google.maps.LatLng(lat, lng);
+        var map = new google.maps.Map(document.getElementById('map_canvas'), {
+            zoom: 16,
+            center: newLatlng,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        });
+        for(i=0;i<cams.length;i++){
+            var MonitorLatlng = new google.maps.LatLng(cams[i].lat, cams[i].lng);
+            marker = new google.maps.Marker({
+                position: MonitorLatlng,
+                map: map,
+                draggable: true,
+                icon: "/media/monitor/image/CameraIcon.png",
+                id: cams[i].id,
+                name: cams[i].name,
+                machine_no: cams[i].machine_no,
+                location: cams[i].location,
+                ip: cams[i].ip,
+                video_url: cams[i].video_url
+            });
+
+            google.maps.event.addListener(marker, 'click', function() {
+                editSelectedCam(this);
+            });
+            google.maps.event.addListener(marker, 'dragstart', function() {
+                editSelectedCam(this);
+            });
+            google.maps.event.addListener(marker, 'drag', function() {
+                renewSelectedCamCoord(this);
+            });
+            google.maps.event.addListener(marker, 'dragend', function() {
+                editSelectedCam(this);
+            });
+        };
+    }
+</script>
+<body onload="initialize()">
+    <div id="EditCamBlock" state="activate"></div>
+    <div id="map_canvas" style="width:800px; height:300px"></div>
+    <table id="selected_cam" value="">
+        <tr>
+            <td>攝影機座標：</td>
+            <td colspan="3">
+                <div id="coord" align="center" style="width: 500px; height: 20px;line-height:20px; border: 1px black solid;font-size: 12px;disabled: true;">請選擇攝影機</div>
+                <div id="lat" class="cam_need" style="display: none;" value=""></div>
+                <div id="lng" class="cam_need" style="display: none;" value=""></div>
+            </td>
+            <td>
+                <img id="check_coord" src="/media/monitor/image/uncheck.png" width="20" style="vertical-align:middle; display: none;" alt="位置檢查">
+            </td>
+        </tr>
+        <tr>
+            <td>攝影機名稱：</td>
+            <td colspan="3">
+                <input id="name" class="cam_need form-control" size="60">
+            </td>
+            <td>
+                <img id="check_name" src="/media/monitor/image/uncheck.png" width="20" style="vertical-align:middle; display: none;" alt="名稱檢查">
+            </td>
+        </tr>
+        <tr>
+            <td>攝影機型號：</td>
+            <td colspan="4">
+                <select id="machine_no" class="cam_need">
+                    <option value="BE3204">Blue Eyes BE3204(2010 年架設，共 6 台)</option>
+                    <option value="PELCO-D">Eyeview PELCO-D(2011 年架設，共 15 台)</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>攝影機備註：</td>
+            <td colspan="4">
+                <input id="note" class="form-control" size="60">
+            </td>
+        </tr>
+        <tr>
+            <td>攝影機 IP 位置：</td>
+            <td>
+                <input id="IP" class="cam_need form-control" size="25">
+            </td>
+            <td colspan="3">
+                <img id="check_IP" src="/media/monitor/image/uncheck.png" width="20" style="vertical-align:middle; display: none;" alt="IP 檢查">
+            </td>
+        </tr>
+        <tr>
+            <td>錄影檔儲存位置：</td>
+            <td>
+                <input id="video_url" class="cam_need" size="25">
+            </td>
+            <td colspan="3">
+                <img id="check_video_url" src="/media/monitor/image/uncheck.png" width="20" style="vertical-align:middle; display: none;" alt="影片儲存位置檢查">
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" height="70" align="right">
+                <button id="cam_update" class="btn btn-success">更新攝影機資訊</button>
+            </td>
+            <td colspan="4" height="70" align="right">
+                <button id="cam_remove" class="btn btn-danger">刪除攝影機</button>
+            </td>
+        </tr>
+    </table>
+</body>

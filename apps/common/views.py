@@ -1,0 +1,336 @@
+# -*- coding:utf8 -*-
+# Create your views here.
+from django.template.loader import get_template
+from django.template import Context
+from django.template import RequestContext
+from django.http import HttpResponse
+from django.http import HttpResponseRedirect
+from django.http import HttpResponseNotFound
+from django.http import HttpResponseServerError
+from django.db.models import Q
+from django.db import models as M
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import permission_required
+from django.contrib import auth
+from django.utils.http import same_origin
+
+import json
+if not hasattr(json, "write") and hasattr(json, "dumps"):
+    #for python2.6
+    json.write = json.dumps
+    json.read = json.loads
+import re
+import random
+import os
+from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageFont
+from MySQLdb import IntegrityError
+from datetime import datetime
+from cStringIO import StringIO
+
+from common.models import Log
+from common.models import Option
+from common.models import VerifyCode
+from common.models import BugPage
+from common.lib import readDATA
+from settings import ROOT
+from settings import CAN_VIEW_BUG_PAGE_IPS
+from settings import ROOT_URLCONF
+from settings import DEVELOPER_USERNAME
+from settings import SYSTEM_AUTH_MODULE
+
+def authority_check(myfunc):
+    def inner_func(*args, **kw):
+        R = args[0]
+        DATA = readDATA(R)
+        func_name = myfunc.__name__
+        try:
+            ContentType_id = kw['ContentType_id']
+            row_id = kw['row_id']
+        except:
+            ContentType_id = DATA['ContentType_id']
+            row_id = DATA['row_id']
+
+        try:
+            kw['CT'] = CT = ContentType.objects.get(id=ContentType_id)
+        except (ContentType.DoesNotExist, ValueError):
+            return HttpResponse(json.write({'status': False,
+            'message': u'無法找到所對應的資料表', 'ContentType_id': ContentType_id}))
+
+        try:
+            # for unknown bug: http://fes.fa.gov.tw/common/bugpage/89N8/
+            MODEL = CT.model_class()
+            kw['row'] = row = CT.get_object_for_this_type(id=row_id)
+        except (MODEL.DoesNotExist, ValueError):
+            return HttpResponse(json.write({'status': False,
+            'message': u'無法找到資料表中的紀錄', 'row_id': row_id}))
+
+        # TODO 紀錄誰作了什麼事(delete, update)
+        #if not row.validateUser(R.user):
+        #    return HttpResponse(json.write({'status': False,
+        #    'message': '你沒有該工程案的權限', 'user': R.user.username}))
+        ##TODO 如何驗證角色的權限，及因應自辦/委外狀態不同情況的權限。這架構要再想想，目前先將它 Log 起來。
+
+        return myfunc(*args, **kw)
+    return login_required(inner_func)
+
+@authority_check
+def deleteRow(R, **kw):
+    CT = kw['CT']
+    row = kw['row']
+
+    try:
+        row.delete()
+        return HttpResponse(json.write({'status': True, 'ContentType_id': CT.id,
+        'row_id': row.id}))
+    except:
+        return HttpResponse(json.write({'status': False, 'ContentType_id': CT.id,
+        'row_id': row.id}))
+
+@authority_check
+def setValue(R, **kw):
+    INPUT = readDATA(R)
+    if not INPUT.has_key('value'):
+        return HttpResponse(json.write({'status': False,
+        'message': u'沒有傳入值'})) # 可允許傳入值為空值。
+    value = input_value = INPUT['value']
+
+    CT = kw['CT']
+    row = kw['row']
+    fieldname = kw['fieldname']
+    try:
+        orivalue = getattr(row, fieldname)
+    except AttributeError:
+        return HttpResponse(json.write({'status': False,
+        'message': u'欄位名設定錯誤', 'fieldname': fieldname}))
+
+    if row._meta.get_field(fieldname).__class__ == M.DateField:
+        try: value = datetime.strptime(value, '%Y-%m-%d').date()
+        except ValueError:
+            try: value = datetime.strptime(value, '%Y/%m/%d').date()
+            except ValueError:
+                return HttpResponse(json.write({'status': False,
+                'message': u'格式不對，時間格式須為 XXXX-XX-XX ，如 2008-01-01',
+                'value': input_value}))
+
+    elif row._meta.get_field(fieldname).__class__ == M.EmailField:
+        if CT.model_class()(**{fieldname: value}).validate().has_key(fieldname):
+            return HttpResponse(json.write({'status': False,
+            'message': fieldname + u' 格式不對，email 格式須為 xxx@xxx.xxx ，如 m_i_g.admin-1@swcb.gov.tw',
+            'value': input_value}))
+
+    try:
+        Fieldname = re.sub('^(.?)', lambda m: m.group(1).upper(), fieldname)
+        if hasattr(row, 'set'+Fieldname):
+            result = getattr(row, 'set'+Fieldname)(value)
+        else:
+            setattr(row, fieldname, value)
+            result = ''
+        row.save()
+
+        log = Log()
+        log.makeUpdateLog(content_type=CT, user=R.user, object_id=row.id, ori=orivalue, new=value,
+        action_repr=u'修改 %s 欄位值' % fieldname)
+
+    except IntegrityError:
+        return HttpResponse(json.write({'status': False, 'ContentType_id': CT.id, 'fieldname': fieldname,
+            'row_id': row.id, 'value': input_value, 'message': u'與系統上已存在欄位值重覆'}))
+
+    except:
+        return HttpResponse(json.write({'status': False, 'ContentType_id': CT.id, 'fieldname': fieldname,
+            'row_id': row.id, 'value': input_value, 'message': u'不知原因，儲存失敗'}))
+
+    else:
+        return HttpResponse(json.write({'status': True, 'ContentType_id': CT.id, 'fieldname': fieldname,
+            'row_id': row.id, 'value': input_value, 'result': result}))
+
+
+def askNewNumber(R):
+    randomkey = '%03d' % random.randint(2, 1000)
+    verifycode = VerifyCode(key=randomkey)
+    verifycode.save()
+    return HttpResponse(json.write({'status': True, 'verifycode_id': verifycode.id}))
+
+
+def verifyImage(R, verifycode_id):
+    im = Image.new('RGBA', (120, 40), (125, random.randint(0, 255), random.randint(0, 255), 125))
+    dw = ImageDraw.Draw(im)
+    try:
+        vc = VerifyCode.objects.get(id=verifycode_id)
+    except VerifyCode.DoesNotExist:
+        key = u'查無編號'
+        font_size = 28
+        postion = (0, 0)
+    else:
+        key = vc.key
+        font_size = 64
+        postion = (-3, -15)
+
+    dw.text(postion, key,
+        font=ImageFont.truetype('/var/www/fes/apps/common/bkai00mp.ttf', font_size),
+        fill=(0, 0, 0, random.randint(100, 200)))
+
+    buffer = StringIO()
+    im.save(buffer, 'PNG')
+    png = buffer.getvalue()
+    buffer.close()
+    return HttpResponse(png, content_type='image/png')
+
+def pureLogin(R):
+    if R.META['REMOTE_ADDR'] not in R.META['HTTP_HOST']:
+        return HttpResponse(json.write({'status': False, 'message': u'只允許本機端登入'}))
+
+    try:
+        user = auth.authenticate(username=DEVELOPER_USERNAME, password="^!@#$%^&*('給admin轉帳號用')")
+        if user:
+            auth.login(R, user)
+            return HttpResponse(json.write({'status': True}))
+        else:
+            return HttpResponse(json.write({'status': False, 'message': u'%s 不存在。' % username}))
+    except:
+        return HttpResponse(json.write({'status': False, 'message': u'無法轉換帳號'}))
+
+def pureLogout(R):
+    auth.logout(R)
+    response = HttpResponseRedirect('/')
+    return response
+
+def notFoundPage(R, template_name='404.html'):
+    if not R.META.get('HTTP_REFERER', '') or not R.META.get('PATH_INFO', ''):
+        log_id = None
+    else:
+        log = Log()
+        user = R.user
+        referer = R.META.get('HTTP_REFERER', '')
+        good_referer = 'https://%s/' % R.get_host()
+        if not same_origin(referer, good_referer):
+            R.META['HTTP_REFERER'] = ''
+            referer = ''
+        path = R.META.get('PATH_INFO', '')
+
+        log.makeHTTP404Log(user=user, referer=referer, url=path)
+        log_id = log.object_id
+
+    if R.is_ajax():
+        return HttpResponseNotFound('%s<>%s'%(path, log_id), content_type='text/plain')
+    else:
+        t = get_template(os.path.join(SYSTEM_AUTH_MODULE, '404.html')) # You need to create a 404.html template.
+        html = t.render(RequestContext(R, {'log_id': log_id}))
+        return HttpResponseNotFound(html)
+
+from django.views.debug import ExceptionReporter
+import sys
+def recordErrorPage(R, **kw):
+    """
+        Create a technical server error response. The last three arguments are
+        the values returned from sys.exc_info() and friends.
+    """
+    reporter = ExceptionReporter(R, *sys.exc_info())
+    bug_html = reporter.get_traceback_html()
+    bp = BugPage(html=bug_html)
+    bp.save()
+    log = Log()
+    log.makeHTTP500Log(user=R.user, bug_page=bp, url=R.META['PATH_INFO'])
+
+    if R.is_ajax():
+        return HttpResponseServerError(bp.code, content_type='text/plain')
+    else:
+        if R.META['HTTP_X_FORWARDED_ADDR'] in CAN_VIEW_BUG_PAGE_IPS:
+            is_internal_ips = True
+        else:
+            is_internal_ips = False
+
+        referer = R.META.get('HTTP_REFERER', '')
+        good_referer = 'https://%s/' % R.get_host()
+        if not same_origin(referer, good_referer):
+            # R.META.HTTP_REFERER = ''
+            referer = ''
+
+        t = get_template(os.path.join(SYSTEM_AUTH_MODULE, '500.html'))
+        html = t.render(RequestContext(R, {'bug_page': bp, 'is_internal_ips': is_internal_ips}))
+        return HttpResponseServerError(html, content_type='text/html')
+
+def checkCanViewBugPageIPS(view_function):
+    def innerFunction(*args, **kw):
+        R = args[0]
+        # if R.META['REMOTE_ADDR'] not in CAN_VIEW_BUG_PAGE_IPS:
+        #     html = u"""<html><head><meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        #         <title>錯誤自動化紀錄系統</title>
+        #         </head>
+        #         <body>錯誤碼: <a href="/common/bugpage/%(code)s/">%(code)s</a> 的訊息<br>
+        #         已將錯誤回報給工程師了<br>請稍候或隔天測試<br>或來電客服專線 04-22855647</body></html>
+        #     """ % {'code': kw.get('code', '')}
+        #     return HttpResponse(html, content_type='text/html')
+        return view_function(*args, **kw)
+    return innerFunction
+
+@checkCanViewBugPageIPS
+def rBugPage(R, code):
+    try:bp = BugPage.objects.filter(code=code).order_by('-id')[0]
+    except IndexError: html = u'無此份 bug page'
+    else: html = re.sub(u'<title>.*</title>', u'<title>錯誤自動化紀錄系統</title>', bp.html)
+    return HttpResponse(html)
+
+@checkCanViewBugPageIPS
+def rBugList(R):
+    bugs_done = BugPage.objects.filter(is_solved=True).order_by('-id')
+    bugs_done.delete()
+    bugs_notyet = BugPage.objects.filter(is_solved=False).order_by('-id')
+    if bugs_notyet.count() > 100:
+        for i in bugs_notyet[100:]:
+            i.delete()
+
+    t = get_template(os.path.join('common', 'bug_list.html'))
+    html = t.render(RequestContext(R, {'bugs_done': bugs_done, 'bugs_notyet': bugs_notyet}))
+    return HttpResponse(html)
+
+def rBugState(R):
+    DATA = readDATA(R)
+    try:
+        bug = BugPage.objects.get(id=int(DATA.get('bug_id', 0)))
+    except:
+        return HttpResponse(json.write({'status': False, 'message': u'找不到此錯誤'}))
+    if bug.is_solved:
+        bug.is_solved = False
+    else:
+        bug.is_solved = True
+    bug.save()
+    return HttpResponse(json.write({'status': True}))
+
+
+def testExpandoModel(R):
+    from common.models import ProjectExpandoModel
+    from common.models import HarborExpandoModel
+    t = get_template(os.path.join('common', 'expando_model.html'))
+    try:
+        o = ProjectExpandoModel.objects.get(id=199)
+    except ProjectExpandoModel.DoesNotExist:
+        o = ProjectExpandoModel(no='no%s'%random.random(), name=u'隨便的名稱')
+
+    key, value = 'attr%s'%random.randint(0, 10000), random.random()
+    setattr(o, key, value)
+    o.integer = 1333
+    o.float = 499.99
+    o.datetime = datetime(2010, 9, 10, 12, 32, 45)
+    setattr(o, u'測試', 'whatever~~')
+    o.save()
+
+    try:
+        h = HarborExpandoModel.objects.get(name=u'隨便的漁港名稱')
+    except HarborExpandoModel.DoesNotExist:
+        h = HarborExpandoModel(name=u'隨便的漁港名稱')
+
+    h.no = 'no%s'%random.random()
+    key, value = 'attr%s'%random.randint(0, 10000), random.random()
+    setattr(h, key, value)
+    h.integer = 333
+    h.float = 999.99
+    h.datetime = datetime(2010, 9, 1, 2, 2, 5)
+    setattr(h, u'漁港測試', 'whatever~~')
+    h.save()
+
+    html = t.render(RequestContext(R, {'o': o, 'key': key, 'value': value,
+        'h': h}))
+    return HttpResponse(html)

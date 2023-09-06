@@ -1,0 +1,205 @@
+{% load i18n %}
+{% load humanize %}
+{% load utiltags %}
+{% load guardian_tags %}
+
+<br>
+<h3>
+    <span class="label label-success">
+        <span class="glyphicon glyphicon-paperclip"></span>
+        投礁紀錄
+    </span>
+    {% if edit %}　<button class="btn btn-info btn-sm" data-toggle="modal" data-target="#create_reefput_dialog">新增</button><br>{% endif %}
+</h3>
+<table class="table table-bordered" style="font-size: 14px;" id="reefput_table">
+    <tr class="warning" align="center">
+        <td width="7%">
+            年度
+        </td>
+        <td width="50%">
+            投礁位置
+        </td>
+        <td width="20%">
+            投礁型式與數量
+        </td>
+        <td width="20%">
+            水深(M)
+        </td>
+        {% if edit %}
+            <td width="5%">刪除</td>
+        {% endif %}
+    </tr>
+    {% for p in reef.reefputs %}
+        <tr align="center" id="tr_reefput_{{ p.id }}">
+            <td>{{ p.year }}</td>
+            <td align="left">
+                {{ p.location|default_if_none:"" }}
+            </td>
+            <td align="left">
+                {% for putnum in p.reefputnum_set.all %}
+                    <div id="div_reefputnum_{{ putnum.id }}">
+                        {{ putnum.name }} ： {{ putnum.num }}
+                        <button class="deleteRow btn btn-danger btn-xs" title="點我刪除"
+                            row_id="{{ putnum.id }}"
+                            module_name = "harbor"
+                            table_name = "reefputnum"
+                            message="確定要刪除此筆紀錄嗎？"
+                            remove_target = "div_reefputnum_{{ putnum.id }}"
+                            title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+                    </div>
+                {% endfor %}
+                {% if edit %}
+                    <button class="btn btn-xs btn-success create_reefputnum" row_id="{{ p.id }}">新增</button>
+                {% endif %}
+            </td>
+            <td align="right">{{ p.deep|default_if_none:""|cutzero|intcomma }}</td>
+            {% if edit %}
+                <td>
+                    <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                        row_id="{{ p.id }}"
+                        module_name = "harbor"
+                        table_name = "reefput"
+                        message="確定要刪除此筆紀錄嗎？"
+                        remove_target = "tr_reefput_{{ p.id }}"
+                        title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+                </td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+</table>
+
+
+{% if edit %}
+    <script type="text/x-jquery-tmpl" id="HideReefPutTr">
+        <tr align="center" id="tr_reefput_${id}">
+            <td>${year}</td>
+            <td align="left">${location}</td>
+            <td align="left">
+                <button class="btn btn-xs btn-success create_reefputnum" row_id="${id}">新增</button>
+            </td>
+            <td align="right">${deep}</td>
+            <td>
+                <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                    row_id="${id}"
+                    module_name = "harbor"
+                    table_name = "reefput"
+                    message="確定要刪除此筆紀錄嗎？"
+                    remove_target = "tr_reefput_${id}"
+                    title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+            </td>
+        </tr>
+    </script>
+
+    <div class="modal fade" id="create_reefput_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="width:800px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">新增投礁紀錄</h4>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered" style="font-size: 14px;">
+                        <tr>
+                            <td width="20%" class="active">年度*</td>
+                            <td width="80%" align="left">
+                                <input id="reefput_year" class="form-control reefput_field" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="active">投礁位置*</td>
+                            <td align="left">
+                                <input id="reefput_location" class="form-control reefput_field" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="active">水深(M)</td>
+                            <td align="left">
+                                <input id="reefput_deep" class="form-control reefput_field" value="">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" id="create_reefput" class="btn btn-primary">新增</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+
+
+
+<script type="text/javascript">
+    function create_reefput() {
+        var reef = $('#reef').val();;
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            reef: reef,
+        }
+        $.each($('.reefput_field'), function(){
+            var $obj = $(this);
+            var field_name = $obj.attr('id').replace('reefput_', '');
+            if ($obj.val()){
+                data[field_name] = $obj.val();
+            }
+        });
+
+        $.ajax({
+            url: '/harbor/api/v2/reefput/',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                var $div = $('#HideReefPutTr').tmpl(data).appendTo($('#reefput_table'));
+                $('.reefput_field').val('');
+                $('#create_reefput_dialog').modal('hide');
+                $('.deleteRow').unbind('click');
+                $('.create_reefputnum').unbind('click');
+                $('.deleteRow').click(deleteRow);
+                $('.create_reefputnum').click(create_reefputnum);
+            },
+            error: function (data) {}
+        })
+    }
+
+    function create_reefputnum(){
+        var $obj = $(this);
+        var reefput_id = $obj.attr('row_id');
+        var name = prompt('投礁型式：', '');
+        var num = prompt('數量：', '');
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            reefput: '/harbor/api/v2/reefput/' + reefput_id + '/',
+            name: name,
+            num: num
+        }
+        $.ajax({
+            url: '/harbor/api/v2/reefputnum/',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                var html = '<div id="div_reefputnum_' + data['id'] + '">' + name + ' ： ' + num;
+                html += '<button class="deleteRow btn btn-danger btn-xs" title="點我刪除"';
+                html += 'row_id="' + data['id'] + '"';
+                html += 'module_name = "harbor" table_name = "reefputnum" message="確定要刪除此筆紀錄嗎？"';
+                html += 'remove_target = "div_reefputnum_' + data['id'] + '"';
+                html += 'title="刪除"><span class="glyphicon glyphicon-remove"></span></button></div>';
+                $(html).insertBefore($obj);
+                $(".deleteRow").unbind('click');
+                $(".deleteRow").click(deleteRow);
+            },
+            error: function (data) {}
+        })
+    }
+
+    $(document).ready(function(){
+        $('#create_reefput').click(create_reefput);
+        $('.create_reefputnum').click(create_reefputnum);
+    });
+
+</script>

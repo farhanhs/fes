@@ -1,0 +1,270 @@
+{% extends 'project/index.html' %}
+{% block style %}
+td {
+    padding:3px 5px;
+    height: 25px;
+}
+{% endblock %}
+{% block menu %}
+    <ul id="menu" value ="/project/addproject/"></ul>
+{% endblock %}
+{% block content %}
+<span style="font-size: 14px"><br><br><br>
+<table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+    <tbody align="left">
+        <tr>
+            <td bgcolor="#EEEEEE">計畫名稱<font color="red">*</font></td>
+            <td>
+                <select id="plan" class="needExist">
+                    <option value=""></option>
+                    {% for plan in plans %}
+                    <option value="{{ plan.id }}" code="{{ plan.code }}" up_code="{{ plan.up_code }}" serial='{{ plan.serial }}' level="{{ plan.level }}" max_level="{{ max_level }}" {% ifequal carry_info.plan_id plan.id %}selected{% endifequal %}>{{ plan.name }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td bgcolor="#EEEEEE">年度<font color="red">*</font></td>
+            <td>
+                <select id="year" class="needExist">
+                    {% for y in years %}
+                    <option value="{{ y }}"  {% ifequal this_year y %}selected{% endifequal %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">工程屬性別<font color="red">*</font></td>
+
+            <td colspan="3">
+                <table style="border-collapse: collapse" border="1" frame="vsides" cellpadding="2" cellspacing="2">
+                    <tr>
+                        <td width="150">
+                            <select id="project_type" class="needExist">
+                                {% for type in project_type_sorts %}
+                                        <option value="{{ type.id }}" name="{{ type.value }}">{{ type.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td width="250">
+                            <select id="sub_{{ project_type_sorts.0.id }}" class="subType needExist">
+                                {% for type in project_sub_types %}
+                                <option value="{{ type.id }}" name="{{ type.value }}" {% ifequal target_project.project_sub_type.id type.id %}selected{% endifequal %}>{{ type.value }}</option>
+                                {% endfor %}
+                            </select>
+                            <select id="sub_{{ project_type_sorts.1.id }}" class="subType needExist" style="display: none;">
+                                {% for type in farm_types %}
+                                <option value="{{ type.id }}" name="{{ type.value }}" {% ifequal target_project.project_sub_type.id type.id %}selected{% endifequal %}>{{ type.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <!-- TODO: "其他"選項的補充
+                        <td id="type_other" width="150" bgcolor="#CDE5FF" style="{% if target_project.project_sub_type.id in other_ids %}{% else %} display: none{% endif %}">
+                            <input editing="type_other" class="edit_type_other" size="20" type="text" value="{{ target_project.type_other|default_if_none:'' }}" old_value="{{ target_project.type_other|default_if_none:'' }}">
+                        </td>
+                        -->
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">工作名稱<font color="red">*</font></td>
+            <td colspan="3" rowspan="1">
+                <input id="name" size="56" type="text" class="needExist">
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">核定數</td>
+            <td colspan="3" rowspan="1">
+                <input id="capital_ratify_budget" size="20" type="text" class="integer change_allot_rate"> (元)
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">地方核定數</td>
+            <td colspan="3" rowspan="1">
+                <input id="capital_ratify_local_budget" size="20" type="text" class="integer change_allot_rate"> (元)
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">本署負擔比例</td>
+            <td colspan="3" rowspan="1">
+                <input id="allot_rate" size="20" type="text" value="0"> % 
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">署內標案編號</td>
+            <td colspan="3" rowspan="1">
+                <input id="bid_no" size="56" type="text">
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">縣市<font color="red">*</font></td>
+            <td>
+                <select id="place" onchange="getSubLocation(renewSubLocation, false)" class="needExist">
+                    <option value=""></option>
+                    {% for place in place_list %}
+                    <option value="{{ place.id }}">{{ place.name }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td bgcolor="#EEEEEE" rowspan="3" valign="top">漁港／<br>養殖區</td>
+            <td rowspan="3" valign="top">
+                <table>
+                    <tr valign="top">
+                        <td id="SubLocation">
+                            <select id="port">
+                                <option value="" twdx="" twdy="">請選擇縣市</option>
+                            </select>
+                            <span id="insertSubLocation"></span>
+                        </td>
+                        <td>
+                            <img onclick="getSubLocation(addSubLocationOption, false)" src="/media/project/image/plus.png" width="16" title="新增漁港/養殖區">
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">採購類別<font color="red">*</font></td>
+            <td>
+                <select id="purchase_type" class="needExist">
+                    {% for purchase_type in option.purchase_type %}
+                    <option value="{{ purchase_type.id }}" {% ifequal purchase_type.value '工程' %}selected{% endifequal %}>{{ purchase_type.value }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">承辦方式<font color="red">*</font></td>
+            <td>
+                <select id="undertake_type" class="needExist">
+                    {% for undertake_type in option.undertake_type %}
+                    <option value="{{ undertake_type.id }}" {% ifequal undertake_type.value '補助' %}selected{% endifequal %}>{{ undertake_type.value }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">經費種類<font color="red">*</font></td>
+            <td>
+                <select id="budget_sub_type" class="needExist">
+                    {% for sub_type in budget_sub_types %}
+                    <option value="{{ sub_type.id }}" {% ifequal sub_type.value '資本門' %}selected{% endifequal %}>{{ sub_type.value }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td bgcolor="#EEEEEE">署內負責人</td>
+            <td>
+                <input id="self_charge" size="20" type="text">
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">執行機關<font color="red">*</font></td>
+            <td>
+                <select id="unit" class="needExist">
+                    <option value=""></option>
+                    {% for n, unit in units %}
+                    <option value="{{ n }}">{{ unit }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <!--<td bgcolor="#EEEEEE">預算別<font color="red">*</font></td>
+            <td>
+                <select id="budget_type" class="needExist">
+                    {% for budget_type in option.budget_type %}
+                    <option value="{{ budget_type.id }}">{{ budget_type.value }}</option>
+                    {% endfor %}
+                </select>
+            </td>-->
+            <td bgcolor="#EEEEEE">署內聯絡人</td>
+            <td>
+                <input id="self_contacter" size="20" type="text">
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">X座標</td>
+            <td>
+                <input id="x_coord" size="20" type="text" class="integer">
+            </td>
+            <td bgcolor="#EEEEEE">署內聯絡人電話</td>
+            <td>
+                <input id="self_contacter_phone" size="20" type="text">
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">Y座標</td>
+            <td>
+                <input id="y_coord" size="20" type="text">
+            </td>
+            <td bgcolor="#EEEEEE">署內聯絡人E-mail</td>
+            <td>
+                <input id="self_contacter_email" size="20" type="text" class="email">
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">工程施作地點</td>
+            <td>
+                <input id="location" size="20" type="text">
+            </td>
+            <td bgcolor="#EEEEEE">廠商負責人</td>
+            <td>
+                <input id="contractor_charge" size="20" type="text">
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">縣市負責人</td>
+            <td>
+                <input id="local_charge" size="20" type="text">
+            </td>
+            <td bgcolor="#EEEEEE">廠商聯絡人</td>
+            <td>
+                <input id="contractor_contacter" size="20" type="text">
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">縣市聯絡人</td>
+            <td>
+                <input id="local_contacter" size="20" type="text">
+            </td>
+            <td bgcolor="#EEEEEE">廠商聯絡人電話</td>
+            <td>
+                <input id="contractor_contacter_phone" size="20" type="text">
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">縣市聯絡人電話</td>
+            <td>
+                <input id="local_contacter_phone" size="20" type="text">
+            </td>
+            <td bgcolor="#EEEEEE">廠商聯絡人 E-mail</td>
+            <td>
+                <input id="contractor_contacter_email" size="20" type="text" class="email">
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">縣市聯絡人 E-mail</td>
+            <td>
+                <input id="local_contacter_email" size="20" type="text" class="email">
+            </td>
+            <td bgcolor="#EEEEEE"></td>
+            <td>
+            </td>
+        </tr>
+
+
+
+        <tr>
+            <td colspan="4" rowspan="1" bgcolor="#EEEEEE"><center>備註</center></td>
+        </tr>
+        <tr>
+            <td colspan="4" rowspan="1">
+                <textarea id="project_memo" cols="90" rows="6"></textarea>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<br><font color="red">*</font>為必填欄位<br>
+<button id="cProject">--------建立工程案-------</button>
+</span>
+        
+
+
+{% endblock %}

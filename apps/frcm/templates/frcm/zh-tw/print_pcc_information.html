@@ -1,0 +1,352 @@
+{% load i18n %}
+{% load humanize %}
+{% load utiltags %}
+<!DOCTYPE html PUBLIC>
+<html lang="zh-tw">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link type="image/x-icon" rel="shortcut icon" href="/media/cim/images/fa.ico" />
+    <!-- jquery -->
+    <script type="text/javascript" src="/media/fishuser/v2/jquery/jquery-1.10.2.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/fishuser/v2/jquery/jquery-ui-1.10.3.custom.js{{ settings.SV_ }}" ></script>
+    <script type="text/javascript" src="/media/fishuser/v2/jquery-bbq-1.3/jquery.ba-bbq.min.js{{ settings.SV_ }}" ></script>
+    <link rel="stylesheet" type="text/css" href="/media/fishuser/v2/jquery/smoothness/jquery-ui-1.10.3.custom.css{{ settings.SV_ }}" charset="utf-8"/>
+
+    <style type="text/css">
+        {% block style %}{% endblock %}
+        .pointer, .li_page{ cursor: pointer;}
+        td a {background: none !important;}
+    </style>
+    
+    <script type="text/javascript">
+        var DEBUG = {% if settings.DEBUG %}true{% else %}false{% endif %};
+        var CSRFMIDDLEWARETOKEN;
+        var SUB_PAGE_LIST = '';
+    </script>
+
+    <link rel="stylesheet" type="text/css" href="/media/fishuser/v2/css/style.css{{ settings.SV_ }}" charset="utf-8"/>
+    <link rel="stylesheet" type="text/css" href="/media/fishuser/v2/bootstrap/css/bootstrap.css{{ settings.SV_ }}"/>
+    <link rel="stylesheet" type="text/css" href="/media/fishuser/v2/bootstrap/css/bootstrap-theme.css{{ settings.SV_ }}"/>
+    {% block css_in_compress %}{% endblock %}
+
+    <script type="text/javascript" src="/media/fishuser/v2/js/fishuser.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/fishuser/v2/js/purl.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/fishuser/v2/js/jquery.contextmenu.r2.js{{ settings.SV_ }}" ></script>
+    <script type="text/javascript" src="/media/fishuser/v2/jstree/jquery.hotkeys.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/fishuser/v2/jstree/jquery.cookie.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/fishuser/v2/sorttable/sorttable.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/fishuser/v2/bootstrap/js/bootstrap.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/fishuser/v2/js/md5.js"></script>
+    <script type="text/javascript" src="/media/fishuser/v2/js/jquery.tmpl.min.js"></script>
+    {% block js_in_compress %}{% endblock %}
+
+
+    {% block script %}{% endblock %}
+
+    <title>{% block title %}漁業工程管理系統{% endblock %}</title>
+</head>
+<body style="padding-top: 70px; text-align: center;font-family: 'Helvetica Neue', Helvetica, '微軟正黑體', 'Microsoft Jhenghei', Arial, sans-serif;">
+
+
+<div class="container bs-docs-container">
+    <h3>工程會標案管理系統同步資料</h3>
+    <table class="table table-bordered" id="pcc_information_table">
+        <col width="17%">
+        <col width="33%">
+        <col width="17%">
+        <col width="33%">
+        <tr>
+            <td class="active">標案編號</td>
+            <td>{{ row.uid }}</td>
+            <td class="active">同步資料時間</td>
+            <td>{{ row.lastsync|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="active">進度月份</td>
+            <td>{{ row.month|default:"" }}</td>
+            <td class="active">工程會內容填報日</td>
+            <td>{{ row.fill_date|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="active">進度</td>
+            <td>
+                預定： {{ row.percentage_of_predict_progress|default:"" }} %
+                <br>實際： {{ row.percentage_of_real_progress|default:"" }} %
+            </td>
+            <td class="active">工程會進度填報日</td>
+            <td>{{ row.progress_date|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="active">差異</td>
+            <td>
+                {{ row.percentage_of_dulta|default:"" }} %
+            </td>
+            <td class="active">狀態</td>
+            <td>{{ row.status|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="active">總累計預定完成金額</td>
+            <td align="right">
+                {{ row.total_sch_price|default:""|cutzero|intcomma }} 元
+            </td>
+            <td class="active">年累計預定完成金額</td>
+            <td align="right">
+                {{ row.year_sch_price|default:""|cutzero|intcomma }} 元
+            </td>
+        </tr>
+        <tr>
+            <td class="active">總累計實際完成金額</td>
+            <td align="right">
+                {{ row.total_act_price|default:""|cutzero|intcomma }} 元
+            </td>
+            <td class="active">年累計實際完成金額</td>
+            <td align="right">
+                {{ row.year_act_price|default:""|cutzero|intcomma }} 元
+            </td>
+        </tr>
+        <tr>
+            <td class="active">已估驗計價經費</td>
+            <td align="right">
+                {{ row.invoice_price|default:"0"|cutzero|intcomma }} 元
+            </td>
+            <td class="active">待支付金額</td>
+            <td align="right">
+                {{ row.wait_pay_price|default:"0"|cutzero|intcomma }} 元
+            </td>
+        </tr>
+        {% if row.cancel_reason %}
+        <tr>
+            <td class="active">解約原因</td>
+            <td colspan="3">
+                {{ row.cancel_reason|default:"" }}
+            </td>
+        </tr>
+        {% endif %}
+        <tr>
+            <td class="active">查核/督導</td>
+            <td colspan="3">
+                {% for i in row.mapping_supervise_record %}
+                    {{ i.date }}紀錄，{{ i.score }}分({{ i.level }})<br>
+                {% endfor %}
+            </td>
+        </tr>
+        <tr>
+            <td class="active" rowspan="2">落後因素/原因分析<br>解決辦法/改進期限</td>
+            <td rowspan="2">
+                {{ row.delay_factor|default:"" }}<br>
+                {{ row.delay_reason|default:"" }}<br>
+                {{ row.delay_solution|default:"" }}<br>
+                {{ row.improve_date|default:"" }}
+            </td>
+            <td class="active">預定執行摘要</td>
+            <td>{{ row.s_executive_summary|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="active">實際執行摘要</td>
+            <td>{{ row.r_executive_summary|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="active">歸屬計畫</td>
+            <td colspan="3">{{ row.plan_name|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="active">標案名稱</td>
+            <td colspan="3">{{ row.name }}</td>
+        </tr>
+        <tr>
+            <td class="active">執行機關</td>
+            <td>
+                {{ row.implementation_department|default:"" }}
+                {% if row.implementation_department_code %}
+                    ({{ row.implementation_department_code }})
+                {% endif %}
+            </td>
+            <td class="active">聯絡人</td>
+            <td>{{ row.manager|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="active">主管機關</td>
+            <td>{{ row.head_department|default:"" }}</td>
+            <td class="active">聯絡電話</td>
+            <td>{{ row.telphone|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="active">主辦機關</td>
+            <td>{{ row.host_department|default:"" }}</td>
+            <td class="active">縣市鄉鎮</td>
+            <td>{{ row.engineering_county|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="active">經費來源機關</td>
+            <td>{{ row.budget_from|default:"" }}</td>
+            <td class="active">施工地點</td>
+            <td>{{ row.engineering_location|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="active">機關首長</td>
+            <td>{{ row.head_of_agency|default:"" }}</td>
+            <td class="active">聯絡電話</td>
+            <td>{{ row.telphone|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="active">聯絡人</td>
+            <td>{{ row.manager|default:"" }}</td>
+            <td class="active">聯絡Email</td>
+            <td>{{ row.manager_email|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="active">工期類別</td>
+            <td>{{ row.frcm_duration_type|default:"" }}</td>
+            <td class="active">總天數</td>
+            <td>{{ row.frcm_duration|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="active">工程概要</td>
+            <td colspan="3">{{ row.project_memo|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="active">招標公告<br>單位代碼</td>
+            <td>{{ row.host_department_code|default:"" }}</td>
+            <td class="active">標案類別</td>
+            <td>{{ row.project_type|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="active">規劃單位</td>
+            <td>{{ row.planning_unit|default:"" }}</td>
+            <td class="active">X座標</td>
+            <td>{{ row.x_coord|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="active">設計單位</td>
+            <td>{{ row.design_unit|default:"" }}</td>
+            <td class="active">Y座標</td>
+            <td>{{ row.y_coord|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="active">專案管理單位</td>
+            <td>{{ row.project_manage_unit|default:"" }}</td>
+            <td class="active"></td>
+            <td align="right"></td>
+        </tr>
+        <tr>
+            <td class="active">中央比</td>
+            <td>{% if row.main_rate %}{{ row.main_rate }} %{% endif %}</td>
+            <td class="success">地方比</td>
+            <td>{% if row.main_rate %}{{ row.sub_rate }} %{% endif %}</td>
+        </tr>
+        <tr>
+            <td class="success">工程總預算</td>
+            <td align="right">{{ row.total_budget|default:""|cutzero|intcomma }} 元</td>
+            <td class="success">本年度可用預算</td>
+            <td align="right">{{ row.this_year_budget|default:""|cutzero|intcomma }} 元</td>
+        </tr>
+        <tr>
+            <td class="active">監造單位</td>
+            <td>{{ row.inspector_name|default:"" }}</td>
+            <td class="success">發包預算</td>
+            <td align="right">{{ row.contract_budget|default:""|cutzero|intcomma }} 元</td>
+        </tr>
+        <tr>
+            <td class="active">得標廠商</td>
+            <td>{{ row.constructor|default:"" }}</td>
+            <td class="success">決標金額</td>
+            <td align="right">{{ row.decide_tenders_price|default:""|cutzero|intcomma }} 元</td>
+        </tr>
+        <tr>
+            <td class="active">契約編號</td>
+            <td>{{ row.contract_id|default:"" }}</td>
+            <td class="success">變更設計後之<br>契約金額</td>
+            <td align="right">{{ row.decide_tenders_price2|default:""|cutzero|intcomma }} 元</td>
+        </tr>
+        <tr>
+            <td class="active">預定招標方式</td>
+            <td>{{ row.s_tenders_method|default:"" }}</td>
+            <td class="success">預估底價</td>
+            <td align="right">{{ row.s_base_price|default:""|cutzero|intcomma }} 元</td>
+        </tr>
+        <tr>
+            <td class="active">實際招標方式</td>
+            <td>{{ row.r_tenders_method|default:"" }}</td>
+            <td class="success">會核底價</td>
+            <td align="right">{{ row.r_base_price|default:""|cutzero|intcomma }} 元</td>
+        </tr>
+        <tr>
+            <td class="active">工期</td>
+            <td>
+                {{ row.frcm_duration_type|default:"" }}
+                {% if row.frcm_duration %}
+                    {{ row.frcm_duration }} 天
+                {% endif %}
+            </td>
+            <td class="warning"></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="active">累計天數</td>
+            <td>
+                {% if row.use_duration %}
+                    {{ row.use_duration }} 天
+                {% endif %}
+            </td>
+            <td class="warning">預定完成規劃<br>設計日期</td>
+            <td>{{ row.s_design_complete_date|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="active">契約費用<br>給付方式</td>
+            <td>{{ row.pay_method|default:"" }}</td>
+            <td class="warning">實際完成規劃<br>設計日期</td>
+            <td>{{ row.r_design_complete_date|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="warning">預定公告日期</td>
+            <td>{{ row.s_public_date|default:"" }}</td>
+            <td class="warning">預定決標日期</td>
+            <td>{{ row.s_decide_tenders_date|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="warning">預定公告日期</td>
+            <td>{{ row.s_public_date|default:"" }}</td>
+            <td class="warning">預定決標日期</td>
+            <td>{{ row.s_decide_tenders_date|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="warning">實際公告次數</td>
+            <td>{{ row.public_times }}</td>
+            <td class="warning">決標方式</td>
+            <td>{{ row.decide_tenders_method|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="warning">預定開工日期</td>
+            <td>{{ row.s_start_date|default:"" }}</td>
+            <td class="warning">預定決算日期</td>
+            <td>{{ row.s_last_pay_date|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="warning">實際開工日期</td>
+            <td>{{ row.r_start_date|default:"" }}</td>
+            <td class="warning">實際決算日期</td>
+            <td>{{ row.r_last_pay_date|default:"" }}</td>
+        </tr>
+        <tr>
+            <td class="warning">原合約<br>預定完工日</td>
+            <td>{{ row.s_end_date|default:"" }}</td>
+            <td class="success">結算金額</td>
+            <td align="right">{{ row.balancing_price|default:""|cutzero|intcomma }} 元</td>
+        </tr>
+        <tr>
+            <td class="warning">變更後<br>預定完工日</td>
+            <td>{{ row.s_end_date2|default:"" }}</td>
+            <td class="success">決算金額</td>
+            <td align="right">{{ row.last_pay_price|default:""|cutzero|intcomma }} 元</td>
+        </tr>
+        <tr>
+            <td class="warning">實際完工日期</td>
+            <td>{{ row.r_end_date|default:"" }}</td>
+            <td class="warning">實際<br>驗收完成日期</td>
+            <td>{{ row.r_checked_and_accepted_date|default:"" }}</td>
+        </tr>
+    </table>
+</div>
+
+
+</body>

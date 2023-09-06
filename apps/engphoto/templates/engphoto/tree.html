@@ -1,0 +1,51 @@
+<div><button onClick="javacript:window.location='/engphoto/{{ project.id }}/exportactualcheckpoint/';">列印查驗點</button></div>
+<div class="hidden" id="editcheckpoint"
+value="{% if editcheckpoint %}true{% else %}false{% endif %}"></div>
+{% if upDir %}
+<li id='{{ upDir.id }}'><span><a id="upfolder" href="#">回到上一層({{ upDir.rName }})</a>
+{% endif %}
+<link rel="stylesheet" type="text/css" href="/media/engphoto/style.css"/>
+<li class="root" id='{{ Dir.id }}'><span>{{ Dir.rName }} <a id="expand-folder" href="#">全部折疊</a>
+(<span id="alluploadphotonum">{{ uploadphotonum }}</span>/{{ allphotonum }})
+    </span>
+    {% for cps in CPs %}
+    <ul>
+        <li id='{{ cps.dir.id }}' contenttype_id="{{ cps.dir.getContentTypeId }}" kind="dir" class="open">
+            <span class="help" title="{{ cps.dir.getHelp }}"
+        ><span class="name">{{ cps.dir.rName }}{% if cps.dir.template.require %}(不可刪除與編輯){% endif %}</span>(<span id="checkpointuploadnum">{{ cps.dir.uploadphotonum }}</span
+        >/{{ cps.dir.allphotonum }})</span><br/>
+        {% if editcheckpoint %}
+            {% comment %}
+                TODO 應該把 class="addCPDir" 改成 class="create" kind="dir" 
+            {% endcomment %}
+            <img class="addCPDir create" title="新增查驗點群組" src="/media/images/adddir.png"/>
+            {% if not cps.dir.template.require %}
+                <img class="addCP create" title="新增查驗點" src="/media/images/additem.png"/>
+                <img class="modify" title="編輯查驗點群組" src="/media/images/edit.png"/>
+                <img class="delete" title="刪除查驗點群組" src="/media/images/delete.png"/>
+            {% endif %}
+        
+        {% endif %}
+        
+            <ul>
+                {% for cp in cps.sublevel %}
+                <li id='{{ cp.id }}' contenttype_id="{{ cp.getContentTypeId }}" kind="checkpoint">
+                    <span class="help" title="{{ cp.getHelp }}"><span class="name">{{ cp.rName }}</span>(<span
+                    id="photonow_{{ cp.id }}"
+                    >{{ cp.getUploadPhotoNum }}</span>/<span class="need">{{ cp.getAllPhotoNum }}</span>)</span>
+                    {% if editcheckpoint %}
+                        {% if not cp.template.require %}
+	                        <img class="edit_cp modify" title="編輯查驗點" src="/media/images/edit.png"/>
+	                        <img class="delete_cp delete" title="刪除查驗點" src="/media/images/delete.png"/>
+                    	{% endif %}
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+    </ul>
+    {% endfor %}
+</li>
+<script type="text/javascript">
+    //TODO 把 simpleTree 的程式拿來這裡放看看。
+</script>

@@ -1,0 +1,973 @@
+{% load i18n %}
+{% load utiltags %}
+{% load humanize %}
+<style>
+    .lobibox-confirm, .lobibox-prompt {
+        top: 100px !important;
+    }
+
+</style>
+
+<h3 class="text-primary">
+    年度預算(計畫經費)
+    {% if edit %}
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#create_budget_dialog">新增經費來源</button>
+    {% endif %}
+</h3>
+
+{% if edit %}
+<!-- 新增經費來源Modal -->
+    <div class="modal fade" id="create_budget_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">新增經費來源</h4>
+                </div>
+                <div class="modal-body">
+                    請選擇經費來源計畫
+                    <select 
+                        id="new_budget_plan"
+                        class="form-control">
+                        {% for p in plans %}
+                            <option value="/fishuser/api/v2/plan/{{ p.id }}/">{{ p.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消關閉</button>
+                    <button type="button" class="btn btn-primary" id="create_budget">確定新增</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<table class="table table-bordered" style="font-size: 14px; text-align: center;" id="table_budget">
+    <thead>
+        <tr class="active">
+            <th width="1%" rowspan="3">序號</th>
+            <th>年度</th>
+            <th colspan="4">計畫</th>
+            {% if edit %}
+            <th width="1%" rowspan="3">刪除</th>
+            {% endif %}
+        </tr>
+        <tr class="active">
+            <th width="20%">核定數(預算數)</th>
+            <th width="20%" rowspan="2">實際補助金額</th>
+            <th width="20%" rowspan="2">地方配合款(預算數)</th>
+            <th width="20%" rowspan="2">地方實際配合款金額</th>
+            <th width="18%" rowspan="2">歷年</th>
+        </tr>
+        <tr class="active">
+            <th>補助比例</th>
+        </tr>
+    </thead>
+    <tbody id="sortable_tbody">
+        {% for budget in budgets %}
+        {% if budget.new != 0 %}
+            <tr row_id="{{ budget.id }}">
+                <td rowspan="3">
+                    {% if edit %}
+                        <button class="btn btn-info btn-xs update_priority" type="button" direction="up" title="往上移動序位"><i class="glyphicon glyphicon-chevron-up"></i></button>
+                    {% endif %}
+                    {{ forloop.counter }}
+                    {% if edit %}
+                        <button class="btn btn-info btn-xs update_priority" type="button" direction="down" title="往下移動序位"><i class="glyphicon glyphicon-chevron-down"></i></button>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if edit %}
+                        <select 
+                            row_id="{{ budget.id }}"
+                            field_name="year"
+                            table_name="budget"
+                            module_name="fishuser"
+                            is_select="true"
+                            class="form-control BlurUpdateInfo" 
+                            field_ch_name="年度">
+                            {% for y in years %}
+                                <option value="{{ y }}" {% ifequal budget.year y %}selected{% endifequal %}>{{ y }}</option>
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        {{ budget.year }}
+                    {% endif %}
+                </td>
+                <td colspan="4" style="text-align: left">{{ budget.plan.name }}</td>
+                {% if edit %}
+                <td width="1%" rowspan="3">
+                    <button class="btn btn-danger btn-xs delete_budget">X</button>
+                </td>
+                {% endif %}
+            </tr>
+            <tr row_id="{{ budget.id }}">
+                <td style="text-align: right">
+                    {% if edit %}
+                        <div class="input-group">
+                            <input
+                                onblur="calculate_perc('{{budget.id}}')"
+                                id="total_{{budget.id}}"
+                                type="text" class="form-control inputcomma readTotalCapitalRatify"
+                                field_type="float" style="text-align: right;"
+                                row_id="{{ budget.id }}"
+                                field_name="capital_ratify_budget"
+                                table_name="budget"
+                                module_name='fishuser'
+                                placeholder="待輸入"
+                                old_value="{{ budget.capital_ratify_budget|default_if_none:''|cutzero }}"
+                                value="{{ budget.capital_ratify_budget|default_if_none:''|cutzero }}"/>
+                            <span class="input-group-addon">元</span>
+                        </div>
+                    {% else %}
+                        {{ budget.capital_ratify_budget|default_if_none:''|intcomma|cutzero }} 元
+                    {% endif %}
+                </td>
+                <td style="text-align: right" rowspan="2">
+                    {% if edit %}
+                        <div class="input-group">
+                            <input
+                                onblur="calculate_total('{{budget.id}}',1)"
+                                id="gov_{{budget.id}}"
+                                type="text" class=" form-control inputcomma readTotalCapitalRatify"
+                                field_type="float" style="text-align: right;"
+                                row_id="{{ budget.id }}" 
+                                field_name="capital_ratify_revision"
+                                table_name="budget"
+                                module_name='fishuser'
+                                old_value="{{ budget.capital_ratify_revision|default_if_none:''|cutzero }}"
+                                value="{{ budget.capital_ratify_revision|default_if_none:''|cutzero }}"/>
+                            <span class="input-group-addon">元</span>
+                        </div>
+                    {% else %}
+                        {{ budget.capital_ratify_revision|default_if_none:''|intcomma|cutzero }} 元
+                    {% endif %}
+                </td>
+                <td style="text-align: right" rowspan="2">
+                    {% if edit %}
+                        <div class="input-group">
+                            <input
+                                type="text" class="BlurUpdateInfo form-control inputcomma readTotalCapitalRatify"
+                                field_type="float" style="text-align: right;"
+                                row_id="{{ budget.id }}"
+                                field_name="capital_ratify_local_budget"
+                                table_name="budget"
+                                module_name='fishuser'
+                                placeholder="待輸入"
+                                old_value="{{ budget.capital_ratify_local_budget|default_if_none:''|cutzero }}"
+                                value="{{ budget.capital_ratify_local_budget|default_if_none:''|cutzero }}"/>
+                            <span class="input-group-addon">元</span>
+                        </div>
+                    {% else %}
+                        {{ budget.capital_ratify_local_budget|default_if_none:''|intcomma|cutzero }} 元
+                    {% endif %}
+                </td>
+                <td style="text-align: right" rowspan="2">
+                    {% if edit %}
+                        <div class="input-group">
+                            <input
+                                onblur="calculate_total('{{budget.id}}',2)"
+                                id="loc_{{budget.id}}"
+                                type="text" class=" form-control inputcomma readTotalCapitalRatify"
+                                field_type="float" style="text-align: right;"
+                                row_id="{{ budget.id }}"
+                                field_name="capital_ratify_local_revision"
+                                table_name="budget"
+                                module_name='fishuser'
+                                old_value="{{ budget.capital_ratify_local_revision|default_if_none:''|cutzero }}"
+                                value="{{ budget.capital_ratify_local_revision|default_if_none:''|cutzero }}"/>
+                            <span class="input-group-addon">元</span>
+                        </div>
+                    {% else %}
+                        {{ budget.capital_ratify_local_revision|default_if_none:''|intcomma|cutzero }} 元
+                    {% endif %}
+                </td>
+                <td style="text-align: right" rowspan="2">
+                    {% if edit %}
+                        <div class="input-group">
+                            <input
+                                type="text" class="BlurUpdateInfo form-control inputcomma"
+                                field_type="float" style="text-align: right;"
+                                row_id="{{ budget.id }}"
+                                field_name="over_the_year"
+                                table_name="budget"
+                                module_name='fishuser'
+                                placeholder="待輸入"
+                                old_value="{{ budget.over_the_year|default_if_none:''|cutzero }}"
+                                value="{{ budget.over_the_year|default_if_none:''|cutzero }}"/>
+                            <span class="input-group-addon">元</span>
+                        </div>
+                    {% else %}
+                        {{ budget.over_the_year|default_if_none:''|intcomma|cutzero }} 元
+                    {% endif %}
+                </td>
+            </tr>
+            <tr row_id="{{ budget.id }}">
+                <td>
+                    {% if edit %}
+                        <div class="input-group">
+                            <input
+                                type="text"
+                                id="percent_{{budget.id}}"
+                                class="form-control readTotalCapitalRatify" 
+                                field_type="float" style="text-align: right;"
+                                row_id="{{ budget.id }}"
+                                field_name="proportion"
+                                table_name="budget"
+                                module_name='fishuser'
+                                old_value="{{budget.proportion|default_if_none:''}}" 
+                                value="{{budget.proportion|default_if_none:''}}"
+                                onblur="calculate_perc('{{budget.id}}')">
+                            <span class="input-group-addon">%</span>
+                        </div>
+                    {% else %}
+                        {{ budget.proportion|default_if_none:''}} 元
+                    {% endif %}
+                </td>
+            </tr>
+        {% endif %}
+        {% endfor %}
+        <tr id="tr_total_budget" class="active">
+            <td></td>
+            <td>合計補助金額</td>
+            <td style="text-align: right;" name="total_capital_ratify"></td>
+            <td>合計地方配合款</td>
+            <td style="text-align: right;" name="total_capital_ratify_local"></td>
+            <td></td>
+            <td colspan="2"></td>
+        </tr>
+    </tbody>
+</table>
+
+<script type="text/x-jquery-tmpl" id="new_budget_tr">
+    <tr row_id="${id}">
+        <td rowspan="3">
+            <button class="btn btn-info btn-xs update_priority" type="button" direction="up" title="往上移動序位"><i class="glyphicon glyphicon-chevron-up"></i></button>
+            new
+            <button class="btn btn-info btn-xs update_priority" type="button" direction="down" title="往下移動序位"><i class="glyphicon glyphicon-chevron-down"></i></button>
+        </td>
+        <td>
+            <select 
+                row_id="${id}"
+                field_name="year"
+                table_name="budget"
+                module_name="fishuser"
+                is_select="true"
+                class="form-control BlurUpdateInfo" 
+                field_ch_name="年度">
+                {% for y in years %}
+                    <option value="{{ y }}">{{ y }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td colspan="4" style="text-align: left">${plan__name}</td>
+        <td width="1%" rowspan="3">
+            <button class="btn btn-danger btn-xs delete_budget">X</button>
+        </td>
+    </tr>
+    <tr row_id="${id}">
+        <td style="text-align: right">
+            <div class="input-group">
+                <input
+                    onblur="calculate_perc(${id})"
+                    id="total_${id}"
+                    type="text" class="form-control inputcomma readTotalCapitalRatify"
+                    field_type="float" style="text-align: right;"
+                    row_id="${id}"
+                    field_name="capital_ratify_budget"
+                    table_name="budget"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="0"
+                    value="0"/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td style="text-align: right" rowspan="2">
+            <div class="input-group">
+                <input
+                    onblur="calculate_total(${id},1)"
+                    id="gov_${id}"
+                    type="text" class="form-control inputcomma readTotalCapitalRatify"
+                    field_type="float" style="text-align: right;"
+                    row_id="${id}" 
+                    field_name="capital_ratify_revision"
+                    table_name="budget"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="0"
+                    value="0"/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td style="text-align: right" rowspan="2">
+            <div class="input-group">
+                <input
+                    type="text" class="BlurUpdateInfo form-control inputcomma readTotalCapitalRatify"
+                    field_type="float" style="text-align: right;"
+                    row_id="${id}"
+                    field_name="capital_ratify_local_budget"
+                    table_name="budget"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="0"
+                    value="0"/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td style="text-align: right" rowspan="2">
+            <div class="input-group">
+                <input
+                    onblur="calculate_total(${id},2)"
+                    id="loc_${id}"
+                    type="text" class="form-control inputcomma readTotalCapitalRatify"
+                    field_type="float" style="text-align: right;"
+                    row_id="${id}"
+                    field_name="capital_ratify_local_revision"
+                    table_name="budget"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="0"
+                    value="0"/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+        <td style="text-align: right" rowspan="2">
+            <div class="input-group">
+                <input
+                    type="text" class="BlurUpdateInfo form-control inputcomma"
+                    field_type="float" style="text-align: right;"
+                    row_id="${id}"
+                    field_name="over_the_year"
+                    table_name="budget"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    old_value="0"
+                    value="0"/>
+                <span class="input-group-addon">元</span>
+            </div>
+        </td>
+    </tr>
+    <tr row_id="${id}">
+        <td>
+            <div class="input-group">
+                <input
+                    type="text"
+                    id="percent_${id}"
+                    class="form-control readTotalCapitalRatify" 
+                    field_type="float" style="text-align: right;"
+                    row_id="${id}"
+                    field_name="proportion"
+                    table_name="budget"
+                    module_name='fishuser'
+                    old_value="0" 
+                    value=""
+                    onblur="calculate_perc('${id}')">
+                <span class="input-group-addon">%</span>
+            </div>
+        </td>
+    </tr>
+</script>
+
+<br>
+<h3 class="text-primary">工程預算</h3>
+<div class="row">
+    <div class="col-md-7">
+        <table class="table table-bordered" style="font-size: 14px; text-align: center;">
+            <tr class="warning">
+                <td colspan="2"><h4>工程預算</h4></td>
+            </tr>
+            <tr height="63px">
+                <td width="30%" class="active">發包金額</td>
+                <td width="70%">
+                    <div class="input-group">
+                        <input
+                            id="fund_contract" {% if not edit %}disabled{% endif %}
+                            type="text" class="BlurUpdateInfo form-control inputcomma fund_money_field"
+                            field_type="float" style="text-align: right;"
+                            row_id="{{ fund.id }}"
+                            field_name="contract"
+                            table_name="fund"
+                            module_name='fishuser'
+                            placeholder="待輸入"
+                            old_value="{{ fund.contract|default_if_none:''|cutzero }}"
+                            value="{{ fund.contract|default_if_none:''|cutzero }}"/>
+                        <span class="input-group-addon">元</span>
+                    </div>
+                </td>
+            </tr>
+            <tr height="63px">
+                <td width="30%" class="active">空污費</td>
+                <td width="70%">
+                    <div class="input-group">
+                        <input
+                            id="fund_pollution" {% if not edit %}disabled{% endif %}
+                            type="text" class="BlurUpdateInfo form-control inputcomma fund_money_field"
+                            field_type="float" style="text-align: right;"
+                            row_id="{{ fund.id }}"
+                            field_name="pollution"
+                            table_name="fund"
+                            module_name='fishuser'
+                            placeholder="待輸入"
+                            old_value="{{ fund.pollution|default_if_none:''|cutzero }}"
+                            value="{{ fund.pollution|default_if_none:''|cutzero }}"/>
+                        <span class="input-group-addon">元</span>
+                    </div>
+                </td>
+            </tr>
+            <tr height="63px">
+                <td width="30%" class="active">工程管理費</td>
+                <td width="70%">
+                    <div class="input-group">
+                        <input
+                            id="fund_manage" {% if not edit %}disabled{% endif %}
+                            type="text" class="BlurUpdateInfo form-control inputcomma fund_money_field"
+                            field_type="float" style="text-align: right;"
+                            row_id="{{ fund.id }}"
+                            field_name="manage"
+                            table_name="fund"
+                            module_name='fishuser'
+                            placeholder="待輸入"
+                            old_value="{{ fund.manage|default_if_none:''|cutzero }}"
+                            value="{{ fund.manage|default_if_none:''|cutzero }}"/>
+                        <span class="input-group-addon">元</span>
+                    </div>
+                </td>
+            </tr>
+            <tr height="63px">
+                <td width="30%" class="active">委託設計費</td>
+                <td width="70%">
+                    <div class="input-group">
+                        <input
+                            id="fund_entrust_design" {% if not edit %}disabled{% endif %}
+                            type="text" class="BlurUpdateInfo form-control inputcomma fund_money_field"
+                            field_type="float" style="text-align: right;"
+                            row_id="{{ fund.id }}"
+                            field_name="entrust_design"
+                            table_name="fund"
+                            module_name='fishuser'
+                            placeholder="待輸入"
+                            old_value="{{ fund.entrust_design|default_if_none:''|cutzero }}"
+                            value="{{ fund.entrust_design|default_if_none:''|cutzero }}"/>
+                        <span class="input-group-addon">元</span>
+                    </div>
+                </td>
+            </tr>
+            <tr height="63px">
+                <td width="30%" class="active">委託監造費</td>
+                <td width="70%">
+                    <div class="input-group">
+                        <input
+                            id="fund_entrust_supervision" {% if not edit %}disabled{% endif %}
+                            type="text" class="BlurUpdateInfo form-control inputcomma fund_money_field"
+                            field_type="float" style="text-align: right;"
+                            row_id="{{ fund.id }}"
+                            field_name="entrust_supervision"
+                            table_name="fund"
+                            module_name='fishuser'
+                            placeholder="待輸入"
+                            old_value="{{ fund.entrust_supervision|default_if_none:''|cutzero }}"
+                            value="{{ fund.entrust_supervision|default_if_none:''|cutzero }}"/>
+                        <span class="input-group-addon">元</span>
+                    </div>
+                </td>
+            </tr>
+            <tr height="63px">
+                <td width="30%" class="active">其他</td>
+                <td width="70%">
+                    <div class="input-group">
+                        <input
+                            id="fund_other" {% if not edit %}disabled{% endif %}
+                            type="text" class="BlurUpdateInfo form-control inputcomma fund_money_field"
+                            field_type="float" style="text-align: right;"
+                            row_id="{{ fund.id }}"
+                            field_name="other"
+                            table_name="fund"
+                            module_name='fishuser'
+                            placeholder="待輸入"
+                            old_value="{{ fund.other|default_if_none:''|cutzero }}"
+                            value="{{ fund.other|default_if_none:''|cutzero }}"/>
+                        <span class="input-group-addon">元</span>
+                    </div>
+                </td>
+            </tr>
+            <tr height="63px">
+                <td bgcolor="#FFC991">總工程費</td>
+                <td align="right">
+                    <span id="fund_total_money" style="font-size: 16px; color: #DC7100;"></span> 元
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="col-md-5">
+        <table class="table table-bordered" style="height:12px;line-height:12px;font-size: 12px; text-align: center;">
+            <tr class="warning">
+                <td colspan="3"><h4>標案資訊</h4></td>
+            </tr>
+            <tr class="success">
+                <td width="30%"></td>
+                <td width="35%">契約金額</td>
+                <td width="35%">結算金額</td>
+            </tr>
+            <tr bgcolor="#CCCCCC">
+                <td align="left">#工程金額</td>
+                <td align="right">
+                    {{ project.construction_bid|default_if_none:''|intcomma|cutzero }} 元
+                </td>
+                <td align="right">
+                    {{ project.settlement_construction_bid|default_if_none:''|intcomma|cutzero }} 元
+                </td>
+            </tr>
+            <tr bgcolor="#CCCCCC">
+                <td align="left">保險費</td>
+                <td align="right">
+                    {{ project.safety_fee|default_if_none:''|intcomma|cutzero }} 元
+                </td>
+                <td align="right">
+                    {{ project.settlement_safety_fee|default_if_none:''|intcomma|cutzero }} 元
+                </td>
+            </tr>
+            <tr bgcolor="#CCCCCC">
+                <td align="left">營業稅</td>
+                <td align="right">
+                    {{ project.business_tax|default_if_none:''|intcomma|cutzero }} 元
+                </td>
+                <td align="right">
+                    {{ project.settlement_business_tax|default_if_none:''|intcomma|cutzero }} 元
+                </td>
+            </tr>
+            <tr bgcolor="#CCCCCC">
+                <td align="left">#規劃設計監造費用</td>
+                <td align="right">
+                    {{ project.planning_design_inspect|default_if_none:''|intcomma|cutzero }} 元
+                </td>
+                <td align="right">
+                    {{ project.settlement_planning_design_inspect|default_if_none:''|intcomma|cutzero }} 元
+                </td>
+            </tr>
+            <tr bgcolor="#CCCCCC">
+                <td align="left">#工程管理費</td>
+                <td align="right">
+                    {{ project.manage|default_if_none:''|intcomma|cutzero }} 元
+                </td>
+                <td align="right">
+                    {{ project.settlement_manage|default_if_none:''|intcomma|cutzero }} 元
+                </td>
+            </tr>
+            <tr bgcolor="#CCCCCC">
+                <td align="left">#空污費</td>
+                <td align="right">
+                    {{ project.pollution|default_if_none:''|intcomma|cutzero }} 元
+                </td>
+                <td align="right">
+                    {{ project.settlement_pollution|default_if_none:''|intcomma|cutzero }} 元
+                </td>
+            </tr>
+            <tr bgcolor="#CCCCCC">
+                <td align="left">委辦工程管理費</td>
+                <td align="right">
+                    {{ project.cm_value|default_if_none:''|intcomma|cutzero }} 元
+                </td>
+                <td align="right">
+                    {{ project.cm_settlement_value|default_if_none:''|intcomma|cutzero }} 元
+                </td>
+            </tr>
+            {% for bid_money in project.projectbidmoney_set.all %}
+                <tr bgcolor="#CCCCCC">         
+                    <td align="left">#{{ bid_money.field_type.value }}</td>
+                    <td align="right">
+                        {{ bid_money.value|default_if_none:''|intcomma|cutzero }} 元
+                    </td>
+                    <td align="right">
+                        {{ bid_money.settlement_value|default_if_none:''|intcomma|cutzero }} 元
+                    </td>
+                </tr>
+            {% endfor %}
+            {% ifnotequal project.undertake_type.value '自辦' %}
+                <tr bgcolor="#CCCCCC">
+                    <td>直接輸入總額</td>
+                    <td align="right">
+                        {{ project.total_money|default_if_none:''|intcomma|cutzero }} 元
+                    </td>
+                    <td align="right">
+                        {{ project.settlement_total_money|default_if_none:''|intcomma|cutzero }} 元
+                    </td>
+                </tr>
+            {% endifnotequal %}
+            <tr bgcolor="#CCCCCC">
+                <td>最後採用之<br>『發包及其他費用』</td>
+                <td align="right"><span class="final_total_money" style="font-size: 16px; color: #DC7100;"></span> 元</td>
+                <td align="right"><span class="final_settlement_total_money" style="font-size: 16px; color: #DC7100;"></span> 元</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<table class="table table-bordered" style="font-size: 14px; text-align: center;">
+    <tr>
+        <td width="10%" class="active">備註</td>
+        <td width="90%">
+            {% if edit %}
+                <textarea
+                    class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    type="textarea"
+                    row_id="{{ fund.id }}"
+                    field_name="memo_first"
+                    table_name="fund"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    rows="4"
+                    old_value="{{ project.memo_first|default_if_none:'' }}">{{ project.memo_first|default_if_none:'' }}</textarea>
+            {% else %}
+                {{ project.memo_first|default_if_none:''|linebreaks }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td width="10%" class="active">另備註</td>
+        <td width="90%">
+            {% if edit %}
+                <textarea
+                    class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    type="textarea"
+                    row_id="{{ fund.id }}"
+                    field_name="memo_second"
+                    table_name="fund"
+                    module_name='fishuser'
+                    placeholder="待輸入"
+                    rows="4"
+                    old_value="{{ project.memo_second|default_if_none:'' }}">{{ project.memo_second|default_if_none:'' }}</textarea>
+            {% else %}
+                {{ project.memo_second|default_if_none:''|linebreaks }}
+            {% endif %}
+        </td>
+    </tr>
+</table>
+
+{% include "project/zh-tw/page_allocation.html" %}
+
+{% include "project/zh-tw/page_appropriate.html" %}
+
+{% include "project/zh-tw/page_fund_record.html" %}
+
+
+<script>
+    function delete_budget(){
+        var $obj = $(this);
+        var row_id = $obj.closest('tr').attr('row_id');
+        Lobibox.confirm({
+            msg: '刪除此紀錄將會一併刪除所有填報縣市進度金額資訊，您確定要刪除嗎？',
+            buttons: {
+                accept: {
+                    'class': 'lobibox-btn lobibox-btn-yes',
+                    text: '確定刪除',
+                    closeOnClick: true
+                },
+                cancel: {
+                    'class': 'lobibox-btn lobibox-btn-no',
+                    text: '取消',
+                    closeOnClick: true
+                },
+            },
+            callback: function ($this, type, ev) {
+                if(type=="accept"){
+                    Lobibox.prompt('text', //Any input type will be valid
+                        {
+                            title: '二重確認，請輸入大寫『YES』',
+                            //Attributes of <input>
+                            callback : function($this,type,ev){
+                                var input = $this.getValue();
+                                if (input != "YES"){
+                                    Lobibox.notify('error', {
+                                        title: '錯誤訊息',
+                                        msg: "二重確認驗證錯誤!!!",
+                                    });
+                                } else {
+                                    
+                                    $.ajax({
+                                        url: '/fishuser/api/v2/budget/' + row_id + '/',
+                                        type: 'DELETE',
+                                        contentType: 'application/json',
+                                        dataType: 'json',
+                                        beforeSend: function(XHR) {
+                                            XHR.setRequestHeader('X-CSRFToken', CSRFMIDDLEWARETOKEN);
+                                        },
+                                        success: function (json, text, xhr) {
+                                            $('#table_budget').find('tr[row_id="' + row_id + '"]').remove();
+                                            Lobibox.notify('success', {
+                                                title: '刪除完成',
+                                                msg: '已刪除預算來源',
+                                            });
+                                        },
+                                        error: function (json) {
+                                            Lobibox.notify('error', {
+                                                title: '錯誤訊息',
+                                                msg: json.responseText,
+                                            });
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    );
+                }else{
+                    return false;
+                }
+            }
+        });
+    }
+
+    function create_budget(){
+        var plan = $('#new_budget_plan').val();
+        var data = {
+            plan: plan,
+            fund: '/fishuser/api/v2/fund/{{ fund.id }}/',
+        };
+        $.ajax({
+            url: '/fishuser/api/v2/budget/',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            beforeSend: function(XHR) {
+                XHR.setRequestHeader('X-CSRFToken', CSRFMIDDLEWARETOKEN);
+            },
+            success: function (json, text, xhr) {
+                var $div = $('#new_budget_tr').tmpl(json).insertBefore($('#tr_total_budget'));
+                $div.find('[field_name="year"]').val(String(json['year']));
+                $('#create_budget_dialog').modal('hide');
+            },
+            error: function (json) {
+                Lobibox.notify('error', {
+                    title: '錯誤訊息',
+                    msg: json.responseText,
+                });
+            }
+        });
+    }
+
+    function update_priority(){
+        var $obj = $(this);
+        var direction = $obj.attr('direction');
+        var row_id = $obj.closest('tr').attr('row_id');
+        var index = $("#table_budget > tbody > tr").index($obj.closest('tr')) / 3;
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            direction: direction
+        };
+        $.ajax({
+            url: '/fishuser/api/v2/budget/' + row_id + '/',
+            type: 'PUT',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (json, text, xhr) {
+                if (direction=='up'){
+                    var pre_tr = $("#table_budget > tbody > tr").eq((index-1)*3);
+                    $("#table_budget").find('tr[row_id="' + row_id + '"]').insertBefore(pre_tr);
+                } else {
+                    var next_tr = $("#table_budget > tbody > tr").eq((index+1)*3+2);
+                    $("#table_budget").find('tr[row_id="' + row_id + '"]').insertAfter(next_tr);
+                }
+            },
+            error: function (json) {
+                Lobibox.notify('error', {
+                    title: '錯誤訊息',
+                    msg: json.responseText,
+                });
+            },
+        })
+    }
+
+    function readTotalCapitalRatify(){
+        setTimeout(function(){
+            var capital_ratify = 0;
+            var capital_ratify_local = 0;
+            $.ajax({
+                url: '/fishuser/api/v2/budget/?fund={{ fund.id }}',
+                type: 'GET',
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function (json, text, xhr) {
+                    for (i=0;i<json.objects.length;i++){
+                        if (json.objects[i]['new']==0){
+                            continue
+                        }
+                        if (parseInt(json.objects[i]['capital_ratify_revision'])){
+                            capital_ratify += parseInt(json.objects[i]['capital_ratify_revision']);
+                        } 
+                        // else if (parseInt(json.objects[i]['capital_ratify_budget'])){
+                        //     capital_ratify += parseInt(json.objects[i]['capital_ratify_budget']);
+                        // };
+                        if (parseInt(json.objects[i]['capital_ratify_local_revision'])){
+                            capital_ratify_local += parseInt(json.objects[i]['capital_ratify_local_revision']);
+                        } 
+                        // else if (parseInt(json.objects[i]['capital_ratify_local_budget'])){
+                        //     capital_ratify_local += parseInt(json.objects[i]['capital_ratify_local_budget']);
+                        // };
+                    }
+
+                    $('#table_budget').find('[name="total_capital_ratify"]').html(TransformThousands(capital_ratify) + '元');
+                    $('#table_budget').find('[name="total_capital_ratify_local"]').html(TransformThousands(capital_ratify_local) + '元');
+                },
+                error: function (json) {
+                    Lobibox.notify('error', {
+                        title: '錯誤訊息',
+                        msg: json.responseText,
+                    });
+                },
+            })
+        }, 500);
+    }
+
+    function calculate_perc(id){
+        
+        prop = document.getElementById('percent_'+id).value
+        old_value = document.getElementById('percent_'+id).old_value
+        prop = parseFloat(prop)
+        new_total = $('#total_'+id).val()
+        old_total = $('#total_'+id).attr('old_value')
+        new_total = remove_TransformThousands(new_total)
+
+        if(new_total==old_total && (prop > 100 || prop < 0 || prop=='')){
+            return false
+        }
+        
+        total = document.getElementById('total_'+id).value
+        total = parseInt(remove_TransformThousands(total))
+        if(isNaN(total)){
+            total=0
+        }
+        if(isNaN(prop)){
+            gov_value = total         
+        }
+        else{
+            gov_value = parseInt(total*prop/100)
+        }
+        loc_value = total - gov_value
+        document.getElementById('gov_'+id).value = TransformThousands(gov_value)
+        document.getElementById('loc_'+id).value = TransformThousands(loc_value)
+        data = {}
+        data['proportion'] = prop;
+        data['capital_ratify_budget'] = total;
+        data['capital_ratify_revision'] = gov_value;
+        data['capital_ratify_local_revision'] = loc_value;
+        
+        // if(new_total!=old_total){
+        //     console.log(new_total,old_total)
+        //     $.ajax({
+        //         url: '/project/copy_money/'+id+'/',
+        //         type: 'POST',
+        //         contentType: 'application/json',
+        //         dataType: 'json',
+        //         beforeSend: function(XHR) {
+        //             XHR.setRequestHeader('X-CSRFToken', CSRFMIDDLEWARETOKEN);
+        //         },
+        //         success: function(data){
+        //         },
+        //         error: function(data){
+        //         },
+        //     })
+        //     $('#total_'+id).attr('old_value', new_total)
+        // }
+
+
+        $.ajax({
+            url: '/fishuser/api/v2/budget/' + id + '/',
+            type: 'PUT',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            beforeSend: function(XHR) {
+                XHR.setRequestHeader('X-CSRFToken', CSRFMIDDLEWARETOKEN);
+            },
+            success: function(json, text, xhr) {
+            },
+            error: function(data) {
+            }
+        });
+
+        readTotalCapitalRatify()
+    }
+
+    function calculate_total(id, mod){
+        gov_value = remove_TransformThousands(document.getElementById('gov_'+id).value)
+        loc_value = remove_TransformThousands(document.getElementById('loc_'+id).value)
+
+        if (isNaN(parseInt(gov_value))){
+            gov_value=0
+        }
+        if (isNaN(parseInt(loc_value))){
+            loc_value=0
+        }
+        
+        total = remove_TransformThousands(document.getElementById('total_'+id).value)
+        if (isNaN(parseInt(total))){
+            total=0
+        }
+
+        console.log(total)
+        if (mod==1){
+            loc_value = total - parseInt(gov_value)
+            if(loc_value<0){
+                loc_value=0
+                total=parseInt(gov_value)
+            }
+        }
+        else{
+            gov_value = total - parseInt(loc_value)
+            if(gov_value<0){
+                gov_value=0
+                total=parseInt(loc_value)
+            }
+        }
+
+        if (total==0){
+            prop=0
+        }
+        else{
+            prop = (parseInt(gov_value)*100/total).toFixed(3)
+        }
+        document.getElementById('total_'+id).value = total
+        document.getElementById('percent_'+id).value = prop
+        document.getElementById('gov_'+id).value = gov_value
+        document.getElementById('loc_'+id).value = loc_value
+
+        data = {}
+        data['proportion'] = prop;
+        data['capital_ratify_budget'] = total;
+        data['capital_ratify_revision'] = gov_value;
+        data['capital_ratify_local_revision'] = loc_value;
+
+        $.ajax({
+            url: '/fishuser/api/v2/budget/' + id + '/',
+            type: 'PUT',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            beforeSend: function(XHR) {
+                XHR.setRequestHeader('X-CSRFToken', CSRFMIDDLEWARETOKEN);
+            },
+            success: function(json, text, xhr) {
+            },
+            error: function(data) {
+            }
+        });
+
+        readTotalCapitalRatify()
+    }
+
+    $(document).ready(function(){
+        $('#create_budget').click(create_budget);
+        $(document).on('click', '.delete_budget', delete_budget);
+        $(document).on('click', '.update_priority', update_priority);
+        $(document).on('change', '.readTotalCapitalRatify', readTotalCapitalRatify);
+        readTotalCapitalRatify();
+    });
+
+</script>

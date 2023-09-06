@@ -1,0 +1,183 @@
+{% extends "fishuser/zh-tw/base.html" %}
+{% load i18n %}
+{% load humanize %}
+{% load utiltags %}
+
+{% block js_in_compress %}
+    <script src="/media/frcm/v2/plupload/jquery.plupload.queue/jquery.plupload.queue.js{{ settings.SV_ }}"></script>
+    <script src="/media/frcm/v2/plupload/js/plupload.full.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+        });
+    </script>
+    <script type="text/javascript" src="/media/frcm/v2/js/fileupload_project.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/frcm/v2/PDFObject-master/pdfobject.min.js{{ settings.SV_ }}"></script>
+
+    <style>
+        .pdfobject-container { height: 400px; width: 100%;}
+        .pdfobject { border: 1px solid #666; }
+    </style>
+{% endblock %}
+
+{% block menu_sub %}
+    <div id="nav" class='panel panel-primary'>
+        <div class="list-group">
+            <a href="{% url 'frcm.views.file_upload_project' project_id=row.id page='base' %}" class='list-group-item {% ifequal menu_tab "工程基本資料" %}active{% endifequal %}'>
+                <span class="glyphicon glyphicon-file"></span>
+                <strong>&nbsp;工程基本資料</strong>
+            </a>
+            {% ifequal menu_tab "工程基本資料" %}
+                <a class="list-group-item select_tag " tag_id="all" tag_name="{{ t.value }}">
+                    <span class="badge">{{ files.count }}</span>
+                    全部顯示
+                </a>
+                {% for t in tags %}
+                    <a class="list-group-item select_tag " tag_id="{{ t.id }}" tag_name="{{ t.value }}">
+                    <span class="badge">{{ t.num }}</span>
+                    {{ t.value }}
+                    </a>
+                {% endfor %}
+            {% endifequal%}
+            <a href="{% url 'frcm.views.file_upload_project' project_id=row.id page='inspector' %}" class='list-group-item {% ifequal menu_tab "監造資料" %}active{% endifequal %}'>
+                <span class="glyphicon glyphicon-file"></span>
+                <strong>&nbsp;監造資料</strong>
+            </a>
+            {% ifequal menu_tab "監造資料" %}
+                <a class="list-group-item select_tag " tag_id="all" tag_name="{{ t.value }}">
+                    <span class="badge">{{ files.count }}</span>
+                    全部顯示
+                </a>
+                {% for t in tags %}
+                    <a class="list-group-item select_tag " tag_id="{{ t.id }}" tag_name="{{ t.value }}">
+                    <span class="badge">{{ t.num }}</span>
+                    {{ t.value }}
+                    </a>
+                {% endfor %}
+            {% endifequal%}
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+
+<div style="font-size: 14px" align="center">
+    {% block sub_content %}
+    <h2><a href="/frcm/project_profile/{{ row.id }}/">{{ row.name }}</a></h2>
+    <h3>{{ menu_tab }}</h3>
+    <div>
+        <button row_id="{{ row.id }}" file_type="{{ menu_tab }}" table_name="ProjectFile" class="uploader btn btn-info" id="new_file">選擇上傳檔案</button>(可多選)
+        <ol id="waitting_for_upload">
+        </ol>
+    </div>
+    <input value="{{ tags.count }}" id="tags_num" type="hidden">
+    <table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2" id="table_files">
+        <thead bgcolor='#FFAC55'>
+            <tr style="text-align: center;">
+                <th width="40">序號</th>
+                <th width="25" style="font-size: 12px;">下載</th>
+                <th width="25" style="font-size: 12px;">預覽</th>
+                <th width="300">檔案名稱</th>
+                <th width="40">類型</th>
+                <th width="40">大小</th>
+                <th width="110">上傳時間</th>
+                <th width="100">標籤</th>
+                <th width="250">備註</th>
+                <th width="40">刪除</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for f in files %}
+                {% include 'frcm/zh-tw/tr_for_projectfile.html' %}
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endblock %}
+</div>
+
+<input type="hidden" value="{% for t in tags %}{{ t.id }},{% endfor %}" id="tags_list">
+
+<div id="projectfile_tag_dialog_div" projectfile_id="" class="modal fade bs-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="projectfile_tag_dialog_name">標籤</h3>
+            </div>
+            <div class="modal-body" id="projectfile_tag_dialog_tags" style="">
+                <div style="font-size: 18px;line-height:28px;text-align: left;padding-left: 200px">
+                    {% for t in tags %}
+                        <input name="projectfile_tag" style="width:25px;height:25px" id="tag_checkbox_{{ t.id }}" tag_name="{{ t.value }}" class="add_or_remove_tag" value="{{ t.id }}" type="checkbox">{{ t.value }}<br>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- 檔案預覽的dialog -->
+<div id="file_view_dialog" class="modal fade bs-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="top:-30px">
+    <div class="modal-dialog">
+        <div class="modal-content" style="position: fixed;top:0;left:0">
+            <div class="modal-header" style="padding:5px">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="myModalLabel"><small>檔案預覽</small></h3>
+            </div>
+            <div class="modal-body" style="overflow-y: auto">
+                <div id="pdf" style="max-width: 100%;display:none;"></div>
+                <img id="image" src="" style="max-width: 100%;display:none;">
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- <div id="file_view_dialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="top:0%">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel"><small>檔案預覽</small></h3>
+    </div>
+    <div class="modal-body">
+        <div id="pdf" style="display:none;"></div>
+        <img id="image" src="" style="width: 100%;display:none;">
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">關閉</button>
+    </div>
+</div> -->
+
+
+<script>
+
+    function show_file_view_dialog(){
+        var $obj = $(this);
+        var url = $obj.attr('url');
+        var type = $obj.attr('type');
+        var width = document.body.clientWidth;
+        var height = document.body.clientHeight;
+        $('#file_view_dialog').find('.modal-dialog').css('width', width-20);
+        $('#file_view_dialog').find('.modal-body').css('width', width-20);
+        $('#file_view_dialog').find('.modal-body').css('height', height-140);
+        $('#file_view_dialog').find('#pdf').css('height', height-140);
+        $('#pdf').hide();
+        $('#image').hide();
+        if (type == 'pdf'){
+            PDFObject.embed(url, "#pdf");
+            $('#pdf').show();
+        } else if (type == 'image'){
+            $('#image').attr('src', url);
+            $('#image').show();
+        }
+        $('#file_view_dialog').modal('show');
+    }
+
+    $(document).ready(function(){
+        $(document).on('click', '.show_file_view_dialog', show_file_view_dialog);
+    });
+</script>
+{% endblock %}

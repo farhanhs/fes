@@ -1,0 +1,109 @@
+{% extends 'frcm/index.html' %}
+{% load utiltags %}
+{% block menu %}
+    <ul id="menu" value ="/frcm/"></ul>
+{% endblock %}
+
+{% block content %}
+
+    <br><br><span style="font-size:35px;color:#CC9933;">我的工程</span><br><br>
+
+    {% if have_print_button_self %}
+        <button type="button" class="makeFRCMCountyChaseExcel" print_type="my" user_id="{{ user.id }}">匯出『自身所屬工程』之進度追蹤資料</button>　　
+    {% endif %}
+    {% if have_print_button_all %}
+        <button type="button" class="makeFRCMCountyChaseExcel" print_type="all" user_id="{{ user.id }}">匯出『本縣市所有工程』之進度追蹤資料</button>
+    {% endif %}
+    <br><br>
+    <span style="font-size: 18px">
+        {% if not projects %}
+            您目前手上無任何工程<br>
+                {% ifequal user.user_profile.group.name "主辦工程師" %}
+                    請選擇上方『匯入工程』按鈕來建立您負責之工程案進行管理。
+                {% else %}
+                    請通知您的主辦工程師，進行『匯入工程』的動作，<br>
+                    並索取您的認證碼來認領工程進行管理。
+                {% endifequal %}
+
+        {% else %}
+
+        <table class="sortable" border="1" style="border-collapse: collapse">
+            <thead bgcolor='#BBFFDD'>
+                <tr>
+                <th></th>
+                <th width="80">您的身分為</th>
+                <th>年度</th>
+                <th>權限</th>
+                <th width="150">標案編號</th>
+                <th width="200">工作名稱</th>
+                <th width="60">施工相片數量</th>
+                <th width="200">計畫名稱</th>
+                <th width="100">執行機關</th>
+                <th>主辦工程師</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in projects %}
+                    <tr id="tr_{{ p.id }}" class="{% cycle "odd" "even" %}">
+                        <td>
+                            {% if p.chase_data %}
+                                {% if p.chase_data.complete %}
+                                    <img src="/media/frcm/image/green_light.gif" title="已列入進度追蹤(填寫完畢)，可繼續更新資訊">
+                                {% else %}
+                                    <img src="/media/frcm/image/red_light.gif" title="已列入進度追蹤，請進入工程案盡快填寫">
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td style="color:#CC9933;">{{ p.usergroup }}</td>
+                        <td>{{ p.year }}</td>
+                        {% if p.open %}
+                        <td align="center" bgcolor="#66FF66">
+                            開放
+                        </td>
+                        {% else %}
+                        <td align="center" bgcolor="#FF6666">
+                            關閉<br>({{ p.message }})
+                            {% if p.have_regret_button %}
+                            <br><input project_id="{{ p.id }}" class="regretToShareProject" name="regretToShareProject"
+                            project_name="{{ p.name }}" user_id="{{ user.id }}" type="button" value="取消要求共管">
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                        <td>{{ p.bid_no }}</td>
+                        <td>
+                            {% if p.open %}
+                            <a href="/frcm/{{ p.id }}/profile/" target="_blank">{{ p.name }}</a>
+                            {% else %}
+                            {{ p.name }}
+                            {% endif %}
+                        </td>
+                        <td align="center">
+                            {% if p.use_gallery %}
+                            {{ p.rGalleryPics }}
+                            {% else %}
+                            {{ p.rFRCMAlreadyUploadPics }}/{{ p.rFRCMNormalPics }}
+                            {% endif %}
+                        </th>
+                        <td>{{ p.plan.name }}</td>
+                        <td>{% if p.unit %}{{ p.unit.name }}{% endif %}</td>
+                        <td>
+                            {% for u in p.engs %}
+                                {% if u.is_active %}
+                                    {{ u.group.name }}:{{ u.user.user_profile.rName }}<br>
+                                {% else %}
+                                    <span style="color:red;">
+                                        {{ u.group.name }}:{{ u.user.user_profile.rName }}(尚未授權)<br>
+                                    </span>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            <tbody>
+        </table>
+        {% endif %}
+    </span>
+    
+    <br><br><br>
+
+{% endblock %}

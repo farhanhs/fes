@@ -1,0 +1,105 @@
+{% extends 'weblive/index.html' %}
+
+{% block weblive_url %}<a href="/1/">監控系統</a>{% endblock %}
+
+{% block main_content %}
+    <script>
+        $(document).ready(function(){
+            $.timepicker.regional['zh_TW'] = {
+                timeOnlyTitle: '選擇時間',
+                timeText: '時間',
+                hourText: '小時',
+                minuteText: '分鐘',
+                secondText: '秒',
+                millisecText: '毫秒',
+                timezoneText: '時區',
+                currentText: '現在',
+                closeText: '確定',
+                timeFormat: 'hh:mm',
+                amNames: ['a.m.', 'AM', 'A'],
+                pmNames: ['p.m.', 'PM', 'P'],
+                ampm: false
+            };
+            $.timepicker.setDefaults($.timepicker.regional['zh_TW']);
+            var now = new Date();
+            $('input#after_time').datetimepicker({
+                showMinute: 1,
+                stepMinute: 1,
+                dateFormat: 'yy-mm-dd',
+                minDate: new Date(2012, 1, 4),
+                maxDate: now
+            });
+            $('input#before_time').datetimepicker({
+                showMinute: 1,
+                stepMinute: 1,
+                dateFormat: 'yy-mm-dd',
+                minDate: new Date(2012, 1, 4),
+                maxDate: now
+            });
+            var search_alive_log = function () {
+                var $input = $(this);
+                $input.hide();
+                $.ajax({url:"/__ajax__/", type: "POST", data: {module: "weblive.views",
+                    submit: "search_alive_log",
+                    after_time: $('#after_time').val(),
+                    before_time: $('before_time').val()},
+                    dataType:"json", success: function(data) {
+                    $('table tbody tr td[field="count"]').each(function(){
+                        $(this).text('0 人');
+                    });
+                    var ms = data['monitors'];
+                    for (var i=0; i<ms.length; i++){
+                        var m = ms[i];
+                        var $tr = $('tr[_id="'+m['monitor__id']+'"]');
+                        var $td = $('td[field="count"]', $tr);
+                        $td.html(m['count']+' 人次');
+                    }
+                    $('#messsage').html(data['after_time']+' ~ '+data['before_time']+' 的統計人次 <br/> (每人每小時最多只計 1 次)');
+                    $input.show();
+                }, error: function(jqXHR, textStatus, errorThrown){
+                    alert(jqXHR.response);
+                    $input.show();
+                }});
+            }
+            $('#search_alive_log').click(search_alive_log);
+        });
+    </script>
+    <div style="clear: both; "></div>
+    <div style="width: 600px;">
+        <br/> <br/> <br/> <br/> <br/> <br/>
+        <center>
+            <p>
+                起： <input id="after_time" size="13" type="text" />
+                迄： <input id="before_time" size="13" type="text" />
+                <input type="submit" id="search_alive_log" value="搜尋起迄時間內的觀看人次" />
+            </p>
+            <p id="messsage">目前線上人數(紀錄時間：{% now "Y-m-d H:i:s" %} )</p>
+        <table border="1">
+        <thead>
+            <th>縣市</th>
+            <th>港口</th>
+            <th>攝影機</th>
+            <th>觀看人數</th>
+        </thead>
+        <tbody>
+            {% for city, ports in hash.list_sorted_key_and_value %}
+                {% for port, monitors in ports.list_sorted_key_and_value %}
+                    {% for monitor in monitors %}
+                        <tr _id="{{ monitor.id }}">
+                            <td>{{ city }}</td>
+                            <td>{{ port }}</td>
+                            <td>{{ monitor.name }}</td>
+                            <td align="right" field="count">
+                                {% with monitor.count_alive as count %}
+                                    {% if count %}
+                                        {{ count }} 人
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table></center></div>
+{% endblock %}

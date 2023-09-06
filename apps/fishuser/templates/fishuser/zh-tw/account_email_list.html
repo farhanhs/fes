@@ -1,0 +1,126 @@
+{% extends "fishuser/zh-tw/base.html" %}
+{% load i18n %}
+{% load humanize %}
+
+{% block body %}
+
+<h3>各縣市政府連絡窗口名單列表</h3>
+<br>
+
+<button class="btn btn-success" ttitle="新增聯絡人" data-toggle="modal" data-target="#create_email_list_dialog">新增聯絡人</button>
+
+<br>
+<table class="table table-bordered" style="word-break:break-all; word-wrap:break-all;">
+    <thead bgcolor='#D6FFAF' style="font-size: 12px;">
+        <td width="10">序號</td>
+        <td width="10">刪除</td>
+        <td width="20">內容</td>
+        <td>寄信</td>
+        <th width="30">縣市</th>
+        <th width="30">姓名</th>
+        <th>科別</th>
+        <th>職稱</th>
+        <th>電話</th>
+        <th>手機</th>
+        <th>傳真</th>
+        <th width="150">Email</th>
+        <th width="50">備註</th>
+    </thead>
+    <tbody>
+        {% for u in users %}
+            {% include 'fishuser/zh-tw/account_email_list_tr.html' %}
+        {% endfor %}
+        <tr style="display: none;" id="insertEmailListUserPlace"><td></td></tr>
+    <tbody>
+</table>
+
+<div class="modal fade" id="create_email_list_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">新增聯絡人</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table table-striped">
+                    <tr>
+                        <td align="right">是否寄信</td>
+                        <td>
+                            <select class="form-control" id="new_need_email">
+                                <option selected="selected" value="true">是</option>
+                                <option value="false">否</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">縣市</td>
+                        <td>
+                            <select class="form-control" id="new_place">
+                                <option value=""></option>
+                                {% for p in places %}
+                                    <option value="/fishuser/api/v2/place/{{ p.id }}/">{{ p.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">姓名</td>
+                        <td>
+                            <input class="form-control" id="new_name" type="text" value=""/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">科別</td>
+                        <td>
+                            <input class="form-control" id="new_departments" type="text" value=""/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">職稱</td>
+                        <td>
+                            <input class="form-control" id="new_title" type="text" value=""/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">電話</td>
+                        <td>
+                            <input class="form-control" id="new_tel" type="text" value=""/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">手機</td>
+                        <td>
+                            <input class="form-control" id="new_phone" type="text" value=""/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">傳真</td>
+                        <td>
+                            <input class="form-control" id="new_fax" type="text" value=""/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">Email</td>
+                        <td>
+                            <input class="form-control" id="new_email" type="text" value=""/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">備註</td>
+                        <td>
+                            <textarea class="form-control" id="new_memo" rows="3"></textarea>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="create_email_list_user">新增聯絡人</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+{% endblock body %}

@@ -1,0 +1,200 @@
+{% load i18n %}
+{% load humanize %}
+<!DOCTYPE html PUBLIC>
+<html lang="zh-tw">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <script type="text/javascript" src="/media/dailyreport/jquery/smoothness/jquery-ui-1.10.3.custom.css{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/dailyreport/jquery/jquery-1.10.2.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/dailyreport/jquery/jquery-ui-1.10.3.custom.js{{ settings.SV_ }}" ></script>
+    <link rel="stylesheet" type="text/css" href="/media/dailyreport/jquery/smoothness/jquery-ui-1.10.3.custom.css{{ settings.SV_ }}" charset="utf-8"/>
+    
+    <script type="text/javascript">
+        var DEBUG = {% if settings.DEBUG %}true{% else %}false{% endif %};
+        var CSRFMIDDLEWARETOKEN;
+        var SUB_PAGE_LIST = '';
+    </script>
+
+    <link rel="stylesheet" type="text/css" href="/media/dailyreport/css/print_style.css{{ settings.SV_ }}" charset="utf-8"/>
+    <link rel="stylesheet" type="text/css" href="/media/dailyreport/bootstrap/css/bootstrap.css{{ settings.SV_ }}"/>
+    <link rel="stylesheet" type="text/css" href="/media/dailyreport/bootstrap/css/bootstrap-responsive.css{{ settings.SV_ }}"/>
+
+    <script type="text/javascript" src="/media/dailyreport/js/dailyreport.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/dailyreport/js/purl.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/dailyreport/js/jquery.contextmenu.r2.js{{ settings.SV_ }}" ></script>
+    <script type="text/javascript" src="/media/dailyreport/jstree/jquery.hotkeys.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/dailyreport/jstree/jquery.cookie.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/dailyreport/sorttable/sorttable.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/dailyreport/bootstrap/js/bootstrap.js{{ settings.SV_ }}"></script>
+    {% block js_in_compress %}{% endblock %}
+
+    {% block script %}{% endblock %}
+
+    <title>{% block title %}漁業發展-漁港管控表{% endblock %}</title>
+</head>
+<body style="text-align: center;font-family: 'Helvetica Neue', Helvetica, '微軟正黑體', 'Microsoft Jhenghei', Arial, sans-serif;">
+    <img id="loading" src="/media/dailyreport/images/loading.gif" width="50" style="display:none;" />
+
+    
+    {% csrf_token %}
+
+    <input type="button" name="print" class="btn btn-large btn-success" id="print_button" onClick="window.print(); return false" value="列印此頁"> </input>
+    <a href="#chrome_print_settings" id="chrome_print_settings_button" role="button" class="btn btn-inverse" data-toggle="modal"><img src="/media/dailyreport/print_settings/chrome.png" width="25"> Chrome列印設定</a>
+    <a href="#firefox_print_settings" id="firefox_print_settings_button" role="button" class="btn btn-inverse" data-toggle="modal"><img src="/media/dailyreport/print_settings/firefox.png" width="25"> FireFox列印設定</a>
+    <a href="#ie_print_settings" id="ie_print_settings_button" role="button" class="btn btn-inverse" data-toggle="modal"><img src="/media/dailyreport/print_settings/ie.png" width="25"> IE列印設定</a>
+
+    {% include 'dailyreport/zh-tw/explanation.html' %}
+    <br>
+    
+    <div class="page">
+        <table width="100%">
+            <tr>
+                <td colspan="2"><h4>{{ year }}年度漁業發展-漁港管控表</h4></td>
+            </tr>
+            <tr>
+                <td align="right">經費種類：{{ budget_type }}</td>
+                <td align="right">上層計畫：{{ top_plan_name }}</td>
+            </tr>
+            <tr></tr>
+            <tr>
+                <td colspan="2" class="td_right">
+                    共有 {{ projects|length }} 筆，單位：千元
+                </td>
+            </tr>
+        </table>
+        <table id="control_form_table" class="" style="text-align: center; font-size: 12px;border:2px #cccccc solid;" cellpadding="10" border='1'>
+            <thead>
+                <tr style="background-color: #3083a9  !important; color: #F0F0F0 !important;;-webkit-print-color-adjust: exact !important;">
+                    <th colspan="9" width="3%" style="text-align: center;color: #F0F0F0 !important;">補助（ {{ budget_type }} ）</th>
+                </tr>
+                <!-- 補助部分 -->
+                <tr style="background-color: #3083a9  !important; color: #F0F0F0 !important;-webkit-print-color-adjust: exact !important;">
+                    <th width="20%" style="text-align: center;color: #F0F0F0 !important;">計畫編號</th>
+                    <th width="25%" style="text-align: center;color: #F0F0F0 !important;">工程名稱</th>
+                    <th width="8%" style="text-align: center;color: #F0F0F0 !important;">補助</th>
+                    <th width="8%" style="text-align: center;color: #F0F0F0 !important;">配合款</th>
+                    <th width="6%" style="text-align: center;color: #F0F0F0 !important;padding: 0px">基金</th>
+                    <th width="7%" style="text-align: center;color: #F0F0F0 !important;padding: 0px">調補助1</th>
+                    <th width="8%" style="text-align: center;color: #F0F0F0 !important;">配合款</th>
+                    <th width="6%" style="text-align: center;color: #F0F0F0 !important;padding: 0px">基金</th>
+                    <th width="8%" style="text-align: center;color: #F0F0F0 !important;">備註</th>
+                </tr>
+                {% for p in projects %}
+                {% if p.undertake_type_id == 156 %}
+                    <tr>
+                        <td >{{ p.work_no|default_if_none:'' }}</td>
+                        <td style='width: 6rem;'>{{ p.name }}</td>
+                        <td style='text-align:right;padding: 3px'>
+                            {{ p.capital_ratify_revision|default_if_none:''|floatformat:1 }}
+                        </td>
+                        <td style='text-align:right;padding: 3px'>
+                            {{ p.capital_ratify_local_revision|default_if_none:''|floatformat:1 }}
+                        </td>
+                        <td style='text-align:right;padding: 3px'>
+                            {{ p.fund_1|default_if_none:''|floatformat:1 }}
+                        </td>
+                        <td style='text-align:right;padding: 3px'>
+                            {{ p.allowance_revise|default_if_none:''|floatformat:1 }}
+                        </td>
+                        <td style='text-align:right;padding: 3px'>
+                            {{ p.matching_fund_2|default_if_none:''|floatformat:1 }}
+                        </td>
+                        <td style='text-align:right;padding: 3px'>
+                            {{ p.fund_2|default_if_none:''|floatformat:1 }}
+                        </td>
+                        <td style='text-align:right;padding: 3px'>
+                            {{ p.control_form_memo|default_if_none:'' }}
+                        </td>
+                    </tr>
+                {% endif %}
+                {% endfor %}
+                
+            
+            </thead>
+            <tbody>
+            </tbody>
+        </table><br/>
+        <table id="control_form_table" class="" style="text-align: center; font-size: 12px;border:2px #cccccc solid;" cellpadding="10" border='1'>
+            <thead>
+                <tr style="background-color: #3083a9  !important; color: #F0F0F0 !important;;-webkit-print-color-adjust: exact !important;">
+                    <th colspan="9" width="3%" style="text-align: center;color: #F0F0F0 !important;">自辦（ {{ budget_type }} ）</th>
+                </tr>
+                <!-- 自辦部分 -->
+                <tr style="background-color: #3083a9  !important; color: #F0F0F0 !important;-webkit-print-color-adjust: exact !important;">
+                    <th width="10%" style="text-align: center;color: #F0F0F0 !important;">編號</th>
+                    <th width="40%" style="text-align: center;color: #F0F0F0 !important;">工程名稱</th>
+                    <th width="8%" style="text-align: center;color: #F0F0F0 !important;">自辦</th>
+                    <th width="8%" style="text-align: center;color: #F0F0F0 !important;">調自辦1</th>
+                    <th width="15%" style="text-align: center;color: #F0F0F0 !important;">備註</th>
+                </tr>
+                {% for p in projects %}
+                {% if p.undertake_type_id == 157 %}
+                    <tr>
+                        <td >{{ forloop.counter }}</td>
+                        <td style='width: 6rem;'>{{ p.name }}</td>
+                        <td style='text-align:right;padding: 3px'>
+                            {{ p.capital_ratify_revision|default_if_none:''|floatformat:1 }}
+                        </td>
+                        <td style='text-align:right;padding: 3px'>
+                            {{ p.selfpay_revise|default_if_none:''|floatformat:1 }}
+                        </td>
+                        <td style='text-align:right;padding: 3px'>
+                            {{ p.control_form_memo|default_if_none:'' }}
+                        </td>
+                    </tr>
+                {% endif %}
+                {% endfor %}
+            </thead>
+            <tbody>
+            </tbody>
+        </table><br/>
+        <table id="control_form_table" class="" style="text-align: center; font-size: 12px;border:2px #cccccc solid;" cellpadding="10" border='1'>
+            <thead>
+                <tr style="background-color: #3083a9  !important; color: #F0F0F0 !important;;-webkit-print-color-adjust: exact !important;">
+                    <th colspan="9" width="3%" style="text-align: center;color: #F0F0F0 !important;">委辦（ {{ budget_type }} ）</th>
+                </tr>
+                <!-- 委辦部分 -->
+                <tr style="background-color: #3083a9  !important; color: #F0F0F0 !important;-webkit-print-color-adjust: exact !important;">
+                    <th width="10%" style="text-align: center;color: #F0F0F0 !important;">計畫編號</th>
+                    <th width="40%" style="text-align: center;color: #F0F0F0 !important;">工程名稱</th>
+                    <th width="8%" style="text-align: center;color: #F0F0F0 !important;">委辦</th>
+                    <th width="8%" style="text-align: center;color: #F0F0F0 !important;">調委辦1</th>
+                    <th width="15%" style="text-align: center;color: #F0F0F0 !important;">備註</th>
+                </tr>
+                {% for p in projects %}
+                {% if p.undertake_type_id == 158 %}
+                    <tr>
+                        <td >{{ p.work_no|default_if_none:'' }}</td>
+                        <td style='width: 6rem;'>{{ p.name }}</td>
+                        <td style='text-align:right;padding: 3px'>
+                            {{ p.capital_ratify_revision|default_if_none:''|floatformat:1 }}
+                        </td>
+                        <td style='text-align:right;padding: 3px'>
+                            {{ p.commission_revise|default_if_none:''|floatformat:1 }}
+                        </td>
+                        <td style='text-align:right;padding: 3px'>
+                            {{ p.control_form_memo|default_if_none:'' }}
+                        </td>
+                    </tr>
+                {% endif %}
+                {% endfor %}
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+</body>
+
+<style>
+    @page {
+        size: auto;
+        margin: 0; /* 邊界與內容的距離 */
+      }
+    td,th {
+        font-size:8px;
+    }
+    td {
+        padding:4px;
+    }
+</style>

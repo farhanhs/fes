@@ -1,0 +1,167 @@
+{% load i18n %}
+{% load utiltags %}
+{% load humanize %}
+
+<h3 class="text-primary">工程相片/檔案</h3>
+
+{% if project.engineers %}
+    <div class="row">
+        <div class="col-md-7">
+            <div class="alert alert-success" align="left">
+                此工程案已經在遠端工程系統，被匯入並開始管理中<br>
+                遠端工程系統之相片品質佐證子系統中已上傳了 {{ project.photo_count }} 張相片<br>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="alert alert-info" align="left">
+                <p class="text-info">
+                    <a href="/frcm/project_profile/{{ project.id }}/">『遠端工程系統』</a>相關負責人列表：
+                </p>
+                <ul>
+                    {% for e in project.engineers %}
+                    <li>{{ e.group.name }} - {{ e.user.user_profile.rName }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-warning" align="left">
+        此工程案尚未在遠端工程系統中被匯入。
+    </div>
+{% endif %}
+
+<button project_id="{{ project.id }}" table_name="ProjectPhoto" class="btn btn-primary uploader" id="new_file">請選擇上傳檔案</button>(可多選)
+<ol id="waitting_for_upload"></ol>
+
+<table class="table table-bordered" id="file_table"
+    style="font-size: 12px; text-align: center;">
+    <tr class="success">
+        <td width="3%">序號</td>
+        <td width="5%">下載</td>
+        <td width="45%">名稱</td>
+        <td width="5%">類型</td>
+        <td width="40%">備註</td>
+        {% if edit %}
+            <td>刪除</td>
+        {% endif %}
+    </tr>
+    <tr id="tr_insert_file" style="display: none;"></tr>
+    {% for p in photos %}
+        <tr class="warning tr_file_{{ p.id }}">
+            <td>{{ forloop.counter }}</td>
+            <td>
+                <a href="{{ p.rUrl }}" download="{{ p.name }}.{{ p.rExt }}">
+                    <button class="btn btn-sm btn-info"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span></button>
+                </a>
+            </td>
+            <td>
+                {% if edit %}
+                    <input
+                        type="text" class="BlurUpdateInfo form-control"
+                        field_type="str"
+                        no_change='true'
+                        row_id="{{ p.id }}"
+                        field_name="name"
+                        table_name="projectphoto"
+                        module_name='fishuser'
+                        placeholder="請填入相片名稱"
+                        old_value="{{ p.name|default_if_none:'' }}"
+                        value="{{ p.name|default_if_none:'' }}"/>
+                {% else %}
+                    {{ p.name }}({{ p.rExt }})
+                {% endif %}
+            </td>
+            <td>{{ p.rExt }}</td>
+            <td>
+                {% if edit %}
+                    <textarea
+                        type="textarea" class="BlurUpdateInfo form-control"
+                        field_type="str"
+                        no_change='true'
+                        row_id="{{ p.id }}"
+                        field_name="memo"
+                        table_name="projectphoto"
+                        module_name='fishuser'
+                        placeholder="請填入相片備註"
+                        old_value="{{ p.memo|default_if_none:'' }}">{{ p.memo|default_if_none:'' }}</textarea>
+                {% else %}
+                    {{ p.memo|linebreaks|default_if_none:"" }}
+                {% endif %}
+            </td>
+            {% if edit %}
+                <td>
+                    <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                        row_id="{{ p.id }}"
+                        row_name="{{ p.name }}"
+                        module_name = "fishuser"
+                        table_name = "projectphoto"
+                        remove_target = "tr_file_{{ p.id }}"
+                        title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+                </td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+</table>
+
+<script type="text/x-jquery-tmpl" id="HideFileTr">
+    <tr class="warning tr_file_${id}">
+        <td>new!</td>
+        <td>
+            <a href="${rUrl}" download="${name}.${rExt}">
+                <button class="btn btn-sm btn-info"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span></button>
+            </a>
+        </td>
+        <td>
+            {% if edit %}
+                <input
+                    type="text" class="BlurUpdateInfo form-control"
+                    field_type="str"
+                    no_change='true'
+                    row_id="${id}"
+                    field_name="name"
+                    table_name="projectphoto"
+                    module_name='fishuser'
+                    placeholder="請填入相片名稱"
+                    old_value="${name}"
+                    value="${name}"/>
+            {% else %}
+                ${name}
+            {% endif %}
+        </td>
+        <td>${rExt}</td>
+        <td>
+            <textarea
+                type="textarea" class="BlurUpdateInfo form-control"
+                field_type="str"
+                no_change='true'
+                row_id="${id}"
+                field_name="memo"
+                table_name="projectphoto"
+                module_name='fishuser'
+                placeholder="請填入相片備註"
+                old_value="${memo}">${memo}</textarea>
+        </td>
+        {% if edit %}
+            <td>
+                <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                    row_id="${id}"
+                    row_name="${name}"
+                    module_name = "fishuser"
+                    table_name = "projectphoto"
+                    remove_target = "tr_file_${id}"
+                    title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+            </td>
+        {% endif %}
+    </tr>
+</script>
+
+
+<script type="text/javascript">
+    
+    
+    $(document).ready(function(){
+        
+    });
+
+</script>

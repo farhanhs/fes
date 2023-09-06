@@ -1,0 +1,135 @@
+{% extends 'project/index.html' %}
+
+{% load utiltags %}
+{% block menu %}
+    <ul id="menu" value ="/project/makeserial/"></ul>
+{% endblock %}
+{% block style %}
+.style1 {
+	color: #CC9900;
+	font-size: 24px;
+}
+.style2 {
+	color: #FF0000;
+}
+{% endblock %}
+
+td {padding:2px 5px;}
+th {padding:2px 5px;}
+
+{% block content %}
+<br><span id="pagemark" page="makeserial"></span>
+<span style="font-size: 16px">
+
+    <form action="./" method="POST">
+        <table width="900">
+            <tr>
+                <td align="left">
+                    <table align="center">
+                        {% for field in form %}
+                        <tr>
+                            <td align="left">{{ field.label_tag }}</td>
+                            <td align="left">{{ field }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </td>
+                <td>
+                    <input type="submit" name="submit" value="開始搜尋" style="width:100px;height:50px;" onClick="loading(this)">
+                    {% if projects %}
+                        <input type="submit" name="makeExcel" id="makeExcel" value="將此結果匯出報表" title="按下匯出Excel" style="color:#336600;width:120px;height:50px;" onMouseOver="this.style.color = '#0000FF';" onMouseOut="this.style.color = '#336600';" onClick="loading(this)">
+                        <!--<br>
+                        <div style="display: none;" id="makeWorkExcel_mag">
+                            <span style="color:#FF0000;">
+                            <img src="/media/images/uploading.gif" title="讀取中">報表製造將花費數秒時間<br>請勿關閉此頁面或重新整理
+                            </span>
+                        </div>-->
+                    {% endif %}
+                    <br>
+                    <input url="/project/makeserial/" type="button" name="clearSearchInfo" id="clearSearchInfo" value="清空資訊重新查詢" onClick="loading(this)"><br>
+                    <br>
+                    搜尋結果依照
+                    <select name="sortBy" id="id_sortBy">
+                        <option value="year" {% ifequal sortBy 'year' %}selected="selected"{% endifequal %}>年度</option>
+                        <option value="bid_no" {% ifequal sortBy 'bid_no' %}selected="selected"{% endifequal %}>標案編號</option>
+                        <option value="name" {% ifequal sortBy 'name' %}selected="selected"{% endifequal %}>工作名稱</option>
+                        <option value="plan" {% ifequal sortBy 'plan' %}selected="selected"{% endifequal %}>所屬計畫</option>
+                        <option value="unit" {% ifequal sortBy 'unit' %}selected="selected"{% endifequal %}>執行機關</option>
+                        <option value="status" {% ifequal sortBy 'status' %}selected="selected"{% endifequal %}>工程狀態</option>
+                    </select>
+                    排序<br><br>
+                </td>
+            </tr>
+        </table>
+
+        
+
+
+    </form>
+<br><hr width="900" color="#ff8000" noshade title="這不是分隔線">
+    {% pyif projects_num == 0 %}
+        無資料，請重設搜尋條件
+    {% endif %}
+    
+    {% pyif projects_num > 0 %}
+        <div align="right" style="margin-right: 200px">共 {{ projects_num }} 個結果</div>
+        {% ifnotequal page_list.all_pages 1 %}
+            {% if page_list.previous_page %}
+                <a href="./?{{ querystring }}&page={{ page_list.previous_page }}">上一頁</a>
+            {% endif %}
+            {% for page in page_list.page_list %}
+                {% ifequal page page_list.now_page %}
+                    <span class="page-number active">{{ page }}</span>
+                {% else %}
+                    <a href="./?{{ querystring }}&page={{ page }}">{{ page }}</a>
+                {% endifequal %}
+            {% endfor %}
+            {% if page_list.next_page %}
+                <a href="./?{{ querystring }}&page={{ page_list.next_page }}">下一頁</a>
+            {% endif %}
+        {% endifnotequal %}
+
+        <table border="1" style="border-collapse: collapse;">
+            <thead bgcolor='#BBFFDD'>
+                <th></th>
+                <th>年度</th>
+                <th>縣市</th>
+                <th>計畫名稱</th>
+                <th>工作名稱</th>
+                <th>工作序號</th>
+            </thead>
+            <tbody>
+                {% for p in projects %}
+                    <tr id="tr_project_{{ p.id }}" align="left" class="{% cycle "odd" "even" %}">
+                        <td style="padding:10px 10px;">{{ p.order }}</td>
+                        <td style="padding:10px 10px;">{{ p.year }}</td>
+                        <td style="padding:10px 10px;">{% if p.place %}{{ p.place.name }}{% endif %}</td>
+                        <td style="padding:10px 10px;">{{ p.plan.name }}</td>
+                        <td style="padding:10px 10px;">{{ p.name }}</td>
+                        <td style="padding:10px 10px;">{{ p.serial }}</td>
+                    </tr>
+                {% endfor %}
+            <tbody>
+        </table>
+        {% ifnotequal page_list.all_pages 1 %}
+            {% if page_list.previous_page %}
+                <a href="./?{{ querystring }}&page={{ page_list.previous_page }}">上一頁</a>
+            {% endif %}
+            {% for page in page_list.page_list %}
+                {% ifequal page page_list.now_page %}
+                    <span class="page-number active">{{ page }}</span>
+                {% else %}
+                    <a href="./?{{ querystring }}&page={{ page }}">{{ page }}</a>
+                {% endifequal %}
+            {% endfor %}
+            {% if page_list.next_page %}
+                <a href="./?{{ querystring }}&page={{ page_list.next_page }}">下一頁</a>
+            {% endif %}
+        {% endifnotequal %}
+        <div align="right" style="margin-right: 200px">共 {{ projects_num }} 個結果</div>
+    {% endif %}
+    </div>
+</span>
+
+{% endblock %}
+

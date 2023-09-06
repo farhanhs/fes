@@ -1,0 +1,147 @@
+{% load utiltags %}
+{% load humanize %}
+{% load project_tags %}
+{% if not pcc_project %}
+<h3>
+    <span>此工程尚未與工程會標案管理系統同步。</span><br>
+    <span>請至工程基本資料填寫工程會編號以讀取標案管理系統資訊。</span>
+</h3>
+{% else %}
+<table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+    <thead bgcolor="#EEEEEE">
+        <tr>
+            <th colspan="4">
+                標案系統工程名稱：{{ pcc_project.name|default_if_none:'' }}
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td bgcolor="#EEEEEE" width="150">標案編號</td>
+            <td colspan="3">{{ pcc_project.uid|default_if_none:'' }}</td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">契約編號</td>
+            <td colspan="3">{{ pcc_project.contract_id|default_if_none:'' }}</td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE" width="150">預估底價</td>
+            <td style=" padding-right: 30px;" align="right">{{ pcc_project.s_base_price|default_if_none:''|transToThousand }} (千元)</td>
+            <td bgcolor="#EEEEEE" width="150">會核底價</td>
+            <td style=" padding-right: 30px;" align="right">{{ pcc_project.r_base_price|default_if_none:''|transToThousand }} (千元)</td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">工程總預算</td>
+            <td style=" padding-right: 30px;" align="right">{{ pcc_project.total_budget|default_if_none:''|transToThousand }} (千元)</td>
+            <td bgcolor="#EEEEEE">發包預算</td>
+            <td style=" padding-right: 30px;" align="right">{{ pcc_project.contract_budget|default_if_none:''|transToThousand }} (千元)</td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">決標金額</td>
+            <td style=" padding-right: 30px;" align="right">{{ pcc_project.decide_tenders_price|default_if_none:''|transToThousand }} (千元)</td>
+            <td bgcolor="#EEEEEE">變更設計後之契約金額</td>
+            <td style=" padding-right: 30px;" align="right">{{ pcc_project.decide_tenders_price2|default_if_none:''|transToThousand }} (千元)</td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">經費來源機關</td>
+            <td>{{ pcc_project.budget_from|default_if_none:'' }}</td>
+            <td bgcolor="#EEEEEE">主管機關</td>
+            <td>{{ pcc_project.head_department|default_if_none:'' }}</td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">主辦機關</td>
+            <td>{{ pcc_project.host_department|default_if_none:'' }}</td>
+            <td bgcolor="#EEEEEE">執行機關</td>
+            <td>{{ pcc_project.implementation_department|default_if_none:'' }}</td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">招標公告單位代碼</td>
+            <td>{{ pcc_project.host_department_code|default_if_none:'' }}</td>
+            <td bgcolor="#EEEEEE"></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">聯絡人</td>
+            <td>{{ pcc_project.manager|default_if_none:'' }}</td>
+            <td bgcolor="#EEEEEE">聯絡電話</td>
+            <td>{{ pcc_project.telphone|default_if_none:'' }}</td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">縣市別</td>
+            <td>{{ pcc_project.engineering_county|default_if_none:'' }}</td>
+            <td bgcolor="#EEEEEE">施工地點</td>
+            <td>{{ pcc_project.engineering_location|default_if_none:'' }}</td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">預定招標方式</td>
+            <td>{{ pcc_project.s_tenders_method|default_if_none:'' }}</td>
+            <td bgcolor="#EEEEEE">實際招標方式</td>
+            <td>{{ pcc_project.r_tenders_method|default_if_none:'' }}</td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">決標方式</td>
+            <td>{{ pcc_project.decide_tenders_method|default_if_none:'' }}</td>
+            <td bgcolor="#EEEEEE">契約費用給付方式</td>
+            <td>{{ pcc_project.pay_method|default_if_none:'' }}</td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">監造單位</td>
+            <td>{{ pcc_project.inspector_name|default_if_none:'' }}</td>
+            <td bgcolor="#EEEEEE">承造廠商</td>
+            <td>{{ pcc_project.constructor|default_if_none:'' }}</td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">預定完成規劃設計日期</td>
+            <td>{{ pcc_project.s_design_complete_date|default_if_none:'' }}</td>
+            <td bgcolor="#EEEEEE">實際完成規劃設計日期</td>
+            <td>{{ pcc_project.r_design_complete_date|default_if_none:'' }}</td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">預定公告日期</td>
+            <td>{{ pcc_project.s_public_date|default_if_none:'' }}</td>
+            <td bgcolor="#EEEEEE">實際公告日期</td>
+            <td>{{ pcc_project.r_public_date|default_if_none:'' }}</td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">預定決標日期</td>
+            <td>{{ pcc_project.s_decide_tenders_date|default_if_none:'' }}</td>
+            <td bgcolor="#EEEEEE">實際決標日期</td>
+            <td>{{ pcc_project.r_decide_tenders_date|default_if_none:'' }}</td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">預定開工日期</td>
+            <td>{{ pcc_project.s_start_date|default_if_none:'' }}</td>
+            <td bgcolor="#EEEEEE">實際開工日期</td>
+            <td>{{ pcc_project.r_start_date|default_if_none:'' }}</td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">預定完工日期</td>
+            <td>{{ pcc_project.s_end_date|default_if_none:'' }}</td>
+            <td bgcolor="#EEEEEE">變更後預定完工日期</td>
+            <td>{{ pcc_project.s_end_date2|default_if_none:'' }}</td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">實際完工日期</td>
+            <td>{{ pcc_project.r_end_date|default_if_none:'' }}</td>
+            <td bgcolor="#EEEEEE">實際完成驗收日期</td>
+            <td>{{ pcc_project.r_checked_and_accepted_date|default_if_none:'' }}</td>
+        </tr>
+
+        <tr>
+            <td bgcolor="#EEEEEE">預定決算日期</td>
+            <td>{{ pcc_project.s_last_pay_date|default_if_none:'' }}</td>
+            <td bgcolor="#EEEEEE">實際決算日期</td>
+            <td>{{ pcc_project.r_last_pay_date|default_if_none:'' }}</td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE">結算金額</td>
+            <td style=" padding-right: 30px;" align="right">{{ pcc_project.balancing_price|default_if_none:''|transToThousand }} (千元)</td>
+            <td bgcolor="#EEEEEE">決算金額</td>
+            <td style=" padding-right: 30px;" align="right">{{ pcc_project.last_pay_price|default_if_none:''|transToThousand }} (千元)</td>
+        </tr>
+        <tr>
+            <td bgcolor="#EEEEEE" colspan="4" align="right">更新時間：{{ pcc_project.lastsync }}</td>
+        </tr>
+    </tbody>
+</table>
+{% endif %}

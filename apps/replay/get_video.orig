@@ -1,0 +1,55 @@
+#!/bin/bash
+# 每次抓 60 秒的 mjpg
+# 執行方式：
+# $ get_mjpg ${CAMERA_ID}
+#
+# 登記在 crontab 的方式：
+#   * *   * * *   root    /home/hoamon/camera/get_mjpg 1 fesview 64429429 211.72.239.7 300 BE3204 ""
+
+root=`dirname ${BASH_SOURCE[0]}`
+camera_id=$1 #4
+username=$2 #fesview
+password=$3 #64429429
+ip=$4 #211.72.239.7
+seconds=$5 #300
+type=$6 #BE3204
+proxy=$7 #""
+
+if [[ $camera_id != [0-9]* ]];then
+    exit 1
+fi
+
+if [[ -f $root/$camera_id/stop ]];then
+    exit 1
+fi
+
+dir=$root/${camera_id}/`date +%Y/%m/%d/%H`
+minute=`date +%M`
+#echo $dir
+#echo $filename
+if ! [ -d $dir ];then
+    mkdir -p $dir
+fi
+
+case $type in
+    "BE3204" )
+        filename=${dir}/${minute}.mjpg
+        tmp_filename=${dir}/${minute}.mjpg.tmp
+        if [ $proxy ] && [ ${proxy:-1} != "/" ] ;then
+            proxy=${proxy}/
+        fi
+#        echo "/usr/bin/timeout -15 ${seconds}s /usr/bin/mplayer -dumpstream -dumpfile $tmp_filename ${proxy}http://${username}:${password}@${ip}/ipcam/mjpeg.cgi > /dev/null 2>&1 "
+
+        `( /usr/bin/timeout -15 ${seconds}s /usr/bin/mplayer -dumpstream -dumpfile $tmp_filename ${proxy}http://${username}:${password}@${ip}/ipcam/mjpeg.cgi > /dev/null 2>&1 ; mv $tmp_filename $filename ) &`
+        ;;
+    "PELCO-D" )
+        filename=${dir}/${minute}.mp4
+        if [ $proxy ] ;then
+            proxy="--http-proxy="${proxy}
+        fi
+        `( /usr/bin/timeout -15 ${seconds}s /usr/bin/cvlc ${proxy} rtsp://${username}:${password}@${ip}/ --sout $filename > /dev/null 2>&1 ) &`
+#        echo "/usr/bin/timeout -15 ${seconds}s /usr/bin/cvlc ${proxy} rtsp://${username}:${password}@${ip}/ --sout $filename > /dev/null 2>&1"
+        ;;
+    * )
+        exit 1;;
+esac
