@@ -1,0 +1,298 @@
+{% extends "mobile/_home_base.html" %}
+{% block page_haeder %}
+    <ul class="w3-navbar w3-left-align w3-light-grey w3-center w3-large w3-top">
+        <li class="w3-left" style="width:20% !important"><a href="{% url 'm_index' %}" ><i class="fa fa-home"></i></a></li>
+        <li class="w3-left" style="width:60% !important"><a href="{% url 'm_search_project' %}" class="w3-text-teal">搜尋工程</a></li>
+        <li class="w3-left" style="width:20% !important"><a class="w3-hover-white w3-large" href="javascript:void(0)" onclick="w3_open()"><i class="fa fa-filter"></i></a></li>
+    </ul>
+    <nav class="w3-sidenav w3-collapse w3-animate-left search_condition" style="z-index:3;width:100%;top:0px;" id="mySidenav">
+        <div class="w3-container w3-teal">
+            <h2>
+            請輸入篩選條件
+            <a href="javascript:void(0)" onclick="w3_close()" class="w3-right w3-hover-black w3-hide-large" title="close menu">
+                <i class="fa fa-remove"></i>
+            </a>
+            </h2>
+        </div>
+        <form class="w3-container">
+            <label class="w3-label w3-text-teal"><b>年度</b></label>
+            <select class="w3-select" name="year">
+                <option value="">全部</option>
+                {% for y in years %}
+                    <option value="{{ y }}" {% if this_year == y %}selected{% endif %}>{{ y }}年度</option>
+                {% endfor %}
+            </select>
+            <div class="w3-row">
+                <div class="w3-col s8">
+                    <label class="w3-label w3-text-teal"><b>計畫名稱</b></label>
+                    <select class="w3-select" name="plan">
+                        <option value="">全部</option>
+                        {% for plan in plans %}
+                        <option value="{{ plan.id }}">{{ plan.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="w3-col s4">
+                    <label class="w3-label w3-text-teal"><b>是否含下層</b></label>
+                    <select class="w3-select" name="sub_plan">
+                        <option value="true" selected>包含</option>
+                        <option value="false">不包含</option>
+                    </select>
+                </div>
+            </div>
+            <label class="w3-label w3-text-teal"><b>工程名稱</b></label>
+            <input class="w3-input" type="text" name="name">
+            <label class="w3-label w3-text-teal"><b>標案編號</b></label>
+            <input class="w3-input" type="text" name="bid_no">
+            <label class="w3-label w3-text-teal"><b>負責工程師</b></label>
+            <input class="w3-input" type="text" name="eng_name">
+            <div class="w3-row">
+                <div class="w3-col s6">
+                    <label class="w3-label w3-text-teal"><b>執行機關</b></label>
+                    <select class="w3-select" name="unit">
+                        {% if perms.fishuser.view_all_project_in_remote_control_system %}
+                            <option value="">－ 全部 －</option>
+                        {% endif %}
+                        {% for unit in units %}
+                            <option value="{{ unit.id }}">－ {{ unit.name }} －</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="w3-col s6">
+                    <label class="w3-label w3-text-teal"><b>採購類別</b></label>
+                    <select class="w3-select" name="purchase_type">
+                        <option value="">全部</option>
+                        {% for purchase_type in option.purchase_type %}
+                        <option value="{{ purchase_type.id }}">{{ purchase_type.value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="w3-row">
+                <div class="w3-col s6">
+                    <label class="w3-label w3-text-teal"><b>縣市</b></label>
+                    <select class="w3-select" name="place">
+                        <option value="">全部</option>
+                        {% for place in places %}
+                            <option value="/fishuser/api/v2/place/{{ place.id }}/">－ {{ place.name }} －</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="w3-col s6">
+                    <label class="w3-label w3-text-teal"><b>承辦方式</b></label>
+                    <select class="w3-select" name="undertake_type">
+                        <option value="">全部</option>
+                        {% for undertake_type in option.undertake_type %}
+                            <option value="{{ undertake_type.id }}">{{ undertake_type.value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="w3-row">
+                <div class="w3-col s6">
+                    <label class="w3-label w3-text-teal"><b>漁港</b></label>
+                    <select class="w3-select" name="fishing_port">
+                        <option value="">全部</option>
+                        {% for port in fishing_ports %}
+                            <option value="{{ port.id }}">{{ port.place.name }} - {{ port.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="w3-col s6">
+                    <label class="w3-label w3-text-teal"><b>工程屬性</b></label>
+                    <select class="w3-select" name="project_type">
+                        <option value="">全部</option>
+                        {% for type in option.project_type_sort %}
+                            <option value="{{ type.id }}">{{ type.value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <hr>
+            <button class="w3-btn w3-blue-grey" type="button" id="search_project" page="1" onclick="w3_close()">搜尋</button>
+        </form>
+    </nav>
+    <div class="w3-overlay w3-hide-large" onclick="w3_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
+    
+{% endblock %}
+<!-- Sidenav -->
+<!-- !PAGE CONTENT! -->
+{% block page_content %}
+    <div class="w3-container w3-padding-32 w3-center">
+    </div>
+    <div class="w3-row-padding " id="projects_list" style="height: 100%;">
+        <div class="w3-center">
+            <ul class="w3-pagination w3-border w3-round w3-white">
+                <li><a class="pre_page">&#10094; 上一頁</a></li>
+                <li><a class="page_info">1/1</a></li>
+                <li><a class="next_page">下一頁 &#10095;</a></li>
+            </ul>
+        </div>
+        <div id="search_result">
+        </div>
+        <div class="w3-center">
+            <ul class="w3-pagination w3-border w3-round w3-white">
+                <li><a class="pre_page">&#10094; 上一頁</a></li>
+                <li><a class="page_info">1/1</a></li>
+                <li><a class="next_page">下一頁 &#10095;</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="w3-clear"></div><br><br>
+
+<script type="text/x-jquery-tmpl" id="HideSearchTr">
+    <div class="w3-card-4 w3-animate-zoom project-card resultTr">
+        <header class="w3-container w3-white">
+            <h4><b>${year}年-${name}</b></h4>
+        </header>
+        <div class="w3-container w3-light-grey">
+            <p>計畫名稱：${plan__name}</p>
+        </div>
+        <ul class="w3-ul">
+            <li class="w3-white">
+                <div class="w3-row">
+                    <div class="w3-col s6">
+                        <p class="w3-text-teal"><b>執行機關</b></p>
+                        <p>${unit__name}</p>
+                    </div>
+                    <div class="w3-col s6">
+                        <p class="w3-text-teal"><b>負責主辦</b></p>
+                        <p>${importer}</p>
+                    </div>
+                </div>
+            </li>
+            <li class="w3-white">
+                <div class="w3-row">
+                    <div class="w3-col s6">
+                        <p class="w3-text-teal" >營造進度：</p>
+                        <div class="w3-progress-container">
+                            <div id="myBar" class="w3-progressbar w3-deep-orange" style="width:${act_contractor_percent}%">
+                                <div class="w3-center w3-text-black">${act_contractor_percent}%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w3-col s6">
+                        <p class="w3-text-teal">監造進度：</p>
+                        <div class="w3-progress-container">
+                            <div id="myBar" class="w3-progressbar w3-blue-grey" style="width:${act_inspector_percent}%">
+                                <div class="w3-center w3-text-black">${act_inspector_percent}%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li class="w3-white">
+                <p>相片張數：${images_count}</p>
+            </li>
+        </ul>
+        <a class="w3-btn-block w3-teal" href="/mobile/project_info/${id}"><h5><b>進入工程案&ensp;<i class="fa fa-arrow-circle-right"></i></b></h5></a>
+    </div>
+    <br class="resultTr">
+</script>
+{% endblock %}
+{% block page_script %}
+    <style type="text/css">
+        .project-card{
+            transition: opacity 0.5s ease;
+            opacity: 0.6;
+        }
+        #projects_list .project-card:nth-child(1){
+            opacity: 1;
+        }
+    </style>
+
+    <script>
+        var mySidenav = document.getElementById("mySidenav");
+        // Get the DIV with overlay effect
+        var overlayBg = document.getElementById("myOverlay");
+        function w3_open() {
+            if (mySidenav.style.display === 'block') {
+                mySidenav.style.display = 'none';
+                overlayBg.style.display = "none";
+            } else {
+                mySidenav.style.display = 'block';
+                overlayBg.style.display = "block";
+            }
+        }
+        // Close the sidenav with the close button
+        function w3_close() {
+            mySidenav.style.display = "none";
+            overlayBg.style.display = "none";
+        }
+        
+        function search_project(){
+            var $obj = $(this);
+            var per_page = 15;
+            var page = parseInt($obj.attr('page'));
+
+            var string = 'limit=' + per_page + '&offset=' + ((page-1) * per_page);
+            $.each($('.search_condition').find('input, select'), function(){
+                var $obj = $(this);
+                var name = $obj.attr('name');
+                var value = $obj.val();
+                string += '&' + name + '=' + value;
+            });
+            
+            $.ajax({
+                url: '/fishuser/api/v2/project/search/?' + string,
+                type: 'GET',
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function (data) {
+                    $('.resultTr').remove();
+                    for (var i=0; i<data.objects.length; i++){
+                        data.objects[i]['sort'] = i+1+(page-1)*per_page;
+                        var $div = $('#HideSearchTr').tmpl(data.objects[i]).appendTo($('#search_result'));
+                    }
+                    $('.page_info').attr('page', page);
+                    $('.page_info').attr('total_page', Math.ceil(data.meta.total_count/per_page));
+                    $('.page_info').html(page + '/' + Math.ceil(data.meta.total_count/per_page));
+                },
+                error: function (json){
+                }
+            })
+        }
+
+        function pre_page(){
+            var page = parseInt($('.page_info').attr('page'));
+            var total_page = parseInt($('.page_info').attr('total_page'));
+            if (page!=1){
+                $('#search_project').attr('page', page-1);
+                $('#search_project').click();
+            }
+        }
+
+        function next_page(){
+            var page = parseInt($('.page_info').attr('page'));
+            var total_page = parseInt($('.page_info').attr('total_page'));
+            if (page!=total_page){
+                $('#search_project').attr('page', page+1);
+                $('#search_project').click();
+            }
+        }
+
+        $( document ).ready(function() {
+            $(window).scroll(function(){
+                var margin_h = 200;
+                $(".project-card").each(function(i){
+                    card = $(this);
+                    card_top = card.offset().top;
+                    card_bottom = card.offset().top + card.height();
+                    window_bottom = $( window ).scrollTop() + $( window ).height();
+                    if((card_top - margin_h) < $( window ).scrollTop()){
+                        card.css("opacity",1);
+                        if((card_bottom - margin_h) < $( window ).scrollTop()){
+                            card.css("opacity",0.6);
+                        }
+                    } else if(card_top + margin_h >window_bottom){
+                        card.css("opacity",0.6);
+                    }
+                })
+            });
+            $('#search_project').click(search_project);
+            $('#search_project').click();
+            $('.pre_page').click(pre_page);
+            $('.next_page').click(next_page);
+        });
+    </script>
+{% endblock %}

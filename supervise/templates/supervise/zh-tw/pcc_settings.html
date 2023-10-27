@@ -1,0 +1,74 @@
+{% extends "fishuser/zh-tw/base.html" %}
+{% load i18n %}
+{% load humanize %}
+{% load utiltags %}
+{% load guardian_tags %}
+
+{% block body %}
+
+
+<table class="table table-bordered" id="table_config">
+    <caption>工程會同步設定</caption>
+    <thead>
+        <tr class="warning">
+            <th width="15%">key</th>
+            <th>value</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in configs %}
+            <tr>
+                <td>{{ i.key }}</td>
+                <td>
+                    <input type="text" class="form-control" name="{{ i.key }}" value="{{ i.value }}">
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<button class="btn btn-success" type="button" id="save_config">確定修改</button>
+
+<script type="text/javascript">
+    function save_config(){
+        $.each($('#table_config').find('input'), function(){
+            var $obj =$(this);
+            var value = $obj.val();
+            var key = $obj.attr('name');
+            var data = {
+                csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                'value': value
+            };
+            $.ajax({
+                url: '/supervise/api/v2/cofiguration/' + key + '/',
+                type: 'PUT',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function (json, text, xhr) {
+                    $obj.closest('td').css('background-color', '');
+                },
+                error: function (data) {
+                    if (data.responseText){
+                        alert(data.responseText);
+                    } else {
+                        alert('操作失敗，可能系統忙碌中，請稍候重試一次。');
+                    }
+                },
+            })
+        })
+    }
+
+    $(document).ready(function(){
+        $('#save_config').click(save_config);
+        $('input').change(function(){
+            var $obj =$(this);
+            $obj.closest('td').css('background-color', 'green');
+        });
+    });
+
+</script>
+
+
+
+{% endblock %}

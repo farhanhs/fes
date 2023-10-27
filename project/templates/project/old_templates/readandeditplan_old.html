@@ -1,0 +1,167 @@
+{% extends 'project/index.html' %}
+{% load humanize %}
+{% load utiltags %}
+{% block menu %}
+    <ul id="menu" value ="/project/replan/"></ul>
+{% endblock %}
+{% block style %}
+.style0 {
+	color: #009900;
+	font-size: 24px;
+}
+.style1 {
+	color: #FF3333;
+	font-size: 22px;
+}
+.style2 {
+	color: #6666CC;
+	font-size: 20px;
+}
+.style3 {
+	color: #CC9933;
+	font-size: 20px;
+}
+.style4 {
+	color: #009999;
+	font-size: 20px;
+}
+{% endblock %}
+
+{% block content %}
+
+<br><br>
+切換顯示階層
+<table>
+    <tr>
+        <td>
+            <table class="ShowandHidePlan" value="1" id="lv_controler_1" height="30"  width="30">
+                <tr><td bgcolor="#FFDDDD" align="center" title="只列出1階">1</td></tr>
+            </table>
+        </td>
+        <td>
+            <table class="ShowandHidePlan" value="2" id="lv_controler_2" height="30"  width="30">
+                <tr><td bgcolor="#DDDDFF" align="center" title="只列出2階">2</td></tr>
+            </table>
+        </td>
+        <td>
+            <table class="ShowandHidePlan" value="3" id="lv_controler_3" height="30"  width="30">
+                <tr><td bgcolor="#FFF9E1" align="center" title="只列出3階">3</td></tr>
+            </table>
+        </td>
+        <td>
+            <table class="ShowandHidePlan" value="4" id="lv_controler_4" height="30"  width="30">
+                <tr><td bgcolor="#E8F9FF" align="center" title="只列出4階">4</td></tr>
+            </table>
+        </td>
+        <td>
+            <table border="1" style="border-collapse: collapse" class="ShowandHidePlan" value="all" id="lv_controler_all" height="50"  width="50">
+                <tr><td bgcolor="#F2F2F2" align="center" title="全部列出">全</td></tr>
+            </table>
+        </td>
+    </tr>
+</table>
+<table>
+    <tr><td width="700" align="right">
+            <input type="button" value="預算一覽表" title="前往計畫預算一覽表" onClick="location='/project/replanbudget/all'">
+        </td></tr>
+</table>
+<span style="font-size: 18px">
+<table width="980">
+    {% for plan in plans %}
+    <tr id="tr_{{ plan.id }}" bgcolor="{{ plan.rBGcolor }}">
+        <td align="left">
+            <table>
+              <tr>
+                <td rowspan="5">
+                    {% for front in plan.front %}
+                        <img src="/media/project/image/empty.png" width="60" height="10">
+                    {% endfor %}
+                </td>
+                <td valign="top" rowspan="5">
+                    {% if plan.uplevel %}
+                        <img id ="img_{{plan.id}}" class="ShowandHideSubPlan" src="/media/project/image/file_{{ plan.rLevelNumber }}.gif" value ="{{plan.id}}" showorhide ="show" width="20" height="20">
+                    {% endif %}
+                </td>
+                <td>
+                    計畫名稱：
+                </td>
+                <td>
+                    <span class="style{{ plan.rLevelNumber }} view_plan_name_{{ plan.id }}" value="{{ plan.name }}">{{ plan.name }}</span>
+                    {% if edit %}
+                        <input class="edit_plan_name_{{ plan.id }}" style="display: none;" item_id="{{ plan.id }}" type="text" name="name" maxlength="128"
+                        size="47" value="{{ plan.name }}"/>-----
+                        <img src="/media/images/edit.png" title="修改計畫資訊" class="updatePlanInfo" value="want_edit" plan_id="{{ plan.id }}">
+                        {% if plan.uplevel %}
+                            <img src="/media/images/adddir.png" title="新增同層計畫" class="addPlan" plan_id="{{ plan.id }}">
+                        {% endif %}
+                        <img src="/media/images/addsubdir.png" title="新增下層計畫" class="addSubPlan" id="addSubPlan_{{ plan.id }}" plan_id="{{ plan.id }}">
+                        {% if plan.uplevel %}
+                            <img src="/media/images/sort.png" title="切換計畫位置或層級" class="sortPlan" id="sortPlan_{{ plan.id }}" plan_id="{{ plan.id }}" plan_name="{{ plan.name }}">
+                            {% if plan.candelete %}
+                                <img src="/media/images/delete.png" title="刪除此計畫" class="deletePlan" id="deletePlan_{{ plan.id }}" plan_id="{{ plan.id }}" plan_name="{{ plan.name }}">
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                    <button title="搜尋計畫工程" class="searchPlanProjects" plan_id="{{ plan.id }}">工程列表</button>
+                    {% if edit %}
+                        <button title="新增計畫工程" class="createPlanProjects" plan_id="{{ plan.id }}">新增工程</button>
+                    {% endif %}
+                    <input type="button" value="計畫預算" title="快速切換至此計畫預算表" onClick="location='/project/replanbudget/{{ plan.id }}/#pb{{ plan.id }}'">
+                </td>
+              </tr>
+              <tr>
+                <td valign="top">
+                    主辦機關：
+                </td>
+                <td>
+                    <span class="view_plan_host_{{ plan.id }}" value="{{ plan.host }}">{% ifequal plan.host None %}----{% else %}{{ plan.host }}{% endifequal %}</span>
+                    {% if edit %}
+                    <input class="edit_plan_host_{{ plan.id }}" style="display: none;" item_id="{{ plan.id }}" type="text" name="host" maxlength="128" size="47" value="{% ifequal plan.host None %}{% else %}{{ plan.host }}{% endifequal %}"/>
+                    {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <td valign="top">
+                    計畫編號：
+                </td>
+                <td>
+                    <span class="view_plan_no_{{ plan.id }}" value="{{ plan.no }}">{% ifequal plan.no None %}----{% else %}{{ plan.no }}{% endifequal %}</span>
+                    {% if edit %}
+                    <input class="edit_plan_no_{{ plan.id }}" style="display: none;" item_id="{{ plan.id }}" type="text" name="no" maxlength="128" size="47" value="{% ifequal plan.no None %}{% else %}{{ plan.no }}{% endifequal %}"/>
+                    {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <td valign="top">
+                    計畫經費：
+                </td>
+                <td>
+                    <span class="view_plan_budget_{{ plan.id }}" vns="{% ifequal plan.budget None %}{% else %}{{ plan.budget }}{% endifequal %}" value="{{ plan.budget }}">{% ifequal plan.budget None %}----{% else %}{{ plan.budget|intcomma|cutzero }}{% endifequal %}</span>
+                    {% if edit %}
+                    <input class="edit_plan_budget_{{ plan.id }} checkBN" style="display: none;" item_id="{{ plan.id }}" type="text" name="budget" maxlength="128" size="47" orbn="{% ifequal plan.budget None %}{% else %}{{ plan.budget }}{% endifequal %}" value="{% ifequal plan.budget None %}{% else %}{{ plan.budget }}{% endifequal %}"/>
+                    {% endif %}
+                </td>
+              </tr>
+
+              <tr>
+                <td valign="top">
+                    說明：
+                </td>
+                <td>
+                    <span class="view_plan_note_{{ plan.id }}" value="{{ plan.note }}">{% ifequal plan.note None %}----{% else %}{{ plan.note|linebreaks }}{% endifequal %}</span>
+                    {% if edit %}
+                    <textarea class="edit_plan_note_{{ plan.id }}" style="display: none;" item_id="{{ plan.id }}" name="note" cols="40" rows="6">{% ifequal plan.note None %}{% else %}{{ plan.note }}{% endifequal %}</textarea>
+                    {% endif %}
+                </td>
+              </tr>
+            </table>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+</span>
+
+
+{% endblock %}
+

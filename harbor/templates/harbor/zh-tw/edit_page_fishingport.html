@@ -1,0 +1,310 @@
+{% load humanize %}
+<br><br>
+<h2 align="center">
+    編輯漁港
+    <button class="btn btn-success" type="button" data-toggle="modal" data-target="#create_fishingport_dialog">新增『漁港』</button>
+</h2>
+
+<select id="edit_fishingport_select_place" class="form-control">
+    <option value="">請選擇縣市</option>
+    {% for place in places %}
+        <option value="{{ place.id }}">{{ place.name }} ({{ place.fishingport_set.all.count }})</option>
+    {% endfor %}
+</select>
+
+<table class="table table-bordered sortable" id="FishingportSearchResultTable">
+    <thead>
+        <tr class="warning" align="center">
+            <td></td>
+            <td>
+                漁港名稱
+            </td>
+            <td>
+                漁港代碼
+            </td>
+            <td>
+                縣市
+            </td>
+            <td>
+                漁港類別
+            </td>
+            <td>
+                觀測站
+            </td>
+            <td>
+                刪除
+            </td>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<script type="text/x-jquery-tmpl" id="HideFishingportSearchTr">
+    <tr id="tr_fishingport_${id}" style="text-align: center;" row_id="${id}" class="${class_name}">
+        <td>${sort}</td>
+        <td>
+            <input
+                type="text" class="BlurUpdateInfo form-control"
+                field_type="str"
+                row_id="${id}"
+                field_name="name"
+                table_name="fishingport"
+                module_name='harbor'
+                placeholder="待輸入"
+                old_value="${name}"
+                value="${name}"/>
+        </td>
+        <td>
+            <input
+                type="text" class="BlurUpdateInfo form-control"
+                field_type="str"
+                row_id="${id}"
+                field_name="code"
+                table_name="fishingport"
+                module_name='harbor'
+                placeholder="待輸入"
+                old_value="${code}"
+                value="${code}"/>
+        </td>
+        <td>
+            <select
+                id="fishingport_place_${id}"
+                class="BlurUpdateInfo form-control"
+                is_select="true"
+                row_id="${id}"
+                field_name="place"
+                table_name="fishingport"
+                module_name='harbor'
+                old_value="${place__id}">
+                {% for place in places %}
+                    <option value="/fishuser/api/v2/place/{{ place.id }}/">{{ place.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td>
+            <select
+                id="fishingport_type_${id}"
+                class="BlurUpdateInfo form-control"
+                is_select="true"
+                row_id="${id}"
+                field_name="type"
+                table_name="fishingport"
+                module_name='harbor'
+                old_value="/harbor/api/v2/option/${type__id}/">
+                {% for type in option.fishingport_type %}
+                    <option value="/harbor/api/v2/option/{{ type.id }}/">{{ type.value }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td>
+            <select
+                id="fishingport_observatory_${id}"
+                class="BlurUpdateInfo form-control"
+                is_select="true"
+                row_id="${id}"
+                field_name="observatory"
+                table_name="fishingport"
+                module_name='harbor'
+                old_value="${observatory}">
+                <option value=""></option>
+                {% for observatory in observatorys %}
+                    <option value="/harbor/api/v2/observatory/{{ observatory.id }}/">{{ observatory.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td>
+            <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                row_id="${id}"
+                row_name="${name}"
+                message="刪除此漁港區將一併刪除所有相關資料及圖資!!!! 且將無法恢復!!!"
+                module_name = "harbor"
+                table_name = "fishingport"
+                remove_target = "tr_fishingport_${id}"
+                title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+        </td>
+    </tr>
+</script>
+
+
+
+<div class="modal fade" id="create_fishingport_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">
+                    新增漁港
+                </h4>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered">
+                    <tr>
+                        <td width="20%">漁港名稱</td>
+                        <td width="80%">
+                            <input class="form-control" id="fishingport_name" value="">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>漁港代碼</td>
+                        <td>
+                            <input class="form-control" id="fishingport_code" value="">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>縣市</td>
+                        <td>
+                            <select
+                                id="fishingport_place"
+                                class="form-control"
+                                is_select="true">
+                                <option value="">請選擇縣市</option>
+                                {% for place in places %}
+                                    <option value="/fishuser/api/v2/place/{{ place.id }}/">{{ place.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>第幾類漁港</td>
+                        <td>
+                            <select
+                                id="fishingport_type"
+                                class="form-control"
+                                is_select="true">
+                                <option value="">請選擇分類</option>
+                                {% for type in option.fishingport_type %}
+                                    <option value="/harbor/api/v2/option/{{ type.id }}/">{{ type.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>觀測站</td>
+                        <td>
+                            <select
+                                id="fishingport_observatory"
+                                class="form-control"
+                                is_select="true">
+                                <option value="">請選擇觀測站</option>
+                                {% for observatory in observatorys %}
+                                    <option value="/harbor/api/v2/observatory/{{ observatory.id }}/">{{ observatory.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" id="create_fishingport" class="btn btn-primary">新增</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+    function edit_fishingport_select_place(){
+        var $obj = $(this);
+        var place_id = $obj.val();
+        if (!place_id){
+            $('.resultTr').remove();
+            return false;
+        }
+        $.ajax({
+            url: '/harbor/api/v2/fishingport/?limit=1000000000&place=' + place_id,
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                $('.resultTr').remove();
+                for (var i=0; i<data.objects.length; i++){
+                    data.objects[i]['sort'] = i+1;
+                    data.objects[i]['class_name'] = 'resultTr';
+                    var $div = $('#HideFishingportSearchTr').tmpl(data.objects[i]).appendTo($('#FishingportSearchResultTable > tbody:last'));
+                    $('#fishingport_place_' + data.objects[i]['id']).val(data.objects[i]['place']);
+                    $('#fishingport_type_' + data.objects[i]['id']).val('/harbor/api/v2/option/' + data.objects[i]['type__id'] + '/');
+                    $('#fishingport_observatory_' + data.objects[i]['id']).val(data.objects[i]['observatory']);
+                    $('.ClickShowInfo').unbind('click');
+                    $('.BlurUpdateInfo').unbind('blur');
+                    $('.BlurUpdateInfo').unbind('keypress');
+                    $('.deleteRow').unbind('click');
+                    $('.ClickShowInfo').click(ClickShowInfo);
+                    $('.BlurUpdateInfo').blur(BlurUpdateInfo);
+                    $('.BlurUpdateInfo').keypress(function(event) {
+                        var $obj = $(this);
+                        if (!$obj.is("textarea") && event.which == 13){
+                            $obj.blur();
+                        }
+                    });
+                    $('.deleteRow').click(deleteRow);
+                }
+            },
+            error: function (data) {
+                if (data.responseText){
+                    alert(data.responseText);
+                } else {
+                    alert('操作失敗，可能系統忙碌中，請稍候重試一次。');
+                }
+            },
+        })
+    }
+
+    function create_fishingport() {
+        var fishingport = $('#fishingport').val();
+        
+        if (!$('#fishingport_name').val()){
+            alert('請輸入漁港名稱');
+            return false;
+        }
+        if (!$('#fishingport_code').val()){
+            alert('請輸入漁港代碼');
+            return false;
+        }
+        if (!$('#fishingport_place').val()){
+            alert('請選擇縣市');
+            return false;
+        }
+        if (!$('#fishingport_type').val()){
+            alert('請選擇漁港種類');
+            return false;
+        }
+        if (!$('#fishingport_observatory').val()){
+            alert('請選擇觀測站');
+            return false;
+        }
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            name: $('#fishingport_name').val(),
+            code: $('#fishingport_code').val(),
+            place: $('#fishingport_place').val(),
+            type: $('#fishingport_type').val(),
+            observatory: $('#fishingport_observatory').val()
+        }
+        $.ajax({
+            url: '/harbor/api/v2/fishingport/',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                $('#fishingport_name').val('');
+                $('#fishingport_code').val('');
+                $('#fishingport_place').val('');
+                $('#fishingport_type').val('');
+                $('#fishingport_observatory').val('');
+                $('#create_fishingport_dialog').modal('hide');
+                alert('新增漁港成功!!');
+            },
+            error: function (data) {}
+        })
+    }
+
+    $(document).ready(function(){
+        $('#edit_fishingport_select_place').change(edit_fishingport_select_place);
+        $('#create_fishingport').click(create_fishingport);
+    });
+
+</script>

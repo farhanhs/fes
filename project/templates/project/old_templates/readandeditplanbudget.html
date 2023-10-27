@@ -1,0 +1,286 @@
+{% extends 'project/index.html' %}
+{% load humanize %}
+{% load utiltags %}
+{% block menu %}
+    <ul id="menu" value ="/project/replan/"></ul>
+{% endblock %}
+{% block style %}
+.style0 {
+	color: #009900;
+	font-size: 16px;
+}
+.style1 {
+	color: #FF3333;
+	font-size: 16px;
+}
+.style2 {
+	color: #6666CC;
+	font-size: 16px;
+}
+.style3 {
+	color: #CC9933;
+	font-size: 16px;
+}
+.style4 {
+	color: #009999;
+	font-size: 16px;
+}
+.style5 {
+	color: #333333;
+	font-size: 16px;
+}
+.style6 {
+	color: #333333;
+	font-size: 16px;
+}
+.style7 {
+	color: #333333;
+	font-size: 16px;
+}
+.style8 {
+	color: #333333;
+	font-size: 16px;
+}
+
+td {padding:2px 5px;}
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<br><br>
+
+<table>
+    <tr align="center">
+        <td colspan="6">
+            切換計畫階層
+        </td>
+    </tr>
+    <tr>
+        <td style="padding:1;">
+            <table class="ShowandHidePlan" value="1" id="lv_controler_1" height="30"  width="30">
+                <tr><td bgcolor="#FFDDDD" align="center" title="列出1階">1</td></tr>
+            </table>
+        </td>
+        <td style="padding:1;">
+            <table class="ShowandHidePlan" value="2" id="lv_controler_2" height="30"  width="30">
+                <tr><td bgcolor="#DDDDFF" align="center" title="列出2階">2</td></tr>
+            </table>
+        </td>
+        <td style="padding:1;">
+            <table class="ShowandHidePlan" value="3" id="lv_controler_3" height="30"  width="30">
+                <tr><td bgcolor="#FFF9E1" align="center" title="列出3階">3</td></tr>
+            </table>
+        </td>
+        <td style="padding:1;">
+            <table class="ShowandHidePlan" value="4" id="lv_controler_4" height="30"  width="30">
+                <tr><td bgcolor="#E8F9FF" align="center" title="列出4階">4</td></tr>
+            </table>
+        </td>
+        <td style="padding:1;">
+            <table border="1" style="border-collapse: collapse" class="ShowandHidePlan" value="all" id="lv_controler_all" height="50"  width="50">
+                <tr><td bgcolor="#F2F2F2" align="center" title="全部列出">全</td></tr>
+            </table>
+        </td>
+        <td style="padding:1;">
+            <table border="1" style="border-collapse: collapse" height="30">
+                <tr>
+                    <td bgcolor="#F2F2F2" align="center" class="SwitchDisplay hall"{% ifnotequal layer 'all' %}style="display: none;"{% endifnotequal %}>隱藏全部預算表</td>
+                    <td bgcolor="#F2F2F2" align="center" class="SwitchDisplay sall" {% ifequal layer 'all' %}style="display: none;"{% endifequal %}>顯示全部預算表</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+<table>
+    <tr><td width="700" align="right">
+            <input type="button" value="回計畫列表" title="返回計畫列表" onClick="location='/project/replan/'">
+        </td></tr>
+</table>
+<span style="font-size: 12px">
+<table width="980">
+    {% for plan in plans %}
+    <tr id="tr_{{ plan.id }}">
+        <td align="left" style="padding:0;">
+            <table>
+            <tr valign="center" bgcolor="{{ plan.rBGcolor }}">
+                <td colspan="5" valign="center" style="min-width:970px;padding:0;">
+                    <table>
+                        <tr>
+                            <td style="padding:0;">
+                                <a name="pb{{ plan.id }}"></a>
+                            {% for front in plan.front %}
+                                <img src="/media/project/image/empty.png" width="30" height="10">
+                            {% endfor %}
+                            {% if plan.uplevel %}
+                                <img id ="img_{{plan.id}}" class="ShowandHideSubPlan"  src="/media/project/image/file_{{ plan.rLevelNumber }}.gif" value ="{{plan.id}}" showorhide ="show" width="20" height="20">
+                            {% endif %}
+                            </td>
+                            <td class="singleswitch showed showed_{{ plan.id }}" plan="{{ plan.id }}"  {% pyif layer in [str(plan.id), 'all'] %}{% else %}style="display: none;"{% endif %}>
+                                    <span class="style{{ plan.rLevelNumber }} view_plan_name_{{ plan.id }}" value="{{ plan.name }}"> {{ plan.name }} </span>
+                                    <span>▼</span>
+                            </td>
+                            <td class="singleswitch hidden hidden_{{ plan.id }}" plan="{{ plan.id }}" {% pyif layer in [str(plan.id), 'all'] %}{% else %}style="display: table-cell;"{% endif %}>
+                                    <span class="style{{ plan.rLevelNumber }} view_plan_name_{{ plan.id }}" value="{{ plan.name }}"> {{ plan.name }} </span>
+                                    <span>▲</span>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+              </tr>
+              <tr class="BudgetsTable table_{{ plan.id }}" {% pyif layer in [str(plan.id), 'all'] %}{% else %}style="display: none;"{% endif %}>
+                  <td valign="top" colspan="5">
+                    <table border="1" style="border-collapse: collapse">
+                        <tr align="center" bgcolor="#F0F0F0">
+                            <td rowspan="2" style="min-width:50px;">年度</td>
+                            <td rowspan="2" style="min-width:90px;">年度預算</td>
+                            <td colspan="4">資本門</td>
+                            <td colspan="4">經常門</td>
+                            <td rowspan="2" style="min-width:170px;">備註</td>
+                            <td rowspan="2" style="min-width:30px;">刪除</td>
+                        </tr>
+                        <tr align="center" bgcolor="#F0F0F0">
+                            <td style="min-width:60px;">自辦</td>
+                            <td style="min-width:60px;">委辦</td>
+                            <td style="min-width:60px;">補助</td>
+                            <td style="min-width:60px;">小計</td>
+                            <td style="min-width:60px;">自辦</td>
+                            <td style="min-width:60px;">委辦</td>
+                            <td style="min-width:60px;">補助</td>
+                            <td style="min-width:60px;">小計</td>
+                        </tr>
+                        <tr id="{{ plan.id }}_start"><td colspan="12" style="padding:0;"></td></tr>
+                        {% for b in plan.budgets %}
+                        <tr align="right" id="{{ plan.id }}_{{ b.id }}">
+                            {% if edit %}
+                            <td id="year_{{ b.id }}" class="editable" align="center">
+                                <a id="year_{{ b.id }}" class="show_year_{{ b.id }}">{% if b.year %}{{ b.year }}{% else %}{% endif %}</a>
+                                <select id="year_{{ b.id }}" class="edit_year_{{ b.id }} update_planbudget" planbudget="{{ b.id }}" field="year" value="{{ b.year }}" old_value="{{ b.year }}" style="display: none;">
+                                        <option value=""></option>
+                                    {% for year in years %}
+                                        <option value="{{ year }}" {% ifequal b.year year %}selected{% endifequal %}>{{ year }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            {% else %}
+                            <td>
+                                {% if b.year %}{{ b.year }}{% else %}{% endif %}
+                            </td>
+                            {% endif %}
+
+                            <td>
+                                <span id="total_{{ b.id }}">{% if b.rTotal %}{{ b.rTotal|intcomma|cutzero }}{% else %}0{% endif %}</span>
+                            </td>
+
+                            {% if edit %}
+                            <td id="capital_self_{{ b.id }}" class="editable">
+                                <a id="capital_self_{{ b.id }}" class="show_capital_self_{{ b.id }}">{% if b.capital_self %}{{ b.capital_self|intcomma|cutzero }}{% else %}{% endif %}</a>
+                                <input id="capital_self_{{ b.id }}" class="edit_capital_self_{{ b.id }} update_planbudget float" planbudget="{{ b.id }}" field="capital_self" size="7" type="text" value="{% if b.capital_self %}{{ b.capital_self }}{% else %}{% endif %}" old_value="{% if b.capital_self %}{{ b.capital_self }}{% else %}{% endif %}" style="text-align: right;display: none;">
+                            </td>
+                            {% else %}
+                            <td>
+                                {% if b.capital_self %}{{ b.capital_self|intcomma|cutzero }}{% else %}{% endif %}
+                            </td>
+                            {% endif %}
+
+                            {% if edit %}
+                            <td id="capital_trust_{{ b.id }}" class="editable">
+                                <a id="capital_trust_{{ b.id }}" class="show_capital_trust_{{ b.id }}">{% if b.capital_trust %}{{ b.capital_trust|intcomma|cutzero }}{% else %}{% endif %}</a>
+                                <input id="capital_trust_{{ b.id }}" class="edit_capital_trust_{{ b.id }} update_planbudget float" planbudget="{{ b.id }}" field="capital_trust" size="7" type="text" value="{% if b.capital_trust %}{{ b.capital_trust }}{% else %}{% endif %}" old_value="{% if b.capital_trust %}{{ b.capital_trust }}{% else %}{% endif %}" style="text-align: right;display: none;">
+                            </td>
+                            {% else %}
+                            <td>
+                                {% if b.capital_trust %}{{ b.capital_trust|intcomma|cutzero }}{% else %}{% endif %}
+                            </td>
+                            {% endif %}
+
+                            {% if edit %}
+                            <td id="capital_grant_{{ b.id }}" class="editable">
+                                <a id="capital_grant_{{ b.id }}" class="show_capital_grant_{{ b.id }}">{% if b.capital_grant %}{{ b.capital_grant|intcomma|cutzero }}{% else %}{% endif %}</a>
+                                <input id="capital_grant_{{ b.id }}" class="edit_capital_grant_{{ b.id }} update_planbudget float" planbudget="{{ b.id }}" field="capital_grant" size="7" type="text" value="{% if b.capital_grant %}{{ b.capital_grant }}{% else %}{% endif %}" old_value="{% if b.capital_grant %}{{ b.capital_grant }}{% else %}{% endif %}" style="text-align: right;display: none;">
+                            </td>
+                            {% else %}
+                            <td>
+                                {% if b.capital_grant %}{{ b.capital_grant|intcomma|cutzero }}{% else %}{% endif %}
+                            </td>
+                            {% endif %}
+
+                            <td>
+                                <span id="capital_total_{{ b.id }}">{% if b.rCapitalTotal %}{{ b.rCapitalTotal|intcomma|cutzero }}{% else %}0{% endif %}</span>
+                            </td>
+
+                            {% if edit %}
+                            <td id="regular_self_{{ b.id }}" class="editable">
+                                <a id="regular_self_{{ b.id }}" class="show_regular_self_{{ b.id }}">{% if b.regular_self %}{{ b.regular_self|intcomma|cutzero }}{% else %}{% endif %}</a>
+                                <input id="regular_self_{{ b.id }}" class="edit_regular_self_{{ b.id }} update_planbudget float" planbudget="{{ b.id }}" field="regular_self" size="7" type="text" value="{% if b.regular_self %}{{ b.regular_self }}{% else %}{% endif %}" old_value="{% if b.regular_self %}{{ b.regular_self }}{% else %}{% endif %}" style="text-align: right;display: none;">
+                            </td>
+                            {% else %}
+                            <td>
+                                {% if b.regular_self %}{{ b.regular_self|intcomma|cutzero }}{% else %}{% endif %}
+                            </td>
+                            {% endif %}
+
+                            {% if edit %}
+                            <td id="regular_trust_{{ b.id }}" class="editable">
+                                <a id="regular_trust_{{ b.id }}" class="show_regular_trust_{{ b.id }}">{% if b.regular_trust %}{{ b.regular_trust|intcomma|cutzero }}{% else %}{% endif %}</a>
+                                <input id="regular_trust_{{ b.id }}" class="edit_regular_trust_{{ b.id }} update_planbudget float" planbudget="{{ b.id }}" field="regular_trust" size="7" type="text" value="{% if b.regular_trust %}{{ b.regular_trust }}{% else %}{% endif %}" old_value="{% if b.regular_trust %}{{ b.regular_trust }}{% else %}{% endif %}" style="text-align: right;display: none;">
+                            </td>
+                            {% else %}
+                            <td>
+                                {% if b.regular_trust %}{{ b.regular_trust|intcomma|cutzero }}{% else %}{% endif %}
+                            </td>
+                            {% endif %}
+
+                            {% if edit %}
+                            <td id="regular_grant_{{ b.id }}" class="editable">
+                                <a id="regular_grant_{{ b.id }}" class="show_regular_grant_{{ b.id }}">{% if b.regular_grant %}{{ b.regular_grant|intcomma|cutzero }}{% else %}{% endif %}</a>
+                                <input id="regular_grant_{{ b.id }}" class="edit_regular_grant_{{ b.id }} update_planbudget float" planbudget="{{ b.id }}" field="regular_grant" size="7" type="text" value="{% if b.regular_grant %}{{ b.regular_grant }}{% else %}{% endif %}" old_value="{% if b.regular_grant %}{{ b.regular_grant }}{% else %}{% endif %}" style="text-align: right;display: none;">
+                            </td>
+                            {% else %}
+                            <td>
+                                {% if b.regular_grant %}{{ b.regular_grant|intcomma|cutzero }}{% else %}{% endif %}
+                            </td>
+                            {% endif %}
+
+                            <td>
+                                <span id="regular_total_{{ b.id }}">{% if b.rRegularTotal %}{{ b.rRegularTotal|intcomma|cutzero }}{% else %}0{% endif %}</span>
+                            </td>
+
+                            {% if edit %}
+                            <td id="memo_{{ b.id }}" class="editable" align="left">
+                                <a id="memo_{{ b.id }}" class="show_memo_{{ b.id }}">{% if b.memo %}{{ b.memo|linebreaks }}{% else %}{% endif %}</a>
+                                <textarea id="memo_{{ b.id }}" cols="17" rows="1" class="edit_memo_{{ b.id }} update_planbudget" planbudget="{{ b.id }}" field="memo" type="text" value="{% if b.memo %}{{ b.memo }}{% else %}{% endif %}" old_value="{% if b.memo %}{{ b.memo }}{% else %}{% endif %}" style="display: none;">{% if b.memo %}{{ b.memo }}{% else %}{% endif %}</textarea>
+                            </td>
+                            {% else %}
+                            <td align="left">
+                                {% if b.memo %}{{ b.memo|linebreaks }}{% else %}{% endif %}
+                            </td>
+                            {% endif %}
+                            <td align="center">
+                                <img src="/media/images/delete.png" title="刪除紀錄" dn="{{ b.id }}" class="deletePlanBudget">
+                            </td>
+                        </tr>
+                        {% endfor%}
+                        {% if edit %}
+                        <tr>
+                            <td colspan="12">
+                                <button class="addPlanBudget" title="新增紀錄" plan="{{ plan.id }}"><img src="/media/project/image/addmoney.png" height="14"> 新增紀錄</button>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </td>
+              </tr>
+            </table>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+</span>
+
+
+{% endblock %}
+

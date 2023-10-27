@@ -1,0 +1,60 @@
+{% extends 'project/project.html' %}
+{% block menu %}
+{% endblock %}
+{% load humanize %}
+{% load utiltags %}
+{% block title %}<title id="title">{{ target_project }} 工程資訊</title>{% endblock %}
+
+
+{% block content %}
+    <br><br><br>
+        <a id="test"></a>
+<span style="font-size: 18px">
+<ul><h1><a id="{{ target_project.id }}" class="target_project" name="Appropriate"></a></h1><br>
+<table>
+    <tr>
+        <td width="420" colspan="5">
+            <center>
+            撥付款項
+            {% if edit %}
+            <img src="/media/images/create.png" title="新增撥付款項" class="addAppropriate" type="schedul">
+            {% endif %}
+            </center>
+        </td>
+    </tr>
+    <tr id="appropriate_start"></tr>
+    {% for appropriate in appropriate_list %}
+    <tr id="appropriate_{{ appropriate.id }}">
+        <td width="120">撥付日期：</td>
+        {% if edit %}
+        <td id="allot_date_{{ appropriate.id }}" class="editable" width="140">
+            <a id="allot_date_{{ appropriate.id }}" class="show_allot_date_{{ appropriate.id }}" >{% if appropriate.allot_date %}{{ appropriate.allot_date }}{% else %}{% endif %}</a>
+            <input id="allot_date_{{ appropriate.id }}" dn="{{ appropriate.id }}" name="allot_date" class="edit_allot_date_{{ appropriate.id }} update_edited allot_date chooseDate" size="12" type="text" value="{% if appropriate.allot_date %}{{ appropriate.allot_date }}{% else %}{% endif %}" old_value="{% if appropriate.allot_date %}{{ appropriate.allot_date }}{% else %}{% endif %}" style="display: none;">
+        </td>
+        {% else %}
+        <td>
+            {% if appropriate.allot_date %}{{ appropriate.allot_date }}{% else %}{% endif %}
+        </td>
+        {% endif %}
+        <td width="120" align="right">撥付數：</td>
+        {% if edit %}
+        <td id="num_{{ appropriate.id }}" class="editable" width="140">
+            <a id="num_{{ appropriate.id }}" class="show_num_{{ appropriate.id }}" >{% if appropriate.num %}{{ appropriate.num|intcomma|cutzero }}{% else %}{% endif %}</a>
+            <input id="num_{{ appropriate.id }}" dn="{{ appropriate.id }}" name="num" class="edit_num_{{ appropriate.id }} update_edited num float" size="12" type="text" value="{{ appropriate.num }}" old_value="{{ appropriate.num }}" style="display: none;">
+        </td>
+        {% else %}
+        <td>
+            {% if appropriate.num %}{{ appropriate.num }}{% else %}{% endif %}
+        </td>
+        {% endif %}
+        {% if edit %}
+        <td><img src="/media/images/delete.png" title="刪除撥付款項" dn="{{ appropriate.id }}" class="deleteAppropriate"></td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+</table>
+
+</span>
+
+
+{% endblock %}

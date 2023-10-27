@@ -1,0 +1,183 @@
+{% extends "mobile/project_info.html" %}
+
+
+{% block page_content %}
+<script type="text/javascript">
+        //選擇自己的目錄
+        $(document).ready(function(){
+                $('#project_info_menu').find('li[name="dailyreport"]').find('a').addClass('w3-text-teal');
+        });
+</script>
+
+    <div class="w3-container w3-padding-8 w3-center w3-light-grey w3-card-8" style="margin-top:32px;">
+        <div class="w3-clear"></div>
+        <h4 class=""><b>{{ project.year }}年-{{ project.name }}</b></h4>
+    </div>
+    <br>
+    <div class="w3-row-padding ">
+        <div class="w3-card-4">
+            <header class="w3-container w3-teal">
+                <h5><b><i class="fa fa-info"></i>&ensp;專案系統資訊</b></h5>
+            </header>
+            <div class="w3-center w3-row">
+                <div class="w3-col s6 w3-white w3-padding-4"><b>監造進度</b></div>
+                <div class="w3-col s6 w3-white w3-padding-4">營造進度</div>
+            </div>
+            <div class="w3-center w3-row">
+                <div class="w3-col s6 w3-blue w3-padding-16"><h3>{{ engprofile.act_inspector_percent }} %</h3></div>
+                <div class="w3-col s6 w3-red w3-padding-16"><h3>{{ engprofile.act_contractor_percent }} %</h3></div>
+            </div>
+            <div class="w3-progress-container">
+                <div class="w3-progressbar w3-cyan" style="width:{{ engprofile.design_percent }}%;position:relative">
+                    <div style="position:absolute; width:200px;">預定進度：{{ engprofile.design_percent }} %</div>
+                </div>
+            </div>
+        </div>
+        </br>
+
+        <div class="w3-card-4 ">
+            <header class="w3-container w3-teal">
+                <h5><b><i class="fa fa-info"></i>&ensp;日報表基本資訊</b></h5>
+            </header>
+            <ul class="w3-ul w3-card-4 w3-white">
+                <li class="w3-padding-8 w3-row">
+                    <span class="w3-text-teal"><b>實際開工日期:</b></span>
+                    <span>{{ engprofile.start_date|default:"未設定" }}</span><br>
+                </li>
+                <li class="w3-padding-8 w3-row">
+                    <span class="w3-text-teal"><b>工期計算方式:</b></span>
+                    <span>{{ engprofile.date_type.value|default:"未設定" }}</span><br>
+                </li>
+                <li class="w3-padding-8 w3-row">
+                    <span class="w3-text-teal"><b>預定完工日期:</b></span>
+                    <span>{% if engprofile.start_date %}{{ engprofile.readLatestWorkingDate }}{% else %}未設定{% endif %}</span><br>
+                </li>
+            </ul>
+        </div>
+        </br>
+        
+        <div class="w3-card-4 ">
+            <header class="w3-container w3-teal">
+                <h5><b><i class="fa fa-info"></i>&ensp;展延紀錄</b></h5>
+            </header>
+            <ul class="w3-ul w3-card-4 w3-white">
+                {% for e in engprofile.extensions %}
+                <li class="w3-padding-0 w3-row w3-light-grey">
+                    <div class="w3-col s2 w3-center "><h5>{{ e.day }}<br>天</h5></div>
+                    <div class="w3-col s10 w3-white" >
+                        <span class="w3-text-teal"><b>生效日期：</b></span>
+                        <span>{{ e.date }}</span><br>
+                        <span class="w3-text-teal"><b>文號：</b></span>
+                        <span>{{ e.no|default:"" }}</span><br>
+                        <span class="w3-text-teal"><b>備註：</b></span><span>{{ e.memo|default:"" }}</span>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        </br>
+        <div class="w3-card-4 ">
+            <header class="w3-container w3-teal">
+                <h5><b><i class="fa fa-info"></i>&ensp;停工休息日設定</b></h5>
+            </header>
+            <ul class="w3-ul w3-card-4 w3-white">
+                {% for s in engprofile.specialdates %}
+                <li class="w3-padding-0 w3-row w3-light-grey">
+                    <div class="w3-col s2 w3-center "><h5>{{ s.get_days }}<br>天</h5></div>
+                    <div class="w3-col s10 w3-white" >
+                        <span class="w3-text-teal"><b>類別：</b></span>
+                        <span>{{ s.type.value }}</span><br>
+                        <span class="w3-text-teal"><b>日期：</b></span>
+                        <span>{{ s.start_date }}~{{ s.end_date }}</span><br>
+                        <span class="w3-text-teal"><b>生效日期：</b></span>
+                        <span>{{ s.begin_date }}</span><br>
+                        <span class="w3-text-teal"><b>文號：</b></span>
+                        <span>{{ s.no|default:"" }}</span><br>
+                        <span class="w3-text-teal"><b>備註：</b></span><span>{{ s.reason|default:"" }}</span>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        </br>
+
+        <div class="w3-card-4 ">
+            <header class="w3-container w3-teal">
+                <h5><b><i class="fa fa-info"></i>&ensp;S曲線(施工報表進度)</b></h5>
+            </header>
+            {% if engprofile.start_date %}
+            <img src="/dailyreport/progress_photo/{{ project.id }}/contractor/{{ random_str }}/{{ project.id }}.png" width="100%">
+            {% endif %}
+        </div>
+        </br>
+
+        <div class="w3-card-4 ">
+            <header class="w3-container w3-light-grey">
+                <h5><b><i class="fa fa-info"></i>&ensp;日報表紀錄</b></h5>
+            </header>
+            <div class="w3-container w3-light-grey w3-row w3-xlarge">
+                <div class="w3-col s2 next_peroid_dailyreport">«</div>
+                <div class="w3-col s8 w3-center w3-medium w3-padding-8 now_page" month_list='{{ month_list_string }}' now_page="{{ month_list.0 }}">{{ month_list.0 }}</div>
+                <div class="w3-col s2 before_peroid_dailyreport" style="text-align:right">»</div>
+            </div>
+            <div class="w3-responsive">
+                <table class="w3-table w3-bordered w3-striped w3-white w3-hoverable">
+                    <thead>
+                        <tr class="w3-teal w3-center">
+                            <th>日期</th>
+                            <th>監造進度</th>
+                            <th>營造進度</th>
+                            <th>預定進度</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody_progress">
+                        {% for i in engprofile.progress %}
+                            <tr class="{{ i.date.year }}-{{ i.date.month }} {% if i.date == TODAY %}w3-khaki{% endif %}" style="display: none;"><td>{{ i.date }}</td><td>{{ i.i }}%</td><td>{{ i.c }}%</td><td>{{ i.d }}%</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="w3-container w3-light-grey w3-row w3-xlarge">
+                <div class="w3-col s2 next_peroid_dailyreport">«</div>
+                <div class="w3-col s8 w3-center w3-medium w3-padding-8 now_page" month_list='{{ month_list_string }}' now_page="{{ month_list.0 }}">{{ month_list.0 }}</div>
+                <div class="w3-col s2 before_peroid_dailyreport" style="text-align:right">»</div>
+            </div>
+        </div>
+        </br>
+    </div>
+    </br>
+
+    
+
+    <div class="w3-clear"></div><br><br>
+
+    <script>
+        $('#tbody_progress').find('.{{ month_list.0 }}').show();
+        $('.before_peroid_dailyreport').click(function(){
+            var month_list = $('.now_page').attr('month_list').split(',');
+            var now_page = $('.now_page').attr('now_page');
+            var index = month_list.indexOf(now_page);
+            if (index!=0){
+                $('.now_page').html(month_list[index-1]);
+                $('.now_page').attr('now_page', month_list[index-1]);
+                $('#tbody_progress').find('tr').hide();
+                $('#tbody_progress').find('.' + month_list[index-1]).show();
+            }
+        });
+        $('.next_peroid_dailyreport').click(function(){
+            var month_list = $('.now_page').attr('month_list').split(',');
+            var now_page = $('.now_page').attr('now_page');
+            var index = month_list.indexOf(now_page);
+            if (index!=(month_list.length-1)){
+                $('.now_page').html(month_list[index+1]);
+                $('.now_page').attr('now_page', month_list[index+1]);
+                $('#tbody_progress').find('tr').hide();
+                $('#tbody_progress').find('.' + month_list[index+1]).show();
+            }
+        });
+    </script>
+
+
+
+{% endblock %}

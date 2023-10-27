@@ -1,0 +1,1295 @@
+{% extends "fishuser/zh-tw/base.html" %}
+{% load i18n %}
+{% load humanize %}
+{% load utiltags %}
+{% load guardian_tags %}
+
+{% block js_in_compress %}
+    <script src="/media/frcm/v2/plupload/jquery.plupload.queue/jquery.plupload.queue.js{{ settings.SV_ }}"></script>
+    <script src="/media/frcm/v2/plupload/js/plupload.full.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/supervise/v2/PDFObject-master/pdfobject.min.js{{ settings.SV_ }}"></script>
+{% endblock %}
+
+{% block body %}
+
+<h3>行政院農業部漁業署工程督導小組督導紀錄</h3>
+
+<button class="btn btn-info" onclick="history.go(-1);">
+    回上一頁
+</button>
+<input type="hidden" value="{{ p.id }}" id="supervisecase_id">
+<h4>基本資料</h4>
+<table class="table table-bordered" style="font-size: 12px;margin-bottom:0px">
+    <tr>
+        <td class="active" width="12%">標案編號</td>
+        <td colspan="5">{{ p.uid|default_if_none:'' }}</td>
+    </tr>
+    <tr>
+        <td class="active" width="12%">列管計畫名稱</td>
+        <td colspan="3">{{ p.plan|default_if_none:'' }}</td>
+        <td class="active" width="12%">計畫主辦機關</td>
+        <td width="20%">行政院農業部漁業署</td>
+    </tr>
+    <tr>
+        <td class="active">標案所屬<br>工程主管機關</td>
+        <td colspan="3">{{ p.subordinate_agencies_unit }}</td>
+        <td class="active">督導日期</td>
+        <td id="supervise_date">{{ p.date }}</td>
+    </tr>
+    <tr>
+        <td class="active">標案名稱</td>
+        <td colspan="3">
+            {{ p.project|default_if_none:'' }}
+        </td>
+        <td class="active">地點</td>
+        <td>{{ p.place|default_if_none:'' }}{{ p.location|default_if_none:'' }}</td>
+    </tr>
+    <tr>
+        <td class="active">對應FES系統<br>工程案</td>
+        <td colspan="5">
+            <span id="fes_project" style="color: blue;">
+                {% if p.fes_project %}
+                    <a href="/frcm/project_profile/{{ p.fes_project.id }}/">{{ p.fes_project.year }}年度-{{ p.fes_project.name }}</a>
+                {% else %}
+                    尚未選擇
+                {% endif %}
+            </span>
+        </td>
+    </tr>
+</table>
+
+<div align="right">
+    <button class="btn btn-warning btn-xs" type="button" onclick="$(this).parent().hide();$('#more_info_table').show()">顯示詳細...</button>
+</div>
+
+<table class="table table-bordered" style="font-size: 12px;margin-top:0px;display:none" id="more_info_table">
+    <tr>
+        <td class="active" width="12%">標案主辦機關</td>
+        <td colspan="3">{{ p.project_organizer_agencies }}</td>
+        <td class="active" width="12%">專案管理單位</td>
+        <td width="20%">{{ p.project_manage_unit }}</td>
+    </tr>
+    <tr>
+        <td class="active">設計單位</td>
+        <td width="20%">{{ p.designer }}</td>
+        <td class="active" width="12%">監造單位</td>
+        <td>{{ p.inspector }}</td>
+        <td class="active">承包商</td>
+        <td>{{ p.construct }}</td>
+    </tr>
+    <tr>
+        <td class="active">發包預算</td>
+        <td colspan="3">{{ p.budget_price|intcomma|cutzero }} 千元</td>
+        <td class="active">契約金額</td>
+        <td>
+            {{ p.contract_price|intcomma|cutzero }} 千元
+            {% if p.contract_price_change %}
+                <br><span style="color: blue">變更設計後：{{ p.contract_price_change|intcomma|cutzero }} 千元</span>
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="active">工程概要</td>
+        <td colspan="5" id="show_info__info">{{ p.info|linebreaks }}</td>
+    </tr>
+    <tr>
+        <td class="active">工程進度、<br>經費支用及<br>目前施工概況</td>
+        <td colspan="5">
+            截至 {{ p.progress_date }} 止：<br>
+            <ol>
+                <li>工程累計進度：預定： {{ p.scheduled_progress|cutzero }} %；實際： {{ p.actual_progress|cutzero }} %</li>
+                <li>經費累計支用：預定： {{ p.scheduled_money|intcomma|cutzero }} 仟元；實際： {{ p.actual_money|intcomma|cutzero }} 仟元</li>
+                <li>{{ p.progress_info|linebreaks }}</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td class="active">督導委員</td>
+        <td colspan="3">
+            {% if p.outguide.all %}
+                外　　聘：{% for u in p.outguide.all %}{{ u.name }}{% if not forloop.last %}、{% endif %}{% endfor %}<br>
+            {% endif %}
+            {% if p.inguide.all %}
+                內　　聘：{% for u in p.inguide.all %}{{ u.name }}{% if not forloop.last %}、{% endif %}{% endfor %}
+            {% endif %}
+        </td>
+        <td class="active">開工及<br>預定完工日期</td>
+        <td>
+            開工：{{ p.start_date }}<br>
+            完工：{{ p.expected_completion_date }}
+            {% if p.expected_completion_date_change %}
+                <br><span style="color: blue">變更後至{{ p.expected_completion_date_change }}</span>
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td class="active">領隊<br>及工作人員</td>
+        <td colspan="3">
+            {% if p.captain.all %}
+                領　　隊：{% for u in p.captain.all %}{{ u.name }}{% if not forloop.last %}、{% endif %}{% endfor %}<br>
+            {% endif %}
+            {% if p.worker.all %}
+                工作人員：{% for u in p.worker.all %}{{ u.name }}{% if not forloop.last %}、{% endif %}{% endfor %}
+            {% endif %}
+        </td>
+        <td class="active">督導分數<br>(等級)</td>
+        <td id="case_score">{{ p.score }}</td>
+    </tr>
+</table>
+<br>
+
+
+
+
+
+<h4>缺失改善填報</h4>
+<button class="btn btn-info" tile="若您填報完成，可按此下載DOC檔案" onclick="window.location='/supervise/download_error_improve/{{ p.id }}'">
+    匯出缺失改善填報Word檔案
+</button>
+{% if p.is_test %}
+    <h3 class="text-warning">
+        注意：本次督導有鑽心試驗，請於繳交改善紀錄報告時，檢附鑽心試驗報告。
+    </h3>
+{% endif %}
+<table class="table table-bordered">
+    <tr>
+        <td colspan="6">
+            <table class="table table-bordered" style="text-align: center;font-size: 16px;">
+                <tr class="danger">
+                    <td width="20%">缺失事項</td>
+                    <td>改善對策及結果</td>
+                    <td width="15%">完成<br>日期</td>
+                    <td width="12%">備註<br><apan style="font-size:10px;">(未完成者請說明)</apan></td>
+                    <td width="10%">改善<br>相片</td>
+                    <td width="10%">改善<br>PDF</td>
+                </tr>
+                {% for e in p.errors %}
+                    <tr>
+                        <td align="left" style="vertical-align: top;">
+                            <p style="margin-left:15px; text-indent:-22px;">
+                                {{ forloop.counter }}. {{ e.ec.no }}({{ e.level.name }})-{{ e.context }}
+                            </p>
+                        </td>
+                        <td align="left" style="vertical-align: top;">
+                            {% if edit %}
+                                <textarea
+                                    type="textarea" class="BlurUpdateInfo form-control"
+                                    field_type="str"
+                                    row_id="{{ e.id }}"
+                                    field_name="improve_result"
+                                    table_name="error"
+                                    module_name='supervise'
+                                    placeholder="待輸入"
+                                    rows="6"
+                                    old_value="{{ e.improve_result|default_if_none:"" }}">{{ e.improve_result|default_if_none:"" }}</textarea>
+                            {% else %}
+                                {{ e.improve_result|default_if_none:"" }}
+                            {% endif %}
+                        </td>
+                        <td align="left" style="vertical-align: top;">
+                            {% if edit %}
+                                <input
+                                    type="text" class="BlurUpdateInfo form-control datepicker"
+                                    field_type="date"
+                                    row_id="{{ e.id }}"
+                                    field_name="date"
+                                    table_name="error"
+                                    module_name='supervise'
+                                    placeholder="待輸入"
+                                    old_value="{{ e.date|default_if_none:"" }}"
+                                    value="{{ e.date|default_if_none:"" }}">
+                            {% else %}
+                                {{ e.date|default_if_none:"" }}
+                            {% endif %}
+                        </td>
+                        <td align="left" style="vertical-align: top;">
+                            {% if edit %}
+                                <textarea
+                                    type="textarea" class="BlurUpdateInfo form-control"
+                                    field_type="str"
+                                    row_id="{{ e.id }}"
+                                    field_name="memo"
+                                    table_name="error"
+                                    module_name='supervise'
+                                    placeholder="待輸入"
+                                    rows="6"
+                                    old_value="{{ e.memo|default_if_none:"" }}">{{ e.memo|default_if_none:"" }}</textarea>
+                            {% else %}
+                                {{ e.memo|default_if_none:"" }}
+                            {% endif %}
+                        </td>
+                        <td align="left" style="vertical-align: top;" id="errorphoto_{{ e.id }}">
+                            <button class="btn btn-success btn-sm add_error_photo_record"
+                            context="{{ e.context }}" add_td="errorphoto_{{ e.id }}"
+                            target="error" row_id="{{ e.id }}" error_no="{{ e.ec.no }}">
+                                新增
+                            </button>
+                            {% for ep in e.errorimprovephoto_set.all %}
+                                <table class="show_error_photo_table_dialog pointer" id="error_photo_small_table_{{ ep.id }}" style="margin-bottom:10;border:1px solid red;" data-toggle="modal" data-target="#error_photo_table_dialog" row_id="{{ ep.id }}">
+                                    <tr>
+                                        <td style="padding:0px;">
+                                            <img id="error_photo_before_thumb_{{ ep.id }}" src="/supervise/get_image/ErrorImprovePhoto/before/true/{{ ep.id }}/" width="50">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:0px;">
+                                            <img id="error_photo_middle_thumb_{{ ep.id }}" src="/supervise/get_image/ErrorImprovePhoto/middle/true/{{ ep.id }}/" width="50">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:0px;">
+                                            <img id="error_photo_after_thumb_{{ ep.id }}" src="/supervise/get_image/ErrorImprovePhoto/after/true/{{ ep.id }}/" width="50">
+                                        </td>
+                                    </tr>
+                                </table>
+                            {% endfor %}
+                        </td>
+                        <td align="left" style="vertical-align: top;" id="errorfile_{{ e.id }}">
+                            <button class="btn btn-success btn-sm uploader_errorfile" id="uploader_errorfile_{{ e.id }}" row_id="{{ e.id }}">
+                                上傳
+                            </button>
+                            {% for ef in e.errorimprovefile_set.all %}
+                                <img class="show_pdf_view_dialog pointer" row_id="{{ ef.id }}" src="/media/supervise/v2/image/pdf.png" width="50" url="/supervise/download_file/ErrorImproveFile/{{ ef.id }}/?open=true"><br>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="6">
+            <table class="table table-bordered" style="text-align: center;font-size: 16px;">
+                <tr class="danger">
+                    <td width="20%">規劃設計<br>問題及建議</td>
+                    <td width="45%">改善對策及結果</td>
+                    <td width="15%">完成日期</td>
+                    <td width="12%">備註<br><apan style="font-size:10px;">(未完成者請說明)</apan></td>
+                    <td width="10%">改善<br>相片</td>
+                </tr>
+                <tr>
+                    <td align="left" style="vertical-align: top;">{{ p.advise|linebreaks }}</td>
+                    <td align="left" style="vertical-align: top;">
+                        {% if edit %}
+                            <textarea
+                                type="textarea" class="BlurUpdateInfo form-control"
+                                field_type="str"
+                                row_id="{{ p.id }}"
+                                field_name="advise_improve_result"
+                                table_name="supervisecase"
+                                module_name='supervise'
+                                placeholder="待輸入"
+                                rows="20"
+                                old_value="{{ p.advise_improve_result|default_if_none:"" }}">{{ p.advise_improve_result|default_if_none:"" }}</textarea>
+                        {% else %}
+                            {{ p.advise_improve_result|default_if_none:"" }}
+                        {% endif %}
+                    </td>
+                    <td align="left" style="vertical-align: top;">
+                        {% if edit %}
+                            <input
+                                type="text" class="BlurUpdateInfo form-control datepicker"
+                                field_type="date"
+                                row_id="{{ p.id }}"
+                                field_name="advise_date"
+                                table_name="supervisecase"
+                                module_name='supervise'
+                                placeholder="待輸入"
+                                old_value="{{ p.advise_date|default_if_none:"" }}"
+                                value="{{ p.advise_date|default_if_none:"" }}">
+                        {% else %}
+                            {{ p.advise_date|default_if_none:"" }}
+                        {% endif %}
+                    </td>
+                    <td align="left" style="vertical-align: top;">
+                        {% if edit %}
+                            <textarea
+                                type="textarea" class="BlurUpdateInfo form-control"
+                                field_type="str"
+                                row_id="{{ p.id }}"
+                                field_name="advise_memo"
+                                table_name="supervisecase"
+                                module_name='supervise'
+                                placeholder="待輸入"
+                                rows="20"
+                                old_value="{{ p.advise_memo|default_if_none:"" }}">{{ p.advise_memo|default_if_none:"" }}</textarea>
+                        {% else %}
+                            {{ p.advise_memo|default_if_none:"" }}
+                        {% endif %}
+                    </td>
+                    <td align="left" style="vertical-align: top;" id="errorphoto_advise_{{ p.id }}">
+                        <button class="btn btn-success btn-sm add_error_photo_record"
+                        target="advise" row_id="{{ p.id }}" add_td="errorphoto_advise_{{ p.id }}">
+                            新增
+                        </button>
+                        {% for ep in p.get_errorimprovephoto_advise %}
+                            <table class="show_error_photo_table_dialog" id="error_photo_small_table_{{ ep.id }}" style="margin-bottom:10;border:1px solid red;" data-toggle="modal" data-target="#error_photo_table_dialog" row_id="{{ ep.id }}">
+                                <tr>
+                                    <td style="padding:0px;">
+                                        <img id="error_photo_before_thumb_{{ ep.id }}" src="/supervise/get_image/ErrorImprovePhoto/before/true/{{ ep.id }}/" width="50">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0px;">
+                                        <img id="error_photo_middle_thumb_{{ ep.id }}" src="/supervise/get_image/ErrorImprovePhoto/middle/true/{{ ep.id }}/" width="50">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0px;">
+                                        <img id="error_photo_after_thumb_{{ ep.id }}" src="/supervise/get_image/ErrorImprovePhoto/before/true/{{ ep.id }}/" width="50">
+                                    </td>
+                                </tr>
+                            </table>
+                        {% endfor %}
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="6">
+            <table class="table table-bordered" style="text-align: center;font-size: 16px;">
+                <tr class="danger">
+                    <td width="20%">其他建議</td>
+                    <td width="45%">改善對策及結果</td>
+                    <td width="15%">完成日期</td>
+                    <td width="12%">備註<br><apan style="font-size:10px;">(未完成者請說明)</apan></td>
+                    <td width="10%">改善<br>相片</td>
+                </tr>
+                <tr>
+                    <td align="left" style="vertical-align: top;">{{ p.other_advise|linebreaks }}</td>
+                    <td align="left" style="vertical-align: top;">
+                        {% if edit %}
+                            <textarea
+                                type="textarea" class="BlurUpdateInfo form-control"
+                                field_type="str"
+                                row_id="{{ p.id }}"
+                                field_name="other_improve_result"
+                                table_name="supervisecase"
+                                module_name='supervise'
+                                placeholder="待輸入"
+                                rows="20"
+                                old_value="{{ p.other_improve_result|default_if_none:"" }}">{{ p.other_improve_result|default_if_none:"" }}</textarea>
+                        {% else %}
+                            {{ p.other_advise|default_if_none:"" }}
+                        {% endif %}
+                    </td>
+                    <td align="left" style="vertical-align: top;">
+                        {% if edit %}
+                            <input
+                                type="text" class="BlurUpdateInfo form-control datepicker"
+                                field_type="date"
+                                row_id="{{ p.id }}"
+                                field_name="other_date"
+                                table_name="supervisecase"
+                                module_name='supervise'
+                                placeholder="待輸入"
+                                old_value="{{ p.other_date|default_if_none:"" }}"
+                                value="{{ p.other_date|default_if_none:"" }}">
+                        {% else %}
+                            {{ p.other_date|default_if_none:"" }}
+                        {% endif %}
+                    </td>
+                    <td align="left" style="vertical-align: top;">
+                        {% if edit %}
+                            <textarea
+                                type="textarea" class="BlurUpdateInfo form-control"
+                                field_type="str"
+                                row_id="{{ p.id }}"
+                                field_name="other_memo"
+                                table_name="supervisecase"
+                                module_name='supervise'
+                                placeholder="待輸入"
+                                rows="20"
+                                old_value="{{ p.other_memo|default_if_none:"" }}">{{ p.other_memo|default_if_none:"" }}</textarea>
+                        {% else %}
+                            {{ p.other_memo|default_if_none:"" }}
+                        {% endif %}
+                    </td>
+                    <td align="left" style="vertical-align: top;" id="errorphoto_other_advise_{{ p.id }}">
+                        <button class="btn btn-success btn-sm add_error_photo_record"
+                        target="other_advise" row_id="{{ p.id }}" add_td="errorphoto_other_advise_{{ p.id }}">
+                            新增
+                        </button>
+                        {% for ep in p.get_errorimprovephoto_otheradvise %}
+                            <table class="show_error_photo_table_dialog" id="error_photo_small_table_{{ ep.id }}" style="margin-bottom:10;border:1px solid red;" data-toggle="modal" data-target="#error_photo_table_dialog" row_id="{{ ep.id }}">
+                                <tr>
+                                    <td style="padding:0px;">
+                                        <img id="error_photo_before_thumb_{{ ep.id }}" src="/supervise/get_image/ErrorImprovePhoto/before/true/{{ ep.id }}/" width="50">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0px;">
+                                        <img id="error_photo_middle_thumb_{{ ep.id }}" src="/supervise/get_image/ErrorImprovePhoto/middle/true/{{ ep.id }}/" width="50">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0px;">
+                                        <img id="error_photo_after_thumb_{{ ep.id }}" src="/supervise/get_image/ErrorImprovePhoto/after/true/{{ ep.id }}/" width="50">
+                                    </td>
+                                </tr>
+                            </table>
+                        {% endfor %}
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    {% if p.is_test %}
+        <tr>
+            <td colspan="6">
+                <h3 class="text-warning">
+                    注意：本次督導有鑽心試驗，請於繳交改善紀錄報告時，檢附鑽心試驗報告。
+                </h3>
+                <table class="table table-bordered" style="text-align: center;font-size: 16px;">
+                    <tr class="danger">
+                        <td width="20%">檢驗拆驗</td>
+                        <td width="45%">鑽心試驗及結果</td>
+                        <td width="15%">完成日期</td>
+                        <td width="22%">備註<br><apan style="font-size:10px;">(未完成者請說明)</apan></td>
+                    </tr>
+                    <tr>
+                        <td align="left" style="vertical-align: top;">{{ p.test|linebreaks }}</td>
+                        <td align="left" style="vertical-align: top;">
+                            {% if edit %}
+                                <textarea
+                                    type="textarea" class="BlurUpdateInfo form-control"
+                                    field_type="str"
+                                    row_id="{{ p.id }}"
+                                    field_name="test_result"
+                                    table_name="supervisecase"
+                                    module_name='supervise'
+                                    placeholder="待輸入"
+                                    rows="20"
+                                    old_value="{{ p.test_result|default_if_none:"" }}">{{ p.test_result|default_if_none:"" }}</textarea>
+                            {% else %}
+                                {{ p.test_result|default_if_none:"" }}
+                            {% endif %}
+                        </td>
+                        <td align="left" style="vertical-align: top;">
+                            {% if edit %}
+                                <input
+                                    type="text" class="BlurUpdateInfo form-control datepicker"
+                                    field_type="date"
+                                    row_id="{{ p.id }}"
+                                    field_name="test_date"
+                                    table_name="supervisecase"
+                                    module_name='supervise'
+                                    placeholder="待輸入"
+                                    old_value="{{ p.test_date|default_if_none:"" }}"
+                                    value="{{ p.test_date|default_if_none:"" }}">
+                            {% else %}
+                                {{ p.test_date|default_if_none:"" }}
+                            {% endif %}
+                        </td>
+                        <td align="left" style="vertical-align: top;">
+                            {% if edit %}
+                                <textarea
+                                    type="textarea" class="BlurUpdateInfo form-control"
+                                    field_type="str"
+                                    row_id="{{ p.id }}"
+                                    field_name="test_memo"
+                                    table_name="supervisecase"
+                                    module_name='supervise'
+                                    placeholder="待輸入"
+                                    rows="20"
+                                    old_value="{{ p.test_memo|default_if_none:"" }}">{{ p.test_memo|default_if_none:"" }}</textarea>
+                            {% else %}
+                                {{ p.test_memo|default_if_none:"" }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    {% endif %}
+</table>
+
+
+
+
+{% if edit %}
+    <button row_id="{{ p.id }}" table_name="ErrorPhotoFile" class="btn btn-primary uploader_file" id="new_file_{{ p.id }}">上傳督導相關檔案</button>(可多選)
+    <ol id="waitting_for_upload"></ol>
+{% endif %}
+
+<ol id="col_insert_file" style="text-align: left">
+    {% for i in p.photos %}
+        <li id="li_file_{{ i.id }}">
+            <button class="deleteRow btn btn-danger btn-xs"
+                row_id="{{ i.id }}"
+                message="你確定要刪除嗎？"
+                module_name = "supervise"
+                table_name = "errorphotofile"
+                remove_target = "li_file_{{ i.id }}"
+                title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+            <a target="_blank" href='/supervise/download_file/ErrorPhotoFile/{{ i.id }}/'>{{ i.name }}.{{ i.rExt }}({{ i.calSize }})</a>
+        </li>
+    {% endfor %}
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="text/x-jquery-tmpl" id="error_photo_small_table">
+    <table class="show_error_photo_table_dialog" id="error_photo_small_table_${id}" style="margin-bottom:10;border:1px solid red;" data-toggle="modal" data-target="#error_photo_table_dialog" row_id="${id}">
+        <tr>
+            <td style="padding:0px;"><img id="error_photo_before_thumb_${id}" src="/supervise/get_image/ErrorImprovePhoto/before/true/{id}/" width="50"></td>
+        </tr>
+        <tr>
+            <td style="padding:0px;"><img id="error_photo_middle_thumb_${id}" src="/supervise/get_image/ErrorImprovePhoto/middle/true/{id}/" width="50"></td>
+        </tr>
+        <tr>
+            <td style="padding:0px;"><img id="error_photo_after_thumb_${id}" src="/supervise/get_image/ErrorImprovePhoto/after/true/{id}/" width="50"></td>
+        </tr>
+    </table>
+</script>
+
+
+<div class="modal fade" id="error_photo_table_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style="width:800px; margin-left: -100px;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">
+                    改善照片表
+                </h4>
+            </div>
+            <div class="modal-body" id="error_photo_body">
+                
+            </div>
+            <div class="modal-footer">
+                <button class="deleteRow btn btn-danger"
+                    id="delete_error_improve"
+                    row_id=""
+                    message="您確定要刪除這組改善照片表嗎？照片將一併刪除"
+                    modal_hide="#error_photo_table_dialog"
+                    module_name = "supervise"
+                    table_name = "errorimprovephoto"
+                    remove_target = "">刪除</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">完成編輯，關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/x-jquery-tmpl" id="error_photo_big_table">
+    ${table_title}<br>
+    (附改善前、中、後同一角度拍攝之彩色照片，並加說明)
+    <table class="table table-bordered" id="error_photo_big_table_${id}">
+        <tr>
+            <td width="500" style="vertical-align: top;">
+                {% if edit %}
+                    <button row_id="${id}" table_name="ErrorImprovePhoto" field_name="before" class="btn btn-primary uploader" id="new_file_before_${id}">
+                        選擇相片
+                    </button>
+                    <button row_id="${id}" field_name="before" class="btn btn-warning EmptyThisImprovePhoto">
+                        移除
+                    </button>
+                {% endif %}
+                <img id="error_photo_before_${id}" src="/supervise/get_image/ErrorImprovePhoto/before/true/${id}/" width="500">
+            </td>
+            <td style="vertical-align: top;">
+                說明(缺失情形)：<br>
+                {% if edit %}
+                    <textarea
+                        type="textarea" class="BlurUpdateInfo form-control"
+                        field_type="str"
+                        row_id="${id}"
+                        field_name="before_memo"
+                        table_name="errorimprovephoto"
+                        module_name='supervise'
+                        placeholder="待輸入"
+                        rows="18"
+                        old_value="${before_memo}">${before_memo}</textarea>
+                {% else %}
+                    ${before_memo}
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top;">
+                {% if edit %}
+                    <button row_id="${id}" table_name="ErrorImprovePhoto" field_name="middle" class="btn btn-primary uploader" id="new_file_middle_${id}">
+                        選擇相片
+                    </button>
+                    <button row_id="${id}" field_name="middle" class="btn btn-warning EmptyThisImprovePhoto">
+                        移除
+                    </button>
+                {% endif %}
+                <img id="error_photo_middle_${id}" src="/supervise/get_image/ErrorImprovePhoto/middle/true/${id}/" width="500">
+            </td>
+            <td style="vertical-align: top;">
+                說明(改善作法)：<br>
+                {% if edit %}
+                    <textarea
+                        type="textarea" class="BlurUpdateInfo form-control"
+                        field_type="str"
+                        row_id="${id}"
+                        field_name="middle_memo"
+                        table_name="errorimprovephoto"
+                        module_name='supervise'
+                        placeholder="待輸入"
+                        rows="18"
+                        old_value="${middle_memo}">${middle_memo}</textarea>
+                {% else %}
+                    ${middle_memo}
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top;">
+                {% if edit %}
+                    <button row_id="${id}" table_name="ErrorImprovePhoto" field_name="after" class="btn btn-primary uploader" id="new_file_after_${id}">
+                        選擇相片
+                    </button>
+                    <button row_id="${id}" field_name="after" class="btn btn-warning EmptyThisImprovePhoto">
+                        移除
+                    </button>
+                {% endif %}
+                <img id="error_photo_after_${id}" src="/supervise/get_image/ErrorImprovePhoto/after/true/${id}/" width="500">
+            </td>
+            <td style="vertical-align: top;">
+                說明：<br>
+                {% if edit %}
+                    <textarea
+                        type="textarea" class="BlurUpdateInfo form-control"
+                        field_type="str"
+                        row_id="${id}"
+                        field_name="after_memo"
+                        table_name="errorimprovephoto"
+                        module_name='supervise'
+                        placeholder="待輸入"
+                        rows="18"
+                        old_value="${after_memo}">${after_memo}</textarea>
+                {% else %}
+                    ${after_memo}
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+</script>
+
+
+<script type="text/x-jquery-tmpl" id="HideFileCol">
+    <li id="li_file_${id}">
+        <button class="deleteRow btn btn-danger btn-xs"
+            row_id="${id}"
+            message="你確定要刪除嗎？"
+            module_name = "supervise"
+            table_name = "errorphotofile"
+            remove_target = "li_file_${id}"
+            title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+        <a target="_blank" href='/supervise/download_file/ErrorPhotoFile/${id}/'>${name}.${ext}(${calSize})</a>
+    </li>
+</script>
+
+
+<script type="text/x-jquery-tmpl" id="HideErrorFile">
+    <img class="show_pdf_view_dialog pointer" row_id="${id}" src="/media/supervise/v2/image/pdf.png" width="50" url="/supervise/download_file/ErrorImproveFile/${id}/?open=true"><br>
+</script>
+
+
+
+
+<div class="modal fade" id="pdf_view_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style="top:-25px">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">
+                    改善PDF
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div id="pdf" style="max-width: 100%;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger"
+                    id="delete_error_improve_file"
+                    row_id="">刪除</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+    function add_error_photo_record(){
+        var $obj = $(this);
+        var target = $obj.attr('target');
+        var row_id = $obj.attr('row_id');
+        var add_td = $obj.attr('add_td');
+        if (target=='error'){
+            var error_no = $obj.attr('error_no');
+            var context = $obj.attr('context');
+            if (confirm('要幫『' + error_no + '』此缺失改善紀錄新增一組改善照片表嗎？')){
+                var data = {
+                    csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                    error: '/supervise/api/v2/error/' + row_id + '/',
+                };
+                $.ajax({
+                    url: '/supervise/api/v2/errorimprovephoto/',
+                    type: 'POST',
+                    data: JSON.stringify(data),
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    success: function (json, text, xhr) {
+                        $('#error_photo_body').html('');
+                        $('#error_photo_small_table').tmpl(json).appendTo($('#' + add_td));
+                        $('#error_photo_big_table').tmpl(json).appendTo($('#error_photo_body'));
+                        $('#error_photo_table_dialog').modal('show');
+
+                        $('#delete_error_improve').attr('row_id', json['id']);
+                        $('#delete_error_improve').attr('remove_target', 'error_photo_small_table_' + json['id']);
+
+                        $('.BlurUpdateInfo').unbind('blur');
+                        $('.BlurUpdateInfo').unbind('keypress');
+                        $('.deleteRow').unbind('click');
+                        $('.EmptyThisImprovePhoto').unbind('click');
+                        $('.BlurUpdateInfo').blur(BlurUpdateInfo);
+                        $('.BlurUpdateInfo').keypress(function(event) {
+                            var $obj = $(this);
+                            if ($obj.attr('type')!='textarea' && event.which == 13){
+                                $obj.blur();
+                            }
+                        });
+                        $('.deleteRow').click(deleteRow);
+                        $('.EmptyThisImprovePhoto').click(EmptyThisImprovePhoto);
+                        $(".uploader").each(function(){
+                            var $obj = $(this);
+                            var row_id = $obj.attr("row_id");
+                            var field_name = $obj.attr("field_name");
+                            NewFileUploader($obj, row_id, field_name);
+                        });
+                        $('.show_error_photo_table_dialog').click(show_error_photo_table_dialog);
+                    },
+                    error: function (data) {
+                    },
+                })
+            }
+        } else if (target=='advise' || target=='other_advise'){
+            if (target=='advise'){
+                var msg = '要幫『規劃設計問題及建議』新增一組改善照片表嗎？';
+                var improve_type = '/supervise/api/v2/option/17/';
+            } else if (target=='other_advise'){
+                var msg = '要幫『其他建議』新增一組改善照片表嗎？';
+                var improve_type = '/supervise/api/v2/option/18/';
+            }
+            if (confirm(msg)){
+                var case_id = $('#supervisecase_id').val();
+                var data = {
+                    csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                    case: '/supervise/api/v2/supervisecase/' + case_id + '/',
+                    improve_type: improve_type
+                };
+                $.ajax({
+                    url: '/supervise/api/v2/errorimprovephoto/',
+                    type: 'POST',
+                    data: JSON.stringify(data),
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    success: function (json, text, xhr) {
+                        $('#error_photo_body').html('');
+                        $('#error_photo_small_table').tmpl(json).appendTo($('#' + add_td));
+                        $('#error_photo_big_table').tmpl(json).appendTo($('#error_photo_body'));
+                        $('#error_photo_table_dialog').modal('show');
+
+                        $('#delete_error_improve').attr('row_id', json['id']);
+                        $('#delete_error_improve').attr('remove_target', 'error_photo_small_table_' + json['id']);
+
+                        $('.BlurUpdateInfo').unbind('blur');
+                        $('.BlurUpdateInfo').unbind('keypress');
+                        $('.deleteRow').unbind('click');
+                        $('.EmptyThisImprovePhoto').unbind('click');
+                        $('.BlurUpdateInfo').blur(BlurUpdateInfo);
+                        $('.BlurUpdateInfo').keypress(function(event) {
+                            var $obj = $(this);
+                            if ($obj.attr('type')!='textarea' && event.which == 13){
+                                $obj.blur();
+                            }
+                        });
+                        $('.deleteRow').click(deleteRow);
+                        $('.EmptyThisImprovePhoto').click(EmptyThisImprovePhoto);
+                        $(".uploader").each(function(){
+                            var $obj = $(this);
+                            var row_id = $obj.attr("row_id");
+                            var field_name = $obj.attr("field_name");
+                            NewFileUploader($obj, row_id, field_name);
+                        });
+                        $('.show_error_photo_table_dialog').click(show_error_photo_table_dialog);
+                    },
+                    error: function (data) {
+                    },
+                })
+            }
+        }
+    }
+
+    function EmptyThisImprovePhoto(){
+        var $obj = $(this);
+        var row_id = $obj.attr('row_id');
+        var field_name = $obj.attr('field_name');
+        if (confirm('你確定要移除這張相片嗎？')){
+            var data = {
+                csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                action: 'empty_' + field_name
+            };
+            $.ajax({
+                url: '/supervise/api/v2/errorimprovephoto/' + row_id + '/',
+                type: 'PUT',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function (json, text, xhr) {
+                    $('#error_photo_' + field_name + '_' + row_id).attr('src', '/media/supervise/v2/image/empty.png');
+                    $('#error_photo_' + field_name + '_thumb_' + row_id).attr('src', '/media/supervise/v2/image/empty.png');
+                },
+                error: function (data) {
+                },
+            })
+        }
+    }
+
+    function show_error_photo_table_dialog(){
+        var $obj = $(this);
+        var row_id = $obj.attr('row_id');
+        $.ajax({
+            url: '/supervise/api/v2/errorimprovephoto/' + row_id + '/',
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (json) {
+                $('#error_photo_body').html('');
+                $('#error_photo_big_table').tmpl(json).appendTo($('#error_photo_body'));
+                $('#delete_error_improve').attr('row_id', json['id']);
+                $('#delete_error_improve').attr('remove_target', 'error_photo_small_table_' + json['id']);
+                var random = Math.random();
+                $.each($('#error_photo_table_dialog').find('img'), function(){
+                    var $obj = $(this);
+                    var src = $obj.attr('src').split('?')[0];
+                    $obj.attr('src', src + '?v=' + random);
+                });
+                $('.BlurUpdateInfo').unbind('blur');
+                $('.BlurUpdateInfo').unbind('keypress');
+                $('.deleteRow').unbind('click');
+                $('.EmptyThisImprovePhoto').unbind('click');
+                $('.BlurUpdateInfo').blur(BlurUpdateInfo);
+                $('.BlurUpdateInfo').keypress(function(event) {
+                    var $obj = $(this);
+                    if ($obj.attr('type')!='textarea' && event.which == 13){
+                        $obj.blur();
+                    }
+                });
+                $('.deleteRow').click(deleteRow);
+                $('.EmptyThisImprovePhoto').click(EmptyThisImprovePhoto);
+                $(".uploader").each(function(){
+                    var $obj = $(this);
+                    var row_id = $obj.attr("row_id");
+                    var field_name = $obj.attr("field_name");
+                    NewFileUploader($obj, row_id, field_name);
+                });
+            },
+            error: function () {
+            },
+        })
+    }
+
+    function NewFileUploader($buttom, row_id, field_name){
+        var buttom_id = $buttom.attr('id');
+        var table_name = $buttom.attr('table_name');
+
+        var uploader = new plupload.Uploader({
+            runtimes: 'html5',
+            browse_button: buttom_id,
+            url: '/supervise/new_file_upload/',
+            multi_selection: false,
+            max_file_size : '100mb',
+            multipart: true,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            filters : [
+                { title: "Image files", extensions: "jpg,png,gif,bmp,jpeg,tif" }
+            ],
+            multipart_params : {
+                csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                table_name: table_name,
+                field_name: field_name,
+                row_id: row_id
+            },
+            init:{
+                FilesAdded:function(up, files){
+                    var file_num = files.length;
+                    if (confirm('確定上傳這個檔案?，按下確定後，尚未結束前請勿關閉視窗!!!')){
+                        up.start();
+                    }else{
+                        return false
+                    }
+                },
+                FileUploaded:function(up, file, res){
+                    var json = $.parseJSON(res.response);
+                    var src = $('#error_photo_' + field_name + '_' + row_id).attr('src');
+                    $('#error_photo_' + field_name + '_' + row_id).attr('src', src+'?renew');
+                    $('#error_photo_' + field_name + '_thumb_' + row_id).attr('src', src+'?renew');
+                },
+                UploadProgress:function(up, file) {
+                    
+                }
+            }
+        });
+        uploader.init();
+    }
+
+
+    function NewFileUploader_File($buttom, row_id){
+        var buttom_id = $buttom.attr('id');
+        var table_name = $buttom.attr('table_name');
+
+        var uploader = new plupload.Uploader({
+            runtimes: 'html5',
+            browse_button: buttom_id,
+            url: '/supervise/new_file_upload/',
+            multi_selection: true,
+            max_file_size : '100mb',
+            multipart: true,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            multipart_params : {
+                csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                table_name: table_name,
+                row_id: row_id
+            },
+            init:{
+                FilesAdded:function(up, files){
+                    var file_num = files.length;
+                    if (confirm('確定上傳這' + file_num + '個檔案?，按下確定後，上傳進度將顯示在下方，尚未結束前請勿關閉視窗!!!')){
+                        // up.settings.multipart_params.sop_id = sop_id;
+                        // up.settings.multipart_params.file_type = file_type;
+                        for (i=0;i<file_num;i++){
+                            $('#waitting_for_upload').append('<li id="li_fileupload_' + files[i].id + '">' + files[i].name + '，上傳進度：<div class="progress progress-striped active"><div class="progress-bar"  role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" id="file_percent_' + files[i].id + '" style="width: 0%"></div></div></li>');
+                        }
+                        up.start();
+                    }else{
+                        up.splice();
+                    }
+                },
+                FileUploaded:function(up, file, res){
+                    var json = $.parseJSON(res.response);
+                    var size = file.size;
+                    if (size <= 1024){
+                        size = size + ' B';
+                    } else if (size/1024 <= 1024){
+                        size = parseInt(size/1024) + ' KB';
+                    } else if (size/Math.pow(1024,2) <= 1024){
+                        size = parseInt(size/Math.pow(1024,2)) + ' MB';
+                    } else if (size/Math.pow(1024,3) <= 1024){
+                        size = parseInt(size/Math.pow(1024,3)) + ' GB';
+                    }
+                    var data = {
+                        'id': json["id"],
+                        'url': json["url"],
+                        'thumb_url': json["thumb_url"],
+                        'name': json['name'],
+                        'ext': json['ext'],
+                        'calSize': size,
+                    };
+                    var $col = $('#HideFileCol').tmpl(data).appendTo($('#col_insert_file'));
+                    
+                    $('#li_fileupload_' + file.id).remove();
+                    $(".deleteRow").unbind('click');
+                    $(".deleteRow").click(deleteRow);
+                },
+                UploadProgress:function(up, file) {
+                    $('#file_percent_' + file.id).attr('style', 'width: ' + file.percent + "%");
+                    $('#file_percent_' + file.id).html(file.percent + "%");
+                }
+            }
+        });
+        uploader.init();
+    }
+
+    function NewErrorFileUploader_File($buttom, row_id){
+        var buttom_id = $buttom.attr('id');
+        var table_name = 'ErrorImproveFile';
+
+        var uploader = new plupload.Uploader({
+            runtimes: 'html5',
+            browse_button: buttom_id,
+            url: '/supervise/new_file_upload/',
+            multi_selection: true,
+            max_file_size : '100mb',
+            multipart: true,
+            filters : [
+                { title: "Pdf files", extensions: "pdf" }
+            ],
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            multipart_params : {
+                csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                table_name: table_name,
+                row_id: row_id
+            },
+            init:{
+                FilesAdded:function(up, files){
+                    var file_num = files.length;
+                    if (confirm('確定上傳這' + file_num + '個檔案?，按下確定後，上傳進度將顯示在下方，尚未結束前請勿關閉視窗!!!')){
+                        up.start();
+                    }else{
+                        up.splice();
+                    }
+                },
+                FileUploaded:function(up, file, res){
+                    var json = $.parseJSON(res.response);
+                    var size = file.size;
+                    if (size <= 1024){
+                        size = size + ' B';
+                    } else if (size/1024 <= 1024){
+                        size = parseInt(size/1024) + ' KB';
+                    } else if (size/Math.pow(1024,2) <= 1024){
+                        size = parseInt(size/Math.pow(1024,2)) + ' MB';
+                    } else if (size/Math.pow(1024,3) <= 1024){
+                        size = parseInt(size/Math.pow(1024,3)) + ' GB';
+                    }
+                    var data = {
+                        'id': json["id"],
+                        'ext': json['ext'],
+                    };
+                    var $col = $('#HideErrorFile').tmpl(data).appendTo($('#errorfile_' + row_id));
+                }
+            }
+        });
+        uploader.init();
+    }
+
+    function set_is_improve(){
+        var $obj = $(this);
+        var now_status = $obj.attr('now_status');
+        var row_id = $('#supervisecase_id').val();
+        var no_check = $obj.attr('no_check');
+        if (now_status == 'true'){
+            Lobibox.confirm({
+                msg: '您要取消改善完畢的設定嗎？',
+                buttons: {
+                    accept: {
+                        'class': 'lobibox-btn lobibox-btn-yes',
+                        text: '確認取消',
+                        closeOnClick: true
+                    },
+                    cancel: {
+                        'class': 'lobibox-btn lobibox-btn-no',
+                        text: '取消',
+                        closeOnClick: true
+                    },
+                },
+                callback: function ($this, type, ev) {
+                    if(type=="accept"){
+                        $.ajax({
+                            url: '/supervise/api/v2/supervisecase/' + row_id + '/',
+                            type: 'PUT',
+                            data: JSON.stringify({
+                                is_improve: false
+                            }),
+                            contentType: 'application/json',
+                            dataType: 'json',
+                            beforeSend: function(XHR) {
+                                XHR.setRequestHeader('X-CSRFToken', CSRFMIDDLEWARETOKEN);
+                            },
+                            success: function (json, text, xhr) {
+                                $obj.removeClass('btn-success');
+                                $obj.addClass('btn-warning');
+                                $obj.attr('now_status', 'false');
+                                $obj.html('申請提交改善完畢');
+                            },
+                            error: function (json) {
+                                Lobibox.notify('error', {
+                                    title: '錯誤訊息',
+                                    msg: json.responseText,
+                                });
+                            }
+                        });
+                    }
+                }
+            })
+        } else {
+            if (no_check == 'true'){
+                var go = true;
+            } else {
+                var elems = $('.datepicker');
+                var count = elems.length;
+                var go = false;
+                $.each(elems, function(){
+                    var $obj = $(this);
+                    if (!$obj.val()){
+                        Lobibox.notify('warning', {
+                            title: '錯誤訊息',
+                            msg: '您有缺失尚未填報改善日期，請檢查填報內容是否完整。',
+                        });
+                        return false;
+                    }
+                    if (!--count) {go = true};
+                })
+            }
+            if (go) {
+                $.ajax({
+                    url: '/supervise/api/v2/supervisecase/' + row_id + '/',
+                    type: 'PUT',
+                    data: JSON.stringify({
+                        is_improve: true
+                    }),
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    beforeSend: function(XHR) {
+                        XHR.setRequestHeader('X-CSRFToken', CSRFMIDDLEWARETOKEN);
+                    },
+                    success: function (json, text, xhr) {
+                        $obj.removeClass('btn-warning');
+                        $obj.addClass('btn-success');
+                        $obj.attr('now_status', 'true');
+                        $obj.html('已提交改善完畢');
+                        Lobibox.notify('success', {
+                            title: '系統訊息',
+                            msg: '已完成提交改善完畢',
+                        });
+                    },
+                    error: function (json) {
+                        Lobibox.notify('error', {
+                            title: '錯誤訊息',
+                            msg: json.responseText,
+                        });
+                    }
+                });
+            }
+        }
+    }
+
+    function show_pdf_view_dialog(){
+        var $obj = $(this);
+        var url = $obj.attr('url');
+        var width = document.body.clientWidth;
+        var height = document.body.clientHeight;
+        var row_id = $obj.attr('row_id');
+        var $dialog = $('#pdf_view_dialog');
+        $dialog.find('.modal-dialog').css('width', width-20);
+        $dialog.find('.modal-body').css('width', width-20);
+        $dialog.find('.modal-body').css('height', height-140);
+        $dialog.find('#pdf').css('height', height-140);
+        $dialog.find('#delete_error_improve_file').attr('row_id', row_id);
+        PDFObject.embed(url, "#pdf");
+        $dialog.modal('show');
+    }
+
+    function delete_error_improve_file(){
+        var $obj = $(this);
+        var row_id = $obj.attr('row_id');
+        Lobibox.confirm({
+            msg: '您要刪除此上傳PDF嗎？',
+            buttons: {
+                accept: {
+                    'class': 'lobibox-btn lobibox-btn-yes',
+                    text: '確認刪除',
+                    closeOnClick: true
+                },
+                cancel: {
+                    'class': 'lobibox-btn lobibox-btn-no',
+                    text: '取消',
+                    closeOnClick: true
+                },
+            },
+            callback: function ($this, type, ev) {
+                if(type=="accept"){
+                    $.ajax({
+                        url: '/supervise/api/v2/errorimprovefile/' + row_id + '/',
+                        type: 'DELETE',
+                        contentType: 'application/json',
+                        dataType: 'json',
+                        beforeSend: function(XHR) {
+                            XHR.setRequestHeader('X-CSRFToken', CSRFMIDDLEWARETOKEN);
+                        },
+                        success: function (json, text, xhr) {
+                            $('.show_pdf_view_dialog[row_id="' + row_id + '"]').remove();
+                            Lobibox.notify('success', {
+                                title: '系統訊息',
+                                msg: '檔案已刪除',
+                            });
+                            $('#pdf_view_dialog').modal('hide');
+                        },
+                        error: function (json) {
+                            Lobibox.notify('error', {
+                                title: '錯誤訊息',
+                                msg: json.responseText,
+                            });
+                        }
+                    });
+                }
+            }
+        })
+    }
+
+
+    $(document).ready(function(){
+        $('.add_error_photo_record').click(add_error_photo_record);
+        $('.show_error_photo_table_dialog').click(show_error_photo_table_dialog);
+        $(".uploader_file").each(function(){
+            var $obj = $(this);
+            var row_id = $obj.attr("row_id");
+            NewFileUploader_File($obj, row_id);
+        });
+        $(".uploader_errorfile").each(function(){
+            var $obj = $(this);
+            var row_id = $obj.attr("row_id");
+            NewErrorFileUploader_File($obj, row_id);
+        });
+
+        $('.set_is_improve').click(set_is_improve);
+        $(document).on('click', '.show_pdf_view_dialog', show_pdf_view_dialog);
+        $('#delete_error_improve_file').click(delete_error_improve_file);
+    });
+</script>
+{% endblock%}

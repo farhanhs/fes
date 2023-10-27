@@ -1,0 +1,38 @@
+{% load utiltags %}
+{% load humanize %}
+<tr id="Tr_Allocation_{{ a.id }}" class="hightlightRow" align="center">
+    
+    <td id="date_{{ a.id }}" class="redaction" align="center">
+        <a class="show_date_{{ a.id }}">{{ a.date|default_if_none:'' }}</a>
+        <input editing="date_{{ a.id }}" row="{{ a.id }}" category="Allocation"
+                  class="edit_date_{{ a.id }} updateRedaction setDate"
+                  value="{{ a.date|default_if_none:'' }}" old_value="{{ a.date|default_if_none:'' }}"
+                  style="display: none;"/>
+    </td>
+
+    <td id="allocation_{{ a.id }}" class="redaction" align="center">
+        <a class="show_allocation_{{ a.id }}">{{ a.allocation|default_if_none:''|intcomma|cutzero }}</a>
+        <input editing="allocation_{{ a.id }}" row="{{ a.id }}" category="Allocation"
+                  class="edit_allocation_{{ a.id }} updateRedaction nullinteger"
+                  value="{{ a.allocation|default_if_none:''|cutzero }}" old_value="{{ a.allocation|default_if_none:''|cutzero }}"
+                  style="display: none;text-align: right;"/>
+    </td>
+
+    {% if edit %}
+    <td id="memo_{{ a.id }}" class="redaction" style=" padding-right: 55px;" align="left">
+        <a class="show_memo_{{ a.id }}">{{ a.memo|default_if_none:''|linebreaks }}</a>
+        <textarea editing="memo_{{ a.id }}" row="{{ a.id }}" category="Allocation"
+                  class="edit_memo_{{ a.id }} updateRedaction" cols="30" rows="3"
+                  value="{{ a.memo|default_if_none:'' }}" old_value="{{ a.memo|default_if_none:'' }}"
+                  style="display: none;">{{ a.memo|default_if_none:'' }}</textarea>
+    </td>
+    {% else %}
+    <td style=" padding-right: 55px;" align="left">{{ a.memo|default_if_none:''|linebreaks }}</td>
+    {% endif %}
+    
+    {% if edit %}
+    <td align="center">
+        <img class="deleteProjectAllocation" src="/media/images/delete.png" title="刪除紀錄" stage="{{ a.date }}" allocation_id="{{ a.id }}">
+    </td>
+    {% endif %}
+</tr>

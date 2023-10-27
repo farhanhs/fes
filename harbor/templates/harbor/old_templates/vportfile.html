@@ -1,0 +1,98 @@
+{% extends 'harbor/vport.html' %}
+
+{% block scriptlib %}
+    <script type="text/javascript" src="/media/harbor/js/lib.js"></script>
+{% endblock %}
+{% block menu %}
+    <ul id="menu" value ="/harbor/view"></ul>
+{% endblock %}
+
+{% block portinfocontent %}
+<table width="800">
+    <tr>
+        <td>
+            {% if can_upload %}
+            <form enctype="multipart/form-data" action="./" method="POST">
+                <table>
+                    <tr valign="top">
+                        <td>檔案名稱：</td>
+                        <td><input maxlength="256" size="50" type="text" name="name" value=""></td>
+                    </tr>
+                    <tr valign="top">
+                        <td>檔案備註：</td>
+                        <td><textarea cols="50" rows="3" name="memo"></textarea></td>
+                    </tr>
+                    <tr valign="top">
+                        <td>選擇檔案：</td>
+                        <td><input type="file" name="file"></td>
+                    </tr>
+                </table>
+                <input type="submit" id="submit" name="submit" value="確定上傳" onClick="submiting(this)">
+            </form>
+            {% endif %}
+
+            <p>可使用"右鍵另存檔案"</p>
+            <table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+                <tr align="center" bgcolor="#DDFFDD" valign="top" align="left">
+                    <td></td>
+                    <td>檔案<br>類型</td>
+                    <td width="280">檔　　案　　名　　稱</td>
+                    <td width="70">上傳時間</td>
+                    <td width="50">Size</td>
+                    <td width="50">上傳者</td>
+                    <td width="200">說明備註</td>
+                    {% if can_upload %}
+                    <td></td>
+                    {% endif %}
+                </tr>
+                {% for file in files %}
+                <tr id="File_tr_{{ file.id }}" valign="top" align="left">
+                    <td>{{ forloop.counter }}</td>
+                    <td align="center">{{ file.rExt }}</td>
+                    <td>
+                        <a href="/{{ file.rUrl }}" target="_blank">
+                            <span class="showFile_{{ file.id }}" id="showFile_name_{{ file.id }}">{{ file.name }}</span>
+                        </a>
+                        {% ifequal user file.upload_user %}
+                            <input class="editPortFile editPortFile_{{ file.id }}" id="id_name_{{ file.id }}" style="display: none;"
+                                   type="text" name="name"
+                                   maxlength="256" size="36" old_value="{% if file.name %}{{ file.name }}{% endif %}"
+                                   value="{% if file.name %}{{ file.name }}{% endif %}"/>
+                        {% endifequal %}
+                    </td>
+                    <td><span style="font-size:12px;">{{ file.upload_date }}</span></td>
+                    <td align="right"><span style="font-size:12px;">{{ file.calSize }}</span></td>
+                    <td align="center"><span style="font-size:12px;">{{ file.upload_user.user_profile.rName }}</span></td>
+                    <td>
+                        <span class="showFile_{{ file.id }}" id="showFile_memo_{{ file.id }}">{{ file.memo|linebreaks }}</span>
+                        {% ifequal user file.upload_user %}
+                        <textarea class="editPortFile editPortFile_{{ file.id }}" id="id_memo_{{ file.id }}" style="display: none;"
+                               type="" name="memo"
+                               cols="17" rows="3"
+                               old_value="{% if file.memo %}{{ file.memo }}{% endif %}"
+                               >{% if file.memo %}{{ file.memo }}{% endif %}</textarea>
+                        {% endifequal %}
+                    </td>
+                    {% if can_upload %}
+                    <td>
+                        {% ifequal user file.upload_user %}
+                        <span row_id="{{ file.id }}" type="show" class="changePortFile"><img src="/media/images/edit.png" title="編輯"></span>
+                        <span neme="{{ file.name }}" row_id="{{ file.id }}" class="deletePortFile"><img src="/media/images/delete.png" title="刪除檔案"></span>
+                        {% endifequal %}
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </table>
+
+
+
+
+
+
+
+            
+        </td>
+    </tr>
+</table>
+{% endblock %}

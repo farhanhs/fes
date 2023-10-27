@@ -1,0 +1,242 @@
+{% extends "fishuser/zh-tw/base.html" %}
+{% load i18n %}
+{% load humanize %}
+
+{% block body %}
+<h2>我的工程列表<small>若工程案已結案將會進入【已結案區】</small></h2>
+{% if not projects %}
+    <h3>
+    您目前手上無任何工程<br>
+        {% ifequal user.user_profile.group.name "主辦工程師" %}
+            請選擇上方『匯入工程』按鈕來建立您負責之工程案進行管理。
+        {% else %}
+            請通知您的主辦工程師，進行『匯入工程』的動作，<br>
+            並索取您的認證碼來認領工程進行管理。
+        {% endifequal %}
+    </h3>
+{% else %}
+
+    <table class="sortable table table-bordered" style="font-size: 12px;table-layout: fixed">
+        <thead>
+            <tr class="success">
+                <th width="40px" style="text-align: center !important;"></th>
+                <th width="65px" style="text-align: center !important;">您的身分</th>
+                <th width="35px" style="text-align: center !important;">年度</th>
+                <th width="35px" style="text-align: center !important;">權限</th>
+                <th style="text-align: left !important; min-width: 300px;">
+                    所屬計畫<br>工作名稱<br>(標案編號)
+                </th>
+                <th width="40px" style="text-align: center !important;" width="40">施工<br>相片<br>數量</th>
+                <th width="53px" style="text-align: center !important;" width="35">相片<br>系統</th>
+                <th width="53px" style="text-align: center !important;" width="35">報表<br>系統</th>
+                <th width="100px" style="text-align: center !important;">執行機關</th>
+                <th width="110px" style="text-align: center !important;">相關人員</th>
+                <th width="50px" style="text-align: center !important;" width="35">結案<br>通報</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in projects %}
+                <tr id="tr_{{ p.id }}">
+                    <td rowspan="2">
+                        {% if p.chase_data %}
+                            {% if p.chase_data.complete %}
+                                <img src="/media/frcm/v2/image/green_light.gif" title="已列入進度追蹤(填寫完畢)，可繼續更新資訊">
+                            {% else %}
+                                <img src="/media/frcm/v2/image/red_light.gif" title="已列入進度追蹤，請進入工程案盡快填寫">
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td rowspan="2" style="color:#CC9933;">{{ p.usergroup|slice:":4" }}</td>
+                    <td rowspan="2">{{ p.year }}</td>
+                    {% if p.open %}
+                        <td rowspan="2" align="center" bgcolor="#66FF66">
+                            開放
+                        </td>
+                    {% else %}
+                        <td rowspan="2" align="center" bgcolor="#FF6666">
+                            關閉
+                        </td>
+                    {% endif %}
+                    <td>
+                        {{ p.plan__name__list }}<br>
+                        <span style="font-size: 13px;">
+                            <a href="/frcm/project_profile/{{ p.id }}/">{{ p.name }}</a>
+                        </span><br>
+                        {% if p.bid_no %}({{ p.bid_no }}){% endif %}
+                    </td>
+                    <td align="center">
+                        {% if p.use_gallery %}
+                        {{ p.rGalleryPics }}
+                        {% else %}
+                        {{ p.rFRCMAlreadyUploadPics }}/{{ p.rFRCMNormalPics }}
+                        {% endif %}
+                    </td>
+                    <td align="center">
+                        <a href="{% url 'go_photo' project_id=p.id %}" target="_blank">
+                            <img src="/media/frcm/v2/image/eng-photo.png" width="35" height="35" title="施工相片系統">
+                        </a>
+                    </td>
+                    <td align="center">
+                        <a href="/dailyreport/start_page/{{ p.id }}/" target="_blank">
+                            <img src="/media/frcm/v2/image/daily-report.png" width="35" height="35" title="日報表系統">
+                        </a>
+                    </td>
+                    <td>{% if p.unit %}{{ p.unit.name }}{% endif %}</td>
+                    <td>
+                        {% for u in p.frcmusergroup_set.all %}
+                            {% if u.is_active %}
+                                {{ u.group.name|slice:":2" }}:{{ u.user.user_profile.rName }}<br>
+                            {% else %}
+                                <span style="color:red;">
+                                    {{ u.group.name|slice:":2" }}:{{ u.user.user_profile.rName }}(尚未授權)<br>
+                                </span>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td align="center">
+                        <input type="image" src="/media/frcm/v2/image/mail.png" onclick="display_alert({{p.id}})" width="35" height="35" title="點我通報要結案" ></input>
+                    </td>
+                </tr>
+                <tr style="height:1px">
+                    <td colspan="6">
+                        <ul>
+                            {% for case in p.supervisecase_set.all %}
+                                <li><a href="/supervise/error_imporve/{{ case.id }}/">『{{ case.date }}』督導，『缺失改善紀錄表』</a>{% if case.is_improve %}(已改善完畢){% endif %}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
+            {% endfor %}
+        <tbody>
+    </table>
+
+
+{% endif %}
+
+{% if finish_projects %}
+<br><br><br>
+<h2 onclick="$('#finish_project_table').show();" class="pointer">已結案工程案紀錄<small>(點我顯示已結案工程)</small></h2>
+    <table class="sortable table table-bordered" style="font-size: 12px; display:none;table-layout: fixed" id="finish_project_table">
+        <thead>
+            <tr class="active">
+                <th width="40px" style="text-align: center !important;"></th>
+                <th width="65px" style="text-align: center !important;">您的身分</th>
+                <th width="35px" style="text-align: center !important;">年度</th>
+                <th width="35px" style="text-align: center !important;">權限</th>
+                <th style="text-align: left !important; min-width: 300px;">
+                    所屬計畫<br>工作名稱<br>(標案編號)
+                </th>
+                <th width="40px" style="text-align: center !important;" width="40">施工<br>相片<br>數量</th>
+                <th width="53px" style="text-align: center !important;" width="35">相片<br>系統</th>
+                <th width="53px" style="text-align: center !important;" width="35">報表<br>系統</th>
+                <th width="100px" style="text-align: center !important;">執行機關</th>
+                <th width="110px" style="text-align: center !important;">相關人員</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in finish_projects %}
+                <tr id="tr_{{ p.id }}">
+                    <td rowspan="2">
+                        {% if p.chase_data %}
+                            {% if p.chase_data.complete %}
+                                <img src="/media/frcm/v2/image/green_light.gif" title="已列入進度追蹤(填寫完畢)，可繼續更新資訊">
+                            {% else %}
+                                <img src="/media/frcm/v2/image/red_light.gif" title="已列入進度追蹤，請進入工程案盡快填寫">
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td rowspan="2" style="color:#CC9933;">{{ p.usergroup|slice:":4" }}</td>
+                    <td rowspan="2">{{ p.year }}</td>
+                    {% if p.open %}
+                        <td rowspan="2" align="center" bgcolor="#66FF66">
+                            開放
+                        </td>
+                    {% else %}
+                        <td rowspan="2" align="center" bgcolor="#FF6666">
+                            關閉
+                        </td>
+                    {% endif %}
+                    <td>
+                        1.{{ p.plan.name }}<br>
+                        2.{{ p.bid_no }}<br>
+                        3.
+                        <span style="font-size: 13px;">
+                            <a href="/frcm/project_profile/{{ p.id }}/">{{ p.name }}</a>
+                        </span>
+                    </td>
+                    <td align="center">
+                        {% if p.use_gallery %}
+                        {{ p.rGalleryPics }}
+                        {% else %}
+                        {{ p.rFRCMAlreadyUploadPics }}/{{ p.rFRCMNormalPics }}
+                        {% endif %}
+                    </td>
+                    <td align="center">
+                        <a href="{% url 'go_photo' project_id=p.id %}" target="_blank">
+                            <img src="/media/frcm/v2/image/eng-photo.png" width="35" height="35" title="施工相片系統">
+                        </a>
+                    </td>
+                    <td align="center">
+                        <a href="/dailyreport/start_page/{{ p.id }}/" target="_blank">
+                            <img src="/media/frcm/v2/image/daily-report.png" width="35" height="35" title="日報表系統">
+                        </a>
+                    </td>
+                    <td>{% if p.unit %}{{ p.unit.name }}{% endif %}</td>
+                    <td>
+                        {% for u in p.frcmusergroup_set.all %}
+                            {% if u.is_active %}
+                                {{ u.group.name|slice:":2" }}:{{ u.user.user_profile.rName }}<br>
+                            {% else %}
+                                <span style="color:red;">
+                                    {{ u.group.name|slice:":2" }}:{{ u.user.user_profile.rName }}(尚未授權)<br>
+                                </span>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                </tr>
+                <tr style="height:1px">
+                    <td colspan="6">
+                        <ul>
+                            {% for case in p.supervisecase_set.all %}
+                                <li><a href="/supervise/error_imporve/{{ case.id }}/">『{{ case.date }}』督導，『缺失改善紀錄表』</a>{% if case.is_improve %}(已改善完畢){% endif %}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
+            {% endfor %}
+        <tbody>
+    </table>
+{% endif %}
+
+<script type="text/javascript">
+    function display_alert(project_id){
+        var date_check = /^(([1-9]\d{0,3}|0)\-\d{2}\-\d{2})|(([1-9]\d{0,3}|0)\.\d{2}\.\d{2})|(([1-9]\d{0,3}|0)\/\d{2}\/\d{2})$/;
+        var finish_date = prompt("請輸入需結案日期。\n日期範例:2022-01-13","");
+        if (finish_date) {
+            if (!(date_check.test(finish_date))){
+                alert("須為日期格式(如2022-01-13)！");
+            }else if (finish_date && finish_date != ''){
+                alert("需結案日期 : "+ finish_date + "\n" + "已寄信通知承辦人員。");
+                
+                $.ajax({
+                    url: '/frcm/send_email/',
+                    type:'POST',
+                    data:{
+                        id:project_id,
+                        date:finish_date,
+                        csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                        }
+                })
+            }
+        }else if (finish_date == '') {
+            alert("請填寫工程案的結案日期。");
+        }
+        
+    }
+</script>
+
+
+{% endblock %}
+
+
+

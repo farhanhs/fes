@@ -1,0 +1,408 @@
+{% extends "fishuser/zh-tw/base.html" %}
+{% load i18n %}
+{% load humanize %}
+{% load utiltags %}
+
+{% block body %}
+<h2>漁業發展-漁港管控表</h2>
+<br>
+<table class="table">
+    <tr>
+        <td width="10%" align="right">年度</td>
+        <td width="15%">
+            <select id="select_year" class="form-control get_control_info get_work_no_info">
+                <option value="">請選擇</option>
+                {% for y in years %}
+                    {{ y }}
+                    <option value="{{ y }}">{{ y }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td width="10%" align="right">經費種類</td>
+        <td width="20%">
+            <!-- <select id="select_budget_type" class="form-control get_control_info get_work_no_info">
+                <option value="">請選擇</option>
+                <option value="補助（資本門）">補助（資本門）</option>
+                <option value="補助（經常門）">補助（經常門）</option>
+                <option value="自辦（資本門）">自辦（資本門）</option>
+                <option value="自辦（經常門）">自辦（經常門）</option>
+                <option value="委辦（資本門）">委辦（資本門）</option>
+                <option value="委辦（經常門）">委辦（經常門）</option>
+            </select> -->
+            <!--<select id="select_budget_type" class="form-control get_control_info get_work_no_info">
+                <option value="">請選擇</option>
+                <option value="資本門">資本門</option>
+                <option value="經常門">經常門</option>
+            </select>-->
+        </td>
+        <td width="10%" align="right">上層計畫</td>
+        <td width="35%">
+            <select id="select_work" class="form-control get_control_info">
+                <option value="">請選擇</option>
+            {% for p in top_plans %}
+                <option value="{{p.id}}">{{p.name}}</option>
+            {% endfor %}
+            </select>
+        </td>
+    </tr>
+</table>
+<a class="make_excel" >
+    <button class="btn btn-success" type="button">
+        匯出<span style="color: blue;">Excel</span>報表
+    </button>
+</a>
+<a class="print_page" target="print_page" style="margin-left: 1rem;">
+    <button class="btn btn-warning" type="button">
+        線上列印『漁港管控表』
+    </button>
+</a>
+<button onclick="get_control_info()" class="btn btn-info" type="button" style="margin-left: 1rem;">查詢</button><hr>
+<div id='count_unit'>
+</div>
+<table id="control_form_table_allowance" class="sortable table table-bordered" style="text-align: center; font-size: 14px;display: none;">
+    <thead>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<table id="control_form_table_selfpay" class="sortable table table-bordered" style="text-align: center; font-size: 14px;display: none;">
+    <thead>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<table id="control_form_table_commission" class="sortable table table-bordered" style="text-align: center; font-size: 14px;display: none;">
+    <thead>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+
+<script type="text/javascript">
+
+    function get_control_info() {
+        let year = $('#select_year').val();
+        let budget_type = $('#select_budget_type').val();
+        let top_plan_id = $('#select_work').val();
+        if(year == ''){
+            alert('請選擇年度');
+            return false;
+        }
+
+        }
+        let data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            year: year,
+            budget_type: budget_type,
+            top_plan_id: top_plan_id,
+        };
+        let thead_commission_html = '';
+        let tbody_commission_html = '';
+        let thead_selfpay_html = '';
+        let tbody_selfpay_html = '';
+        let thead_allowance_html = '';
+        let tbody_allowance_html = '';
+        let count_unit_html = '';
+        // const allowance = ['allowance', 'matching_fund_1', 'fund_1', 'allowance_revise', 'matching_fund_2', 'fund_2'];
+        // const commission = ['commission', 'commission_revise'];
+        // const selfpay = ['selfpay', 'selfpay_revise'];
+        //補助
+        const allowance = ['capital_ratify_revision', 'capital_ratify_local_revision', 'fund_1', 'allowance_revise', 'matching_fund_2', 'fund_2'];
+        //委辦
+        const commission = ['capital_ratify_revision', 'commission_revise'];
+        //自辦
+        const selfpay = ['capital_ratify_revision', 'selfpay_revise'];
+
+        $.ajax({
+            url: '/project/get_control_form_info/',
+            type: 'POST',
+            data: data,
+            dataType: 'json',
+            success: function (json) {
+                
+                $('#control_form_table_commission tbody').html('');
+                $('#control_form_table_commission thead').html('');
+                $('#control_form_table_selfpay tbody').html('');
+                $('#control_form_table_selfpay thead').html('');
+                $('#control_form_table_allowance tbody').html('');
+                $('#control_form_table_allowance thead').html('');
+                $('#count_unit').html('');
+                $('#control_form_table_commission').hide()
+                $('#control_form_table_selfpay').hide()
+                $('#control_form_table_allowance').hide()
+
+                count_unit_html = `<div style='text-align:end; font-weight:bold; font-size:1.5rem'>共有 ${json['data'].length} 筆，單位：千元</div>`
+                $('#count_unit').append(count_unit_html);
+
+                //補助表格
+                thead_allowance_html = `
+                <tr style="background-color: #3083a9;color: #F0F0F0">
+                    <th colspan="9" width="3%" style="text-align: center">補助（ ${budget_type} ）</th>
+                </tr>
+                `;
+                
+                thead_allowance_html += `
+                <tr style="background-color: #3083a9;color: #F0F0F0;">
+                    <th width="5%" style="text-align: center;">計畫編號</th>
+                    <th width="9%" style="text-align: center;">工程名稱</th>
+                    <th width="1%" style="text-align: center;">補助</th>
+                    <th width="1%" style="text-align: center;">配合款</th>
+                    <th width="1%" style="text-align: center;">基金</th>
+                    <th width="1%" style="text-align: center;">調補助1</th>
+                    <th width="1%" style="text-align: center;">配合款</th>
+                    <th width="1%" style="text-align: center;">基金</th>
+                    <th width="1%" style="text-align: center;">備註</th>
+                </tr>
+                `;
+                
+                for (i=0; i<json['data'].length; i++) {
+                    if(json['data'][i]['undertake_type']!='補助'){
+                        continue
+                    }
+                    if (json['data'][i]['work_no'] == null) {
+                        json['data'][i]['work_no'] = '';
+                    }
+                    tbody_allowance_html += work_no_and_name_html(json['data'][i]['id'], json['data'][i]['work_no'], json['data'][i]['name']);
+
+                    for(x=0; x < allowance.length; x++) {
+                        tbody_allowance_html += bid_column(allowance[x], json['data'][i]['id'], json['data'][i][allowance[x]], json['data'][i]['budget_id']);
+                    }
+
+                    tbody_allowance_html += memo_html(json['data'][i]['id'], json['data'][i]['control_form_memo']);
+                }
+
+                //委辦表格
+                thead_commission_html = `
+                <tr style="background-color: #3083a9;color: #F0F0F0">
+                    <th colspan="9" width="3%" style="text-align: center">委辦（ ${budget_type} ）</th>
+                </tr>
+                `;
+                
+                thead_commission_html += `
+                <tr style="background-color: #3083a9;color: #F0F0F0;">
+                    <th width="7%" style="text-align: center;">計畫編號</th>
+                    <th width="11%" style="text-align: center;">工程名稱</th>
+                    <th width="1%" style="text-align: center;">委辦</th>
+                    <th width="1%" style="text-align: center;">委辦1</th>
+                    <th width="1%" style="text-align: center;">備註</th>
+                </tr>
+                `;
+                
+                for (i=0; i<json['data'].length; i++) {
+                    if (json['data'][i]['undertake_type'] != '委辦'){
+                        continue;
+                    }
+                    if (json['data'][i]['work_no'] == null) {
+                        json['data'][i]['work_no'] = '';
+                    }
+                    tbody_commission_html += work_no_and_name_html(json['data'][i]['id'], json['data'][i]['work_no'], json['data'][i]['name']);
+
+                    for(x=0; x < commission.length; x++) {
+                        tbody_commission_html += bid_column(commission[x], json['data'][i]['id'], json['data'][i][commission[x]], json['data'][i]['budget_id']);
+                    }
+
+                    tbody_commission_html += memo_html(json['data'][i]['id'], json['data'][i]['control_form_memo']);
+                }
+            
+                //自辦表格
+                thead_selfpay_html = `
+                <tr style="background-color: #3083a9;color: #F0F0F0">
+                    <th colspan="9" width="3%" style="text-align: center">自辦（ ${budget_type} ）</th>
+                </tr>
+                `;
+                
+                thead_selfpay_html += `
+                <tr style="background-color: #3083a9;color: #F0F0F0;">
+                    <th width="2%" style="text-align: center;">編號</th>
+                    <th width="10%" style="text-align: center;">工程名稱</th>
+                    <th width="1%" style="text-align: center;">自辦</th>
+                    <th width="1%" style="text-align: center;">自辦1</th>
+                    <th width="1%" style="text-align: center;">備註</th>
+                </tr>
+                `;
+
+                for (i=0; i<json['data'].length; i++) {
+                    if(json['data'][i]['undertake_type'] != '自辦'){
+                        continue
+                    }
+                    tbody_selfpay_html += work_no_and_name_html(json['data'][i]['id'], i + 1, json['data'][i]['name']);
+
+                    for(x=0; x < selfpay.length; x++) {
+                        tbody_selfpay_html += bid_column(selfpay[x], json['data'][i]['id'], json['data'][i][selfpay[x]], json['data'][i]['budget_id']);
+                    }
+
+                    tbody_selfpay_html += memo_html(json['data'][i]['id'], json['data'][i]['control_form_memo']);
+                }
+                
+
+                $('#control_form_table_allowance thead').append(thead_allowance_html);
+                $('#control_form_table_allowance tbody').append(tbody_allowance_html);
+                $('#control_form_table_allowance').show()
+                $('#control_form_table_selfpay thead').append(thead_selfpay_html);
+                $('#control_form_table_selfpay tbody').append(tbody_selfpay_html);
+                $('#control_form_table_selfpay').show()
+                $('#control_form_table_commission thead').append(thead_commission_html);
+                $('#control_form_table_commission tbody').append(tbody_commission_html);
+                $('#control_form_table_commission').show()
+            },
+            error: REST_ERROR
+        })
+    }
+
+    function get_work_no_info() {
+        // let year = $('#select_year').val();
+        // let budget_type = $('#select_budget_type').val();
+        // if(year == ''){
+        //     return false;
+        // }
+        // else if (budget_type == '') {
+        //     return false;
+        // }
+        // let data = {
+        //     csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+        //     year: year,
+        //     budget_type: budget_type,
+        // };
+        // let select_html = '';
+        // $.ajax({
+        //     url: '/project/get_work_no_info/',
+        //     type: 'POST',
+        //     data: data,
+        //     dataType: 'json',
+        //     success: function (json) {
+        //         $('#select_work').html('');
+        //         select_html = `<option value="">請選擇</option>`;
+
+        //         for (i=0; i<json['data'].length; i++) {
+        //             select_html += `
+        //             <option value="${json['data'][i]}">${json['data'][i]}</option>
+        //             `;
+        //         }
+        //         $('#select_work').append(select_html);
+                
+        //     },
+        //     error: REST_ERROR
+        // })
+    }
+
+    function check_year_budget() {
+        // let year = $('#select_year').val();
+        // let budget_type = $('#select_budget_type').val();
+        // if(year == ''){
+        //     alert('請選擇年度');
+        //     return false;
+        // }
+        // else if (budget_type == '') {
+        //     alert('請選擇經費種類');
+        //     return false;
+        // }
+    }
+
+    function bid_column(field, id, value, budget_id) {
+        let row_id = '';
+        let table_name = '';
+        let input_class = '';
+        if (field == 'capital_ratify_revision' || field == 'capital_ratify_local_revision') {
+            table_name = 'budget';
+            row_id = budget_id;
+            value = value / 1000;
+            input_class = 'BlurUpdateInfoBudget';
+        }else {
+            table_name = 'project';
+            row_id = id;
+            input_class = 'BlurUpdateInfo';
+        }
+        const html = `
+            <td>
+                <input
+                style='width: 7.5rem; display: inline-block;padding: 3px;text-align: right;'
+                type="text" class="${input_class} form-control"
+                field_type="float" style="text-align: right;"
+                field_name="${field}"
+                row_id="${row_id}"
+                table_name="${table_name}"
+                module_name='fishuser'
+                placeholder="待輸入"
+                old_value="${value}"
+                value="${value}"/>
+            </td>
+        `;
+
+        return html;
+    }
+
+    function work_no_and_name_html(id, work_no, name) {
+        const html = `
+        <tr>
+            <td>${work_no}</td>
+            <td><a href="/project/project_profile/${id}/">${name}</a></td>
+        `;
+
+        return html;
+    }
+
+    function memo_html(id, memo) {
+        const html = `
+            <td>
+                <textarea style='width: 8rem; display: inline-block;padding: 3px'
+                type="text" class="BlurUpdateInfo form-control"
+                field_type="str" style="text-align: right;"
+                field_name="control_form_memo"
+                row_id="${id}"
+                table_name="project"
+                module_name='fishuser'
+                placeholder="待輸入"
+                old_value="${memo}">${memo}</textarea>
+            </td>
+        </tr>
+        `;
+
+        return html;
+    }
+
+    function print_page() {
+        const year = $('#select_year').val();
+        const budget_type = $('#select_budget_type').val();
+        let top_plan_id = $('#select_work').val();
+        if(year == ''){
+            alert('請選擇年度');
+            return false;
+        }
+        else if (budget_type == '') {
+            alert('請選擇經費種類');
+            return false;
+        }
+        if(!top_plan_id) {
+            top_plan_id = 'ALL';
+        }
+        window.open(`/project/control_form_online_print/${year}/${budget_type}/${top_plan_id}`);
+    }
+    
+    function make_excel() {
+        const year = $('#select_year').val();
+        const budget_type = $('#select_budget_type').val();
+        let top_plan_id = $('#select_work').val();
+        if(year == ''){
+            alert('請選擇年度');
+            return false;
+        }
+        else if (budget_type == '') {
+            alert('請選擇經費種類');
+            return false;
+        }
+        if(!top_plan_id) {
+            top_plan_id = 'ALL';
+        }
+        window.open(`/project/control_form_make_excel/${year}/${budget_type}/${top_plan_id}`);
+    }
+
+    $(document).ready(function(){
+        $('.get_work_no_info').change(get_work_no_info);
+        $('#select_work').click(check_year_budget);
+        $('.print_page').click(print_page);
+        $('.make_excel').click(make_excel);
+    });
+
+</script>
+{% endblock %}

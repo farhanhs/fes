@@ -1,0 +1,491 @@
+{% extends 'project/project.html' %}
+{% load humanize %}
+{% load utiltags %}
+{% block style %}
+th {
+    padding:3px 5px;
+}
+
+td {
+    padding:3px 5px;
+    height: 25px;
+}
+
+.hightlightRow:hover {
+    background-color: #CDE5FF;
+	bgcolor: #CDE5FF;
+}
+
+.cetitle {background-color: #FFFFEB;}
+.netitle {background-color: #FFC991;}
+
+.selfinfo {background-color: #EBF5FF;}
+.cityinfo {background-color: #F5FFEB;}
+.workinfo {background-color: #FCEEEE;}
+
+{% endblock %}
+
+{% block title %}<title id="title">{{ target_project }} 工程資訊</title>{% endblock %}
+{% block content %}
+<span style="font-size: 14px"><br>
+<a id="{{ target_project.id }}" class="target_project" name="Fund" year='{{ target_year }}'></a><br><br><br>
+
+<table border="1" cellpadding="2" cellspacing="2" style="border-collapse: collapse; font-size: 12px;">
+    <thead>
+        <tr>
+            <th colspan="10" align="center" class="title_bar pointer" style="background-color: #D6FFAF;font-size:18px;">工程預算　　(單位：元)</th>
+        </tr>
+        <tr bgcolor="#EEEEEE" align="center">
+            <th style="min-width: 90px;">發包金額</th>
+            <th style="min-width: 90px;">空污費</th>
+            <th style="min-width: 90px;">工程管理費</th>
+            <th style="min-width: 90px;">委託設計費</th>
+            <th style="min-width: 90px;">委託監造費</th>
+            <th style="min-width: 90px;">其他</th>
+            <th style="min-width: 90px;">總工程費</th>
+            <th style="min-width: 60px;">負擔<br>比例</th>
+            <th style="min-width: 90px;">本署<br>負擔</th>
+            <th style="min-width: 90px;">地方<br>配合款</th>
+        </tr>
+	</thead>
+	<tbody>
+        <tr align="right" height="30">
+        	{% if edit %}
+            <td id="contract" class="redaction" align="right">
+                <a class="show_contract" align="right">{{ fund.contract|default_if_none:''|intcomma|cutzero }}</a>
+                <input editing="contract" category="Fund" class="edit_contract updateRedaction float" size="7" type="text" value="{% ifequal fund.contract 0 %}{% else %}{{ fund.contract|default_if_none:''|cutzero }}{% endifequal %}" old_value="{% ifequal fund.contract 0 %}{% else %}{{ fund.contract|default_if_none:''|cutzero }}{% endifequal %}" style="display: none; text-align:right;">
+            </td>
+			{% else %}
+            <td align="right">{{ fund.contract|default_if_none:''|intcomma|cutzero }}</td>
+            {% endif %}
+			{% if edit %}
+			<td id="pollution" class="redaction" align="right">
+                <a class="show_pollution" align="right">{{ fund.pollution|default_if_none:''|intcomma|cutzero }}</a>
+                <input editing="pollution" category="Fund" class="edit_pollution updateRedaction float" size="7" type="text" value="{% ifequal fund.pollution 0 %}{% else %}{{ fund.pollution|default_if_none:''|cutzero }}{% endifequal %}" old_value="{% ifequal fund.pollution 0 %}{% else %}{{ fund.pollution|default_if_none:''|cutzero }}{% endifequal %}" style="display: none; text-align:right;">
+            </td>
+			{% else %}
+            <td align="right">{{ fund.pollution|default_if_none:''|intcomma|cutzero }}</td>
+            {% endif %}
+			{% if edit %}
+			<td id="manage" class="redaction" align="right">
+                <a class="show_manage" align="right">{{ fund.manage|default_if_none:''|intcomma|cutzero }}</a>
+                <input editing="manage" category="Fund" class="edit_manage updateRedaction float" size="7" type="text" value="{% ifequal fund.manage 0 %}{% else %}{{ fund.manage|default_if_none:''|cutzero }}{% endifequal %}" old_value="{% ifequal fund.manage 0 %}{% else %}{{ fund.manage|default_if_none:''|cutzero }}{% endifequal %}" style="display: none; text-align:right;">
+            </td>
+			{% else %}
+            <td align="right">{{ fund.manage|default_if_none:''|intcomma|cutzero }}</td>
+            {% endif %}
+			{% if edit %}
+			<td id="entrust_design" class="redaction" align="right">
+                <a class="show_entrust_design" align="right">{{ fund.entrust_design|default_if_none:''|intcomma|cutzero }}</a>
+                <input editing="entrust_design" category="Fund" class="edit_entrust_design updateRedaction float" size="7" type="text" value="{% ifequal fund.entrust_design 0 %}{% else %}{{ fund.entrust_design|default_if_none:''|cutzero }}{% endifequal %}" old_value="{% ifequal fund.entrust_design 0 %}{% else %}{{ fund.entrust_design|default_if_none:''|cutzero }}{% endifequal %}" style="display: none; text-align:right;">
+            </td>
+			{% else %}
+            <td align="right">{{ fund.entrust_design|default_if_none:''|intcomma|cutzero }}</td>
+            {% endif %}
+			{% if edit %}
+			<td id="entrust_supervision" class="redaction" align="right">
+                <a class="show_entrust_supervision" align="right">{{ fund.entrust_supervision|default_if_none:''|intcomma|cutzero }}</a>
+                <input editing="entrust_supervision" category="Fund" class="edit_entrust_supervision updateRedaction float" size="7" type="text" value="{% ifequal fund.entrust_supervision 0 %}{% else %}{{ fund.entrust_supervision|default_if_none:''|cutzero }}{% endifequal %}" old_value="{% ifequal fund.entrust_supervision 0 %}{% else %}{{ fund.entrust_supervision|default_if_none:''|cutzero }}{% endifequal %}" style="display: none; text-align:right;">
+            </td>
+			{% else %}
+            <td align="right">{{ fund.entrust_supervision|default_if_none:''|intcomma|cutzero }}</td>
+            {% endif %}
+			{% if edit %}
+			<td id="other" class="redaction" align="right">
+                <a class="show_other" align="right">{{ fund.other|default_if_none:''|intcomma|cutzero }}</a>
+                <input editing="other" category="Fund" class="edit_other updateRedaction float" size="7" type="text" value="{% ifequal fund.other 0 %}{% else %}{{ fund.other|default_if_none:''|cutzero }}{% endifequal %}" old_value="{% ifequal fund.other 0 %}{% else %}{{ fund.other|default_if_none:''|cutzero }}{% endifequal %}" style="display: none; text-align:right;">
+            </td>
+			{% else %}
+            <td align="right">{{ fund.other|default_if_none:''|intcomma|cutzero }}</td>
+            {% endif %}
+			<td id="TotalProjectBudget" {% if edit %}bgcolor="#B6C8DA"{% endif %}>{{ fund.rTotalProjectBudget|intcomma|cutzero }}</td>
+			<td id="allot_rate" {% if edit %}bgcolor="#B6C8DA"{% endif %}>{{ fund.project.allot_rate|cutzero }}　%</td>
+			<td id="SelfLoad" {% if edit %}bgcolor="#B6C8DA"{% endif %}>{{ fund.rSelfLoad|intcomma|cutzero }}</td>
+			<td id="localMatchFund" {% if edit %}bgcolor="#B6C8DA"{% endif %}>{{ fund.rlocalMatchFund|intcomma|cutzero }}</td>
+        </tr>
+        <tr bgcolor="#EEEEEE" align="center">
+            <td colspan="10">
+                <table border="1" style="border-collapse: collapse" bgcolor="#DEE6EE">
+                    <tr align="center" bgcolor="#CDE5FF">
+                        <td style="min-width: 130px;"></td>
+                        <td style="min-width: 70px;">規劃費</td>
+                        <td style="min-width: 70px;">委託研究</td>
+                        <td style="min-width: 70px;">設計決標金額</td>
+                        <td style="min-width: 70px;">監造決標金額</td>
+                        <td style="min-width: 70px;">工程決標金額</td>
+                        <td style="min-width: 70px;">空污費</td>
+                        <td style="min-width: 70px;">工程管理費</td>
+                        <td style="min-width: 70px;">外水電補助</td>
+                        <td style="min-width: 70px;">其他費用</td>
+                        <td style="min-width: 70px;">發包及其他費用</td>
+                        <td style="min-width: 100px;">總計</td>
+                    </tr>
+                    <tr align="right">
+                        <td align="center" bgcolor="#FFE7CD" style="font-size: 18px;">契約金額<br>(單位：元)</td>
+                        <td>{{ target_project.planning_fee|default_if_none:''|intcomma|cutzero }}</td>
+                        <td>{{ target_project.commissioned_research|default_if_none:''|intcomma|cutzero }}</td>
+                        <td>{{ target_project.design_bid|default_if_none:''|intcomma|cutzero }}</td>
+                        <td>{{ target_project.inspect_bid|default_if_none:''|intcomma|cutzero }}</td>
+                        <td>{{ target_project.construction_bid|default_if_none:''|intcomma|cutzero }}</td>
+                        <td>{{ target_project.pollution|default_if_none:''|intcomma|cutzero }}</td>
+                        <td>{{ target_project.manage|default_if_none:''|intcomma|cutzero }}</td>
+                        <td>{{ target_project.subsidy|default_if_none:''|intcomma|cutzero }}</td>
+                        <td>{{ target_project.other_defray|default_if_none:''|intcomma|cutzero }}</td>
+                        <td>{{ target_project.total_money|default_if_none:''|intcomma|cutzero }}</td>
+                        <td>{{ target_project.rContractTotalMoney|default_if_none:''|intcomma|cutzero }}</td>
+                    </tr>
+                    <tr align="right">
+                        <td align="center" bgcolor="#FFE7CD" style="font-size: 18px;">結算金額<br>(單位：元)</td>
+                        <td>{{ target_project.settlement_planning_fee|default_if_none:''|intcomma|cutzero }}</td>
+                        <td>{{ target_project.settlement_commissioned_research|default_if_none:''|intcomma|cutzero }}</td>
+                        <td>{{ target_project.settlement_design_bid|default_if_none:''|intcomma|cutzero }}</td>
+                        <td>{{ target_project.settlement_inspect_bid|default_if_none:''|intcomma|cutzero }}</td>
+                        <td>{{ target_project.settlement_construction_bid|default_if_none:''|intcomma|cutzero }}</td>
+                        <td>{{ target_project.settlement_pollution|default_if_none:''|intcomma|cutzero }}</td>
+                        <td>{{ target_project.settlement_manage|default_if_none:''|intcomma|cutzero }}</td>
+                        <td>{{ target_project.settlement_subsidy|default_if_none:''|intcomma|cutzero }}</td>
+                        <td>{{ target_project.settlement_other_defray|default_if_none:''|intcomma|cutzero }}</td>
+                        <td>{{ target_project.settlement_total_money|default_if_none:''|intcomma|cutzero }}</td>
+                        <td>{{ target_project.rSettlementTotalMoney|default_if_none:''|intcomma|cutzero }}</td>
+                    </tr>
+                </table>
+
+            </td>
+        </tr>
+
+        <tr bgcolor="#EEEEEE" align="center">
+            <td colspan="10">備註</td>
+        </tr>
+        <tr height="90" align="left" valign="top">
+            {% if edit %}
+            <td id="memo_first" class="redaction" colspan="10">
+                <span class="show_memo_first">{{ fund.memo_first|default_if_none:''|linebreaks }}</span>
+                <textarea editing="memo_first" category="Fund" class="edit_memo_first updateRedaction" cols="90" rows="3" value="{{ fund.memo_first|default_if_none:'' }}" old_value="{{ fund.memo_first|default_if_none:'' }}" style="display: none;">{{ fund.memo_first|default_if_none:'' }}</textarea>
+            </td>
+            {% else %}
+            <td colspan="10">{{ fund.memo_first|default_if_none:''|linebreaks }}</td>
+            {% endif %}
+        </tr>
+	    <tr bgcolor="#EEEEEE" align="center">
+	        <td colspan="10">另備註</td>
+	    </tr>
+		<tr height="90" align="left" valign="top">
+            {% if edit %}
+            <td id="memo_second" class="redaction" colspan="10">
+                <span class="show_memo_second">{{ fund.memo_second|default_if_none:''|linebreaks }}</span>
+                <textarea editing="memo_second" category="Fund" class="edit_memo_second updateRedaction" cols="90" rows="3" value="{{ fund.memo_second|default_if_none:'' }}" old_value="{{ fund.memo_second|default_if_none:'' }}" style="display: none;">{{ fund.memo_second|default_if_none:'' }}</textarea>
+            </td>
+            {% else %}
+            <td colspan="10">{{ fund.memo_second|default_if_none:''|linebreaks }}</td>
+            {% endif %}
+        </tr>
+	    <tr bgcolor="#EEEEEE" align="center">
+	        <td colspan="10">刪除備註</td>
+	    </tr>
+		<tr height="90" align="left" valign="top">
+			<!-- Weird Bug! 在 FF 中若以 linebreaks 處理文字，將無法正常顯示刪除線效果(s, del, strike, text-decoration:line-through 等方法均不行) -->
+            {% if edit %}
+            <td id="memo_del" class="redaction" colspan="10">
+                <s class="show_memo_del" style="color: red;">{{ fund.memo_del|default_if_none:'' }}</s>
+                <textarea editing="memo_del" category="Fund" class="edit_memo_del updateRedaction" cols="90" rows="3" value="{{ fund.memo_del|default_if_none:'' }}" old_value="{{ fund.memo_del|default_if_none:'' }}" style="display: none;">{{ fund.memo_del|default_if_none:'' }}</textarea>
+            </td>
+            {% else %}
+            <td colspan="10"><s style="color: red;">{{ fund.memo_del|default_if_none:''|linebreaks }}</s></td>
+            {% endif %}
+        </tr>
+	</tbody>
+</table>
+
+<br><hr width="800" style="color:orange"><hr width="800" style="color:orange"><br>
+
+<table border="1" cellpadding="2" cellspacing="2" style="border-collapse: collapse; font-size: 12px;">
+    <thead>
+        <tr>
+            <th colspan="16" align="center" class="title_bar pointer" style="background-color: #D6FFAF;font-size:18px;">年度預算</th>
+        </tr>
+		<tr align=center bgcolor="#EEEEEE">
+			<th rowspan="2" style="min-width: 30px;">年度</th>
+			<th rowspan="2" style="min-width: 70px;">核定數<br>(元)</th>
+			<th rowspan="2" style="min-width: 70px;">修正<br>核定數<br>(元)</th>
+                        <th rowspan="2" style="min-width: 70px;">地方核定數<br>(元)</th>
+			<th rowspan="2" style="min-width: 70px;">修正<br>地方核定數<br>(元)</th>
+                        <th rowspan="2" style="min-width: 70px;">歷年<br>(元)</th>
+			<th rowspan="2" style="min-width: 70px;">應撥款<br>(元)</th>
+			<th rowspan="2" style="min-width: 70px;">已撥款<br>(元)</th>
+			<th rowspan="2" style="min-width: 70px;">未撥款<br>(元)</th>
+			<th rowspan="2" style="min-width: 70px;">申請保留數<br>(元)</th>
+			<th colspan="2">尚未支用數</th>
+			<th rowspan="2" style="min-width: 90px;">申請日期</th>
+			<th rowspan="2" style="min-width: 90px;">保留期限</th>
+			<th rowspan="2" style="min-width: 60px;">保留理由</th>
+			<th rowspan="2" style="min-width: 60px;">證明文件</th>
+			{% if edit %}<th rowspan="2" style="min-width: 60px;">撤銷</th>{% endif %}
+		</tr>
+		<tr align=center bgcolor="#EEEEEE">
+			<th style="min-width: 70px;">已撥款<br>(元)</th>
+			<th style="min-width: 70px;">未撥款<br>(元)</th>
+		</tr>
+	</thead>
+	<tbody>
+            {% for data in budgets %}
+            <tr id="budget_{{ data.year }}" class="hightlightRow" align="right">
+                <td align="center">{{ data.year }}</td>
+                {% if edit %}
+                        <td id="{{ data.year }}_capital_ratify_budget" class="redaction" align="right">
+                            <a class="show_{{ data.year }}_capital_ratify_budget" align="right">{{ data.capital_ratify_budget|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="{{ data.year }}_capital_ratify_budget" category="Budget" class="edit_{{ data.year }}_capital_ratify_budget updateRedaction float" size="8" type="text" value="{% ifequal data.capital_ratify_budget 0 %}{% else %}{{ data.capital_ratify_budget|default_if_none:''|cutzero }}{% endifequal %}" old_value="{% ifequal data.capital_ratify_budget 0 %}{% else %}{{ data.capital_ratify_budget|default_if_none:''|cutzero }}{% endifequal %}" style="display: none; text-align:right;">
+                        </td>
+                {% else %}
+                     <td align="right">{{ data.capital_ratify_budget|default_if_none:''|intcomma|cutzero }}</td>
+                {% endif %}
+
+                {% if edit %}
+                    <td id="{{ data.year }}_capital_ratify_revision" class="redaction" align="right">
+                        <a class="show_{{ data.year }}_capital_ratify_revision" align="right">{{ data.capital_ratify_revision|default_if_none:''|intcomma|cutzero }}</a>
+                        <input editing="{{ data.year }}_capital_ratify_revision" category="Budget" class="edit_{{ data.year }}_capital_ratify_revision updateRedaction float" size="8" type="text" value="{% ifequal data.capital_ratify_revision 0 %}{% else %}{{ data.capital_ratify_revision|default_if_none:''|cutzero }}{% endifequal %}" old_value="{% ifequal data.capital_ratify_revision 0 %}{% else %}{{ data.capital_ratify_revision|default_if_none:''|cutzero }}{% endifequal %}" style="display: none; text-align:right;">
+                    </td>
+                {% else %}
+                    <td align="right">{{ data.capital_ratify_revision|default_if_none:''|intcomma|cutzero }}</td>
+                {% endif %}
+
+                {% if edit %}
+                        <td id="{{ data.year }}_capital_ratify_local_budget" class="redaction" align="right">
+                            <a class="show_{{ data.year }}_capital_ratify_local_budget" align="right">{{ data.capital_ratify_local_budget|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="{{ data.year }}_capital_ratify_local_budget" category="Budget" class="edit_{{ data.year }}_capital_ratify_local_budget updateRedaction float" size="8" type="text" value="{% ifequal data.capital_ratify_local_budget 0 %}{% else %}{{ data.capital_ratify_local_budget|default_if_none:''|cutzero }}{% endifequal %}" old_value="{% ifequal data.capital_ratify_local_budget 0 %}{% else %}{{ data.capital_ratify_local_budget|default_if_none:''|cutzero }}{% endifequal %}" style="display: none; text-align:right;">
+                        </td>
+                {% else %}
+                     <td align="right">{{ data.capital_ratify_local_budget|default_if_none:''|intcomma|cutzero }}</td>
+                {% endif %}
+
+                {% if edit %}
+                    <td id="{{ data.year }}_capital_ratify_local_revision" class="redaction" align="right">
+                        <a class="show_{{ data.year }}_capital_ratify_local_revision" align="right">{{ data.capital_ratify_local_revision|default_if_none:''|intcomma|cutzero }}</a>
+                        <input editing="{{ data.year }}_capital_ratify_local_revision" category="Budget" class="edit_{{ data.year }}_capital_ratify_local_revision updateRedaction float" size="8" type="text" value="{% ifequal data.capital_ratify_local_revision 0 %}{% else %}{{ data.capital_ratify_local_revision|default_if_none:''|cutzero }}{% endifequal %}" old_value="{% ifequal data.capital_ratify_local_revision 0 %}{% else %}{{ data.capital_ratify_local_revision|default_if_none:''|cutzero }}{% endifequal %}" style="display: none; text-align:right;">
+                    </td>
+                {% else %}
+                    <td align="right">{{ data.capital_ratify_local_revision|default_if_none:''|intcomma|cutzero }}</td>
+                {% endif %}
+
+                {% if edit %}
+                    <td id="{{ data.year }}_over_the_year" class="redaction" align="right">
+                        <a class="show_{{ data.year }}_over_the_year" align="right">{{ data.over_the_year|default_if_none:''|intcomma|cutzero }}</a>
+                        <input editing="{{ data.year }}_over_the_year" category="Budget" class="edit_{{ data.year }}_over_the_year updateRedaction float" size="8" type="text" value="{% ifequal data.over_the_year 0 %}{% else %}{{ data.over_the_year|default_if_none:''|cutzero }}{% endifequal %}" old_value="{% ifequal data.over_the_year 0 %}{% else %}{{ data.over_the_year|default_if_none:''|cutzero }}{% endifequal %}" style="display: none; text-align:right;">
+                    </td>
+                {% else %}
+                    <td align="right">{{ data.over_the_year|default_if_none:''|intcomma|cutzero }}</td>
+                {% endif %}
+
+                <td {% if edit %}bgcolor="#B6C8DA"{% endif %}>{{ data.ShouldPayThisYear|default_if_none:''|intcomma|cutzero }}</td>
+                <td {% if edit %}bgcolor="#B6C8DA"{% endif %}>{{ data.TotalAppropriatebyThisYear|default_if_none:''|intcomma|cutzero }}</td>
+                <td {% if edit %}bgcolor="#B6C8DA"{% endif %}>{{ data.TotalProjectNotPayThisYear|default_if_none:''|intcomma|cutzero }}</td>
+
+                {% if data.reserve %}
+                    {% if edit %}
+                        <td id="{{ data.year }}_amount" class="redaction" align="right">
+                            <a class="show_{{ data.year }}_amount">{{ data.reserve.amount|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="{{ data.year }}_amount" category="ReserveInfo" class="edit_{{ data.year }}_amount updateRedaction float" size="5" type="text" value="{{ data.reserve.amount|default_if_none:''|cutzero }}" old_value="{{ data.reserve.amount|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                    {% else %}
+                        <td align="right">{{ data.reserve.amount|default_if_none:''|intcomma|cutzero }}</td>
+                    {% endif %}
+
+                    {% if edit %}
+                        <td id="{{ data.year }}_allocation" class="redaction" align="right">
+                            <a class="show_{{ data.year }}_allocation">{{ data.reserve.allocation|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="{{ data.year }}_allocation" category="ReserveInfo" class="edit_{{ data.year }}_allocation updateRedaction float" size="5" type="text" value="{{ data.reserve.allocation|default_if_none:''|cutzero }}" old_value="{{ data.reserve.allocation|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                    {% else %}
+                        <td align="right">{{ data.reserve.allocation|default_if_none:''|intcomma|cutzero }}</td>
+                    {% endif %}
+
+                    {% if edit %}
+                        <td id="{{ data.year }}_un_allocation" class="redaction" align="right">
+                            <a class="show_{{ data.year }}_un_allocation">{{ data.reserve.un_allocation|default_if_none:''|intcomma|cutzero }}</a>
+                            <input editing="{{ data.year }}_un_allocation" category="ReserveInfo" class="edit_{{ data.year }}_un_allocation updateRedaction float" size="5" type="text" value="{{ data.reserve.un_allocation|default_if_none:''|cutzero }}" old_value="{{ data.reserve.un_allocation|default_if_none:''|cutzero }}" style="display: none; text-align:right;">
+                        </td>
+                    {% else %}
+                        <td align="right">{{ data.reserve.un_allocation|default_if_none:''|intcomma|cutzero }}</td>
+                    {% endif %}
+
+                    {% if edit %}
+                        <td id="{{ data.year }}_apply_date" class="redaction" align="center">
+                            <a class="show_{{ data.year }}_apply_date">{{ data.reserve.apply_date|default_if_none:'' }}</a>
+                            <input editing="{{ data.year }}_apply_date" category="ReserveInfo" class="edit_{{ data.year }}_apply_date updateRedaction setDate" size="5" type="text" value="{{ data.reserve.apply_date|default_if_none:'' }}" old_value="{{ data.reserve.apply_date|default_if_none:'' }}" style="display: none; text-align:right;">
+                        </td>
+                    {% else %}
+                        <td align="center">{{ data.reserve.apply_date|default_if_none:'' }}</td>
+                    {% endif %}
+
+                    {% if edit %}
+                        <td id="{{ data.year }}_reserve_date" class="redaction" align="center">
+                            <a class="show_{{ data.year }}_reserve_date">{{ data.reserve.reserve_date|default_if_none:'' }}</a>
+                            <input editing="{{ data.year }}_reserve_date" category="ReserveInfo" class="edit_{{ data.year }}_reserve_date updateRedaction setDate" size="5" type="text" value="{{ data.reserve.reserve_date|default_if_none:'' }}" old_value="{{ data.reserve.reserve_date|default_if_none:'' }}" style="display: none; text-align:right;">
+                        </td>
+                    {% else %}
+                        <td align="center">{{ data.reserve.reserve_date|default_if_none:'' }}</td>
+                    {% endif %}
+
+                    {% if edit %}
+                        <td id="{{ data.year }}_reason" class="redaction" align="left">
+                            <a class="show_{{ data.year }}_reason">{{ data.reserve.reason|default_if_none:''|linebreaks }}</a>
+                            <textarea editing="{{ data.year }}_reason" category="ReserveInfo" class="edit_{{ data.year }}_reason updateRedaction" cols="10" rows="1" value="{{ data.reserve.reason|default_if_none:'' }}" old_value="{{ data.reserve.reason|default_if_none:'' }}" style="display: none;">{{ data.reserve.reason|default_if_none:'' }}</textarea>
+                        </td>
+                    {% else %}
+                        <td align="left">{{ data.reserve.reason|default_if_none:''|linebreaks }}</td>
+                    {% endif %}
+
+                    {% if edit %}
+                        <td id="{{ data.year }}_prove" class="redaction" align="left">
+                            <a class="show_{{ data.year }}_prove">{{ data.reserve.prove|default_if_none:''|linebreaks }}</a>
+                            <textarea editing="{{ data.year }}_prove" category="ReserveInfo" class="edit_{{ data.year }}_prove updateRedaction" cols="10" rows="1" value="{{ data.reserve.prove|default_if_none:'' }}" old_value="{{ data.reserve.prove|default_if_none:'' }}" style="display: none;">{{ data.reserve.prove|default_if_none:'' }}</textarea>
+                        </td>
+                    {% else %}
+                        <td align="left">{{ data.reserve.prove|default_if_none:''|linebreaks }}</td>
+                    {% endif %}
+
+                    {% if edit %}
+                        <td align="center">
+                            <img id="delete_{{ data.reserve.id }}" src="/media/images/delete.png" title="撤銷跨年度" reserve_id="{{ data.reserve.id }}" class="deleteProjectReserve">
+                        </td>
+		    {% endif %}
+                {% else %}
+                    <td colspan="8" align="center" {% if edit %}bgcolor="#B6C8DA"{% endif %}> －－－ </td>
+                {% endif %}
+            </tr>
+            {% endfor%}
+
+            {% if edit %}
+		<tr>
+                    <td colspan="14" align="right">
+                        <button id="cReserve" project_id="{{ target_project.id }}" style="width: 200px;" href="/project/reserve/{{target_project.id}}">跨年度申請</button>
+                    </td>
+                </tr>
+            {% endif %}
+	</tbody>
+</table>
+
+<br><hr width="800" style="color:orange"><hr width="800" style="color:orange"><br>
+
+<table border="1" cellpadding="2" cellspacing="2" style="border-collapse: collapse; font-size: 12px;">
+    <thead>
+        <tr>
+            <th colspan="15" align="center" class="title_bar pointer" style="background-color: #D6FFAF;font-size:18px;">分配數資訊</th>
+        </tr>
+		<tr align=center bgcolor="#EEEEEE">
+			<th style="min-width: 100px;">日期</th>
+                        <th style="min-width: 150px;">分配數(元)</th>
+			<th style="min-width: 200px;">備註</th>
+			{% if edit %}<th style="min-width: 60px;">刪除記錄</th>{% endif %}
+		</tr>
+	</thead>
+	<tbody>
+        {% for a in allocation %}
+            {% include 'project/allocation_unit.html' %}
+        {% endfor %}
+        <tr id="insertAllocation" style="display: none;">
+            <td></td>
+        </tr>
+        <tr>
+            <td colspan="4" align="right" style="font-size: 20px;">
+                總分配數：{{ fund.rTotalAllocation|default_if_none:''|intcomma|cutzero }} (元)
+            </td>
+        </tr>
+		{% if edit %}
+        <tr>
+            <td colspan="4" align="right">
+                <button class="addAllocation" title="新增紀錄" project_id="{{ target_project.id }}">新增分配數紀錄</button>
+            </td>
+        </tr>
+		{% endif %}
+	</tbody>
+</table>
+
+
+<br><hr width="800" style="color:orange"><hr width="800" style="color:orange"><br>
+
+<table border="1" cellpadding="2" cellspacing="2" style="border-collapse: collapse; font-size: 12px;">
+    <thead>
+        <tr>
+            <th colspan="15" align="center" class="title_bar pointer" style="background-color: #D6FFAF;font-size:18px;">撥付資料</th>
+        </tr>
+		<tr align=center bgcolor="#EEEEEE">
+			<th style="min-width: 100px;">撥付日期</th>
+                        <th style="min-width: 100px;">撥付數<br>(元)</th>
+			<th style="min-width: 100px;">撥付文號</th>
+			<th style="min-width: {% if edit %}380px{% else %}380px{% endif %};">撥付備註</th>
+			{% if edit %}<th style="min-width: 60px;">刪除記錄</th>{% endif %}
+		</tr>
+	</thead>
+	<tbody>
+        {% for a in appropriate %}
+            {% include 'project/appropriate_unit.html' %}
+        {% endfor %}
+		<tr id="insertAppropriate" style="display: none;">
+            <td></td>
+        </tr>
+        <tr>
+            <td colspan="4" align="right" style="font-size: 20px;">
+                總撥付數：{{ fund.rTotalAppropriate|default_if_none:''|intcomma|cutzero }} (元)
+            </td>
+        </tr>
+		{% if edit %}
+        <tr>
+            <td colspan="5" align="right">
+            	<button class="getAccoutingData" project_id="{{ target_project.id }}">會計系統資訊</button>
+                <!--<button class="addAppropriate" title="新增紀錄" project_id="{{ target_project.id }}" year="{{ target_year }}">新增撥付紀錄</button>-->
+            </td>
+        </tr>
+		{% endif %}
+	</tbody>
+</table>
+
+<br><hr width="800" style="color:orange"><hr width="800" style="color:orange"><br>
+
+<table border="1" cellpadding="2" cellspacing="2" style="border-collapse: collapse; font-size: 12px;">
+    <thead>
+        <tr>
+            <th colspan="15" align="center" class="title_bar pointer" style="background-color: #D6FFAF;font-size:18px;">工程實支資料</th>
+        </tr>
+		<tr bgcolor="#EEEEEE" align="center">
+            <th rowspan="2" style="min-width: 90px;">年度／月份</th>
+            <th rowspan="2" style="min-width: {% if edit %}90px{% else %}120px{% endif %};">分配數<br>(元)</th>
+            <th colspan="3" style="min-width: 150px;">累計實支數<br>(元)</th>
+            <th colspan="3" style="min-width: 150px;">應付未付數<br>(元)</th>
+            <!-- 調整排版
+            <th colspan="3" style="min-width: 150px;">歷年支用數</th>
+            -->
+            <th rowspan="2" style="min-width: 90px;">執行率</th>
+            <th rowspan="2" style="min-width: 90px;">達成率</th>
+            <!--<th width="30" rowspan="2">{% if edit %}刪除記錄{% endif %}</th>-->
+        </tr>
+        <tr bgcolor="#EEEEEE" align="center">
+            <th style="min-width: 90px;">總額<br>(元)</th>
+            <th style="min-width: 90px;">本署<br>(元)</th>
+            <th style="min-width: 90px;">地方<br>(元)</th>
+            <th style="min-width: 90px;">總額<br>(元)</th>
+            <th style="min-width: 90px;">本署<br>(元)</th>
+            <th style="min-width: 90px;">地方<br>(元)</th>
+            <!-- 調整排版
+            <th style="min-width: 70px;">總額</th>
+            <th style="min-width: 70px;">本署</th>
+            <th style="min-width: 70px;">地方</th>
+            -->
+        </tr>
+	</thead>
+	 <tbody>
+        {% for f in fund_record_list %}
+            {% include 'project/fundrecord_unit.html' %}
+        {% endfor %}
+<!--		{% if edit %}
+        <tr>
+            <td colspan="14" align="right">
+                <button class="getFundingDetail" project_id="{{ target_project.id }}">工程撥款明細表</button>
+                <button class="getPCCRecord" project_id="{{ target_project.id }}">顯示工程會標案系統資訊</button>
+            </td>
+        </tr>
+		{% endif %}-->
+    </tbody>
+</table>
+<br><br>
+</span>
+{% endblock %}

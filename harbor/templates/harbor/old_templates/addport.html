@@ -1,0 +1,85 @@
+{% extends 'harbor/editmemu.html' %}
+{% block style %}
+.style0 {
+	font-size: 16px;
+}
+{% endblock %}
+{% block sidecontent %}
+<a id="location" class="port" loca="add_port"></a><br>
+<form enctype="multipart/form-data" action="./" method="POST">
+<h1>新增漁港</h1>
+<hr width="800" color="#ff8000" noshade title="這不是分隔線">
+<br><br>
+<h2>
+<table>
+    <tr align="left">
+        <td>漁港名稱</td>
+        <td colspan="2"><input type="text" name="new__port" value=""></td>
+    </tr>
+    <tr align="left">
+        <td>漁港代碼</td>
+        <td colspan="2"><input type="text" name="new__code" value=""></td>
+    </tr>
+    <tr align="left">
+        <td>所在縣市</td>
+        <td colspan="2">
+            <select name="new__place" class="style0">
+                <option value=""></option>
+                {% for city in city_list %}
+                <option value="{{ city.place.id }}">{{ city.place.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+    </tr>
+    <tr align="left">
+        <td rowspan="2">漁港座標</td>
+        <td>X：</td>
+        <td><input type="text" name="new__x_coord" value=""></td>
+    </tr>
+    <tr align="left">
+        <td>Y：</td>
+        <td><input type="text" name="new__y_coord" value=""></td>
+    </tr>
+    <tr align="left">
+        <td>第幾類漁港</td>
+        <td colspan="2">
+            <select name="new__type" class="style0">
+                <option value=""></option>
+                {% for type in option.fishingport_type %}
+                <option value="{{ type.id }}">{{ type.value }}</option>
+                {% endfor %}
+            </select>
+        </td>
+    </tr>
+    <tr align="left">
+        <td>所屬觀測站</td>
+        <td colspan="2">
+            <select name="new__observatory" class="style0">
+                <option value=""></option>
+                {% for observatory in observatory_list %}
+                <option value="{{ observatory.id }}">{{ observatory.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+    </tr>
+</table>
+</h2>
+<br>
+<input type="submit" id="submit" name="submit" value="--------確定新增--------" onClick="submiting(this)">
+<br><br><br>
+<hr width="800" color="#ff8000" noshade title="這不是分隔線">
+<br><br>
+<h3>現有漁港</h3><br>
+<h3>
+<table border="1">
+    {% for city in city_list %}
+        {{ city.place.name }}<br>
+            {% for port in city.fishingport %}
+                -----<a>{{ port.name }}</a> <br>
+            {% endfor %}
+    {% endfor %}
+</table>
+</h3>
+</form>
+
+{% endblock %}

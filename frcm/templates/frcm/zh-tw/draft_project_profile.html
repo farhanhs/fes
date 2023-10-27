@@ -1,0 +1,538 @@
+{% extends "frcm/zh-tw/draft_project.html" %}
+{% load i18n %}
+{% load humanize %}
+{% load utiltags %}
+
+{% block content %}
+<h2>
+    {% if units.name %}{{ units.name }}{% else %}縣市政府{% endif %}-提案區
+</h2>
+
+<table id="create_table" class="table table-bordered" style="font-size: 14px;">
+    <tr>
+        <td colspan="4" align="center">
+            <button class="btn btn-success" onclick="window.location=document.referrer">
+                編輯完成返回列表
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td width="22%" class="warning"><span class="glyphicon glyphicon-asterisk text-danger"></span>年度</td>
+        <td colspan="3">
+            <select 
+                row_id="{{ p.id }}"
+                field_name="year"
+                table_name="draft_project"
+                module_name="fishuser"
+                is_select="true"
+                class="form-control BlurUpdateInfo needExist" 
+                field_ch_name="年度">
+                {% for y in years %}
+                    <option value="{{ y }}" {% ifequal p.year y %}selected{% endifequal %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning"><span class="glyphicon glyphicon-asterisk text-danger"></span>工作名稱</td>
+        <td colspan="3">
+            <input
+                row_id="{{ p.id }}"
+                table_name="draft_project"
+                module_name="fishuser"
+                type="text" class="form-control BlurUpdateInfo needExist"
+                field_name="name"
+                field_ch_name="工作名稱"
+                field_type="str"
+                placeholder="請輸入"
+                old_value="{{ p.name }}"
+                value="{{ p.name }}"/>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning">是否為前年度延續工程</td>
+        <td colspan="3">
+            <div class="row">
+                <div class="col-lg-10">
+                    <div class="input-group">
+                        <span class="input-group-addon">工程名稱搜尋</span>
+                        <input
+                            id="search_ex_project_name"
+                            type="text" class="form-control"
+                            field_name="search_ex_project_name"
+                            field_type="str"
+                            placeholder="若是，請搜尋前年度工程；若否，則留空"
+                            value=""/>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <button class="btn btn-default" id="search_ex_project">開始搜尋</button>
+                </div>
+            </div>
+            <select 
+                row_id="{{ p.id }}"
+                field_name="project"
+                table_name="draft_project"
+                is_select="true"
+                module_name="fishuser"
+                class="form-control BlurUpdateInfo" 
+                id="ex_project_list" 
+                old_value="{% if p.project %}/fishuser/api/v2/project/{{ p.project.id }}{% endif %}">
+                {% if p.project %}
+                    <option value="/fishuser/api/v2/project/{{ p.project.id }}" selected="selected">{{ p.project.year }}年-{{ p.project.name }}</option>
+                {% else %}
+                    <option value="" selected="selected">搜尋後請選擇前年度工程</option>
+                {% endif %}
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning">計畫經費</td>
+        <td colspan="3">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="input-group">
+                        <input
+                            row_id="{{ p.id }}"
+                            table_name="draft_project"
+                            module_name="fishuser"
+                            type="text" class="form-control BlurUpdateInfo inputcomma"
+                            style="text-align: right;"
+                            field_name="capital_ratify_budget"
+                            field_ch_name="計畫經費"
+                            field_type="float"
+                            placeholder="請輸入"
+                            old_value="{{ p.capital_ratify_budget|cutzero|default_if_none:"" }}"
+                            value="{{ p.capital_ratify_budget|cutzero|default_if_none:"" }}"/>
+                        <span class="input-group-addon">元</span>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning">經費概算(中央)</td>
+        <td colspan="3">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="input-group">
+                        <input
+                            row_id="{{ p.id }}"
+                            table_name="draft_project"
+                            module_name="fishuser"
+                            type="text" class="form-control BlurUpdateInfo inputcomma"
+                            style="text-align: right;"
+                            field_name="self_money"
+                            field_ch_name="經費概算(中央)"
+                            field_type="float"
+                            placeholder="請輸入"
+                            old_value="{{ p.self_money|cutzero|default_if_none:"" }}"
+                            value="{{ p.self_money|cutzero|default_if_none:"" }}"/>
+                        <span class="input-group-addon">元</span>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning">經費概算(地方配合款)</td>
+        <td colspan="3">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="input-group">
+                        <input
+                            row_id="{{ p.id }}"
+                            table_name="draft_project"
+                            module_name="fishuser"
+                            type="text" class="form-control BlurUpdateInfo inputcomma"
+                            style="text-align: right;"
+                            field_name="local_money"
+                            field_ch_name="經費概算(地方配合款)"
+                            field_type="float"
+                            placeholder="請輸入"
+                            old_value="{{ p.local_money|cutzero|default_if_none:"" }}"
+                            value="{{ p.local_money|cutzero|default_if_none:"" }}"/>
+                        <span class="input-group-addon">元</span>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning"><span class="glyphicon glyphicon-asterisk text-danger"></span>工程屬性別</td>
+        <td colspan="3">
+            <div class="row">
+                <div class="col-lg-6">
+                    <select
+                        row_id="{{ p.id }}"
+                        table_name="draft_project"
+                        module_name="fishuser"
+                        is_select="true"
+                        id="project_type"
+                        class="form-control BlurUpdateInfo needExist"
+                        field_ch_name="工程屬性別"
+                        field_name="project_type"
+                        old_value="/fishuser/api/v2/option/{{ p.project_type.id }}/">
+                        {% for type in option.project_type_sort %}
+                            <option value="/fishuser/api/v2/option/{{ type.id }}/" {% ifequal p.project_type type %}selected="selected"{% endifequal %}>{{ type.value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-lg-6">
+                    <select
+                        row_id="{{ p.id }}"
+                        table_name="draft_project"
+                        module_name="fishuser"
+                        is_select="true"
+                        class="form-control BlurUpdateInfo"
+                        field_name="project_sub_type"
+                        old_value="/fishuser/api/v2/option/{{ p.project_sub_type.id }}/">
+                        <option value="" selected="selected">請選擇</option>
+                        {% for type in option.port_type %}
+                            <option {% ifequal p.project_type.value "2 養殖區工程" %}style="display: none;"{% endifequal %} 
+                            class="port_type" value="/fishuser/api/v2/option/{{ type.id }}/"
+                            {% ifequal p.project_sub_type type %}selected="selected"{% endifequal %}>{{ type.value }}</option>
+                        {% endfor %}
+                        {% for type in option.farm_type %}
+                            <option {% ifequal p.project_type.value "1 漁港工程" %}style="display: none;"{% endifequal %} 
+                            class="farm_type" value="/fishuser/api/v2/option/{{ type.id }}/"
+                            {% ifequal p.project_sub_type type %}selected="selected"{% endifequal %}>{{ type.value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning"><span class="glyphicon glyphicon-asterisk text-danger"></span>縣市</td>
+        <td width="28%">
+            <select
+                row_id="{{ p.id }}"
+                table_name="draft_project"
+                module_name="fishuser"
+                class="form-control BlurUpdateInfo needExist"
+                is_select="true"
+                field_ch_name="縣市"
+                field_name="place"
+                old_value="/fishuser/api/v2/place/{{ p.place.id }}/">
+                {% for place in places %}
+                    <option value="/fishuser/api/v2/place/{{ place.id }}/" {% ifequal p.place place %}selected="selected"{% endifequal %}>{{ place.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td width="15%" class="warning" rowspan="3">
+            漁港/養殖區 
+            <button class="btn btn-success btn-xs" data-toggle="modal" data-target="#add_fishing_port_dailog">
+                ＋
+            </button>
+        </td>
+        <td width="35%" rowspan="3" style="vertical-align: top;">
+            {% for port in p.fishing_port.all %}
+                <div class="input-group port_or_aquaculture_fishingport_{{ port.id }}">
+                    <select class="form-control fishing_port" disabled>
+                        <option value="/harbor/api/v2/fishingport/{{ port.id }}/">{{ port.place.name }} - {{ port.name }}</option>
+                    </select>
+                    <span class="input-group-addon">
+                        <button class="btn btn-danger btn-xs add_or_remove_fishing_port_or_aquaculture_for_draft_project"
+                        active="remove" remove_target="port_or_aquaculture_fishingport_{{ port.id }}" project_id="{{ p.id }}"
+                        row_id="{{ port.id }}">X</button>
+                    </span>
+                </div>
+            {% endfor %}
+            {% for aqua in p.aquaculture.all %}
+                <div class="input-group port_or_aquaculture_aquaculture_{{ aqua.id }}">
+                    <select class="form-control fishing_port" disabled>
+                        <option value="/harbor/api/v2/fishingport/{{ aqua.id }}/">{{ aqua.place.name }} - {{ aqua.name }}</option>
+                    </select>
+                    <span class="input-group-addon">
+                        <button class="btn btn-danger btn-xs add_or_remove_fishing_port_or_aquaculture_for_draft_project"
+                        active="remove" remove_target="port_or_aquaculture_aquaculture_{{ aqua.id }}" project_id="{{ p.id }}"
+                        row_id="{{ aqua.id }}">X</button>
+                    </span>
+                </div>
+            {% endfor %}
+            <span id="insert_fishing_port"></span>            
+        </td>
+    </tr>
+    <tr>
+        <td class="warning"><span class="glyphicon glyphicon-asterisk text-danger"></span>採購類別<span style="font-size:12px;">(工程/勞務)</span></td>
+        <td>
+            <select
+                row_id="{{ p.id }}"
+                table_name="draft_project"
+                module_name="fishuser"
+                class="form-control BlurUpdateInfo needExist"
+                is_select="true"
+                field_ch_name="採購類別"
+                field_name="purchase_type"
+                old_value="/fishuser/api/v2/option/{{ p.purchase_type.id }}/">
+                {% for type in option.purchase_type %}
+                    <option value="/fishuser/api/v2/option/{{ type.id }}/" {% ifequal p.purchase_type type %}selected="selected"{% endifequal %}>{{ type.value }}</option>
+                {% endfor %}
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning"><span class="glyphicon glyphicon-asterisk text-danger"></span>承辦方式<span style="font-size:12px;">(自/委/補)</span></td>
+        <td>
+            <select
+                row_id="{{ p.id }}"
+                table_name="draft_project"
+                module_name="fishuser"
+                class="form-control BlurUpdateInfo needExist"
+                is_select="true"
+                field_ch_name="承辦方式"
+                field_name="undertake_type"
+                old_value="/fishuser/api/v2/option/{{ p.undertake_type.id }}/">
+                {% for type in option.undertake_type %}
+                    <option value="/fishuser/api/v2/option/{{ type.id }}/" {% ifequal p.undertake_type type %}selected="selected"{% endifequal %}>{{ type.value }}</option>
+                {% endfor %}
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning"><span class="glyphicon glyphicon-asterisk text-danger"></span>經費種類<span style="font-size:12px;">(經常/資本)</span></td>
+        <td>
+            <select
+                row_id="{{ p.id }}"
+                table_name="draft_project"
+                module_name="fishuser"
+                class="form-control BlurUpdateInfo needExist"
+                is_select="true"
+                field_ch_name="經費種類"
+                field_name="budget_sub_type"
+                old_value="/fishuser/api/v2/option/{{ p.budget_sub_type.id }}/">
+                {% for type in option.budget_sub_type %}
+                    <option value="/fishuser/api/v2/option/{{ type.id }}/" {% ifequal p.budget_sub_type type %}selected="selected"{% endifequal %}>{{ type.value }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td class="warning"><span class="glyphicon glyphicon-asterisk text-danger"></span>執行機關</td>
+        <td>
+            <select
+                row_id="{{ p.id }}"
+                table_name="draft_project"
+                module_name="fishuser"
+                class="form-control BlurUpdateInfo needExist"
+                is_select="true"
+                field_ch_name="執行機關"
+                field_name="unit"
+                old_value="/fishuser/api/v2/unit/{{ p.unit.id }}/">
+                {% for unit in units %}
+                    <option value="/fishuser/api/v2/unit/{{ unit.id }}/" {% ifequal p.unit unit %}selected="selected"{% endifequal %}>{{ unit.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning" colspan="4">主要工作內容 (請填主要工作項目之明細及數量，如疏浚土方量、碼頭改善長度、加拋消波塊數量等)</td>
+    </tr>
+    <tr>
+        <td colspan="4">
+            <textarea
+                    row_id="{{ p.id }}"
+                    table_name="draft_project"
+                    module_name="fishuser"
+                    class="form-control BlurUpdateInfo"
+                    field_type="str"
+                    type="textarea"
+                    field_name="info"
+                    placeholder="請輸入"
+                    old_value="{{ p.info|default_if_none:"" }}"
+                    rows="5">{{ p.info|default_if_none:"" }}</textarea>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning" colspan="4">初審結果 (請填優先順序及理由)</td>
+    </tr>
+    <tr>
+        <td colspan="4">
+            <textarea
+                    row_id="{{ p.id }}"
+                    table_name="draft_project"
+                    module_name="fishuser"
+                    class="form-control BlurUpdateInfo"
+                    field_type="str"
+                    type="textarea"
+                    field_name="review_results"
+                    placeholder="請輸入"
+                    old_value="{{ p.review_results|default_if_none:"" }}"
+                    rows="5">{{ p.review_results|default_if_none:"" }}</textarea>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning" colspan="4">設計準備情形 (請填報是否已完成設計及是否已報漁業署同意在案)</td>
+    </tr>
+    <tr>
+        <td colspan="4">
+            <textarea
+                    row_id="{{ p.id }}"
+                    table_name="draft_project"
+                    module_name="fishuser"
+                    class="form-control BlurUpdateInfo"
+                    field_type="str"
+                    type="textarea"
+                    field_name="design"
+                    placeholder="請輸入"
+                    old_value="{{ p.design|default_if_none:"" }}"
+                    rows="5">{{ p.design|default_if_none:"" }}</textarea>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning" colspan="2">設籍漁船資料 (最新之設籍各噸級船筏數)</td>
+        <td class="warning" colspan="2">實際作業漁船數 (平均每日進出漁船筏資料)</td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <textarea
+                    row_id="{{ p.id }}"
+                    table_name="draft_project"
+                    module_name="fishuser"
+                    class="form-control BlurUpdateInfo"
+                    field_type="str"
+                    type="textarea"
+                    field_name="fish_boat"
+                    placeholder="請輸入"
+                    old_value="{{ p.fish_boat|default_if_none:"" }}"
+                    rows="5">{{ p.fish_boat|default_if_none:"" }}</textarea>
+        </td>
+        <td colspan="2">
+            <textarea
+                    row_id="{{ p.id }}"
+                    table_name="draft_project"
+                    module_name="fishuser"
+                    class="form-control BlurUpdateInfo"
+                    field_type="str"
+                    type="textarea"
+                    field_name="real_fish_boat"
+                    placeholder="請輸入"
+                    old_value="{{ p.real_fish_boat|default_if_none:"" }}"
+                    rows="5">{{ p.real_fish_boat|default_if_none:"" }}</textarea>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning" colspan="4">其他補充說明 (如該港之漁產量/值、魚市場交易資料、設施使用情形)</td>
+    </tr>
+    <tr>
+        <td colspan="4">
+            <textarea
+                    row_id="{{ p.id }}"
+                    table_name="draft_project"
+                    module_name="fishuser"
+                    class="form-control BlurUpdateInfo"
+                    field_type="str"
+                    type="textarea"
+                    field_name="other_memo"
+                    placeholder="請輸入"
+                    old_value="{{ p.other_memo|default_if_none:"" }}"
+                    rows="5">{{ p.other_memo|default_if_none:"" }}</textarea>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning" colspan="4">工程預期效益</td>
+    </tr>
+    <tr>
+        <td colspan="4">
+            <textarea
+                    row_id="{{ p.id }}"
+                    table_name="draft_project"
+                    module_name="fishuser"
+                    class="form-control BlurUpdateInfo"
+                    field_type="str"
+                    type="textarea"
+                    field_name="fect"
+                    placeholder="請輸入"
+                    old_value="{{ p.fect|default_if_none:"" }}"
+                    rows="5">{{ p.fect|default_if_none:"" }}</textarea>
+        </td>
+    </tr>
+    <tr>
+        <td class="warning" colspan="4">備註</td>
+    </tr>
+    <tr>
+        <td colspan="4">
+            <textarea
+                    row_id="{{ p.id }}"
+                    table_name="draft_project"
+                    module_name="fishuser"
+                    class="form-control BlurUpdateInfo"
+                    field_type="str"
+                    type="textarea"
+                    field_name="memo"
+                    placeholder="請輸入"
+                    old_value="{{ p.memo|default_if_none:"" }}"
+                    rows="5">{{ p.memo|default_if_none:"" }}</textarea>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="4" align="center">
+            <button class="btn btn-success" onclick="window.location=document.referrer">
+                編輯完成返回列表
+            </button>
+        </td>
+    </tr>
+</table>
+
+<div class="modal fade" id="add_fishing_port_dailog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">請選擇漁港</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-3">
+                        <select class="form-control" id="select_port_or_aquaculture">
+                            <option value="fishing_port_list" selected="selected">漁港</option>
+                            <option value="aquaculture_list">養殖區</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-3">
+                        <select class="form-control" id="select_place_for_fishing_port">
+                            <option value="" selected="selected">請選擇縣市區域</option>
+                            {% for p in places %}
+                                <option value="{{ p.id }}"> - {{ p.name }} - </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-lg-6" class="">
+                        <select class="form-control fishing_port_list">
+                            <option value="" selected="selected">請選擇漁港</option>
+                            {% for p in fishing_ports %}
+                                <option class="{{ p.place.id }} port" style="display: none;" value="/harbor/api/v2/fishingport/{{ p.id }}/">{{ p.place.name }} - {{ p.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <select class="form-control aquaculture_list" style="display: none;">
+                            <option value="" selected="selected">請選擇養殖區</option>
+                            {% for p in aquacultures %}
+                                <option class="{{ p.place.id }} aqua" style="display: none;" value="/harbor/api/v2/aquaculture/{{ p.id }}/">{{ p.place.name }} - {{ p.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" project_id="{{ p.id }}" active="add"
+                    class="btn btn-primary add_or_remove_fishing_port_or_aquaculture_for_draft_project">新增漁港</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<script type="text/x-jquery-tmpl" id="HidePort_or_Aqua_div">
+    <div class="input-group port_or_aquaculture_${type}_${id}">
+        <select class="form-control fishing_port" disabled>
+            <option value="/harbor/api/v2/fishingport/${id}/">${text}</option>
+        </select>
+        <span class="input-group-addon">
+            <button class="btn btn-danger btn-xs add_or_remove_fishing_port_or_aquaculture_for_draft_project"
+            active="remove" remove_target="port_or_aquaculture_${type}_${id}" project_id="${project_id}"
+            value="/harbor/api/v2/fishingport/${id}/"
+            row_id="${id}">X</button>
+        </span>
+    </div>
+</script>
+
+{% endblock %}

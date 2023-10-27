@@ -1,0 +1,37 @@
+{% extends 'harbor/vportphotos.html' %}
+
+{% block photolist %}
+<table id="photo_type_table" width="200" align="left">
+    <tr>
+        <td align="right">
+            此類有{{ photo_num }}張圖資<span style="font-size:10px;">（全部{{ total }}張）</span>
+            <br><hr width="180" color="#ff8000" noshade title="這不是分隔線"><br>
+        </td>
+    </tr>
+    {% for photo in targetphotos %}
+    <tr>
+        <td align="left">
+            <div id="{{ photo.id }}" {% ifequal photo.id standard.id %}class="photonow"{% else %}class="photolink"{% endifequal %}>{% if photo.name %}{{ photo.name }}{% else %}{{ photo.type.value }}{% endif %}</div>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
+
+
+{% block photocontent %}
+(點圖可以放大觀看)<br>
+<table id="show_photo" width="600">
+    <tr>
+        <td>
+            <a href="/{{ standard.rUrl }}" target="_blank"><img src="/{{ standard.rUrl }}" title="{{ standard.name }}{% if standard.name and standard.memo %}：{% endif %}{{ standard.memo }}" width="600" style='float:left;margin:15px'></a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <h2>{% if standard.memo %}{{ standard.memo|linebreaks }}{% endif %}</h2>
+        </td>
+    </tr>
+</table>
+
+{% endblock %}

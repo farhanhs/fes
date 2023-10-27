@@ -1,0 +1,188 @@
+{% extends 'frcm/index.html' %}
+
+{% load utiltags %}
+{% load humanize %}
+{% block scriptlib %}
+    <script type="text/javascript" src="/media/frcm/js/lib.js"></script>
+{% endblock %}
+{% block menu %}
+    <ul id="menu" value ="/frcm/filems"></ul>
+{% endblock %}
+{% block style %}
+td {padding:2px 2px;}
+th {padding:2px 2px;}
+{% endblock %}
+{% block content %}
+
+<table width="980">
+<tr valign="top">
+<td width="130" align="left">
+    <table>
+        <tr>
+            <td height="20" align="left">
+            </td>
+        </tr>
+        <tr>
+            <td align="left">
+                <div class="HarborMemu">
+                        <li><a href="/frcm/filems">檔案上傳</a></li>
+                </div>
+            </td>
+        </tr>
+        {% for city in city_list%}
+        <tr>
+            <td align="left">
+                <div class="HarborMemu">
+                        <li><a href="/frcm/filems/{{ city.0 }}" class="{% ifequal place.id city.0 %}active{% endifequal %}" title="共有 {{ city.2 }} 個檔案">{{ city.1 }}</a></li>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</td>
+<td width="20"></td>
+<td width="850" align="center">
+    <table>
+        <tr><td height="20"></td></tr>
+        <tr>
+            <td align="left">
+                <h3>
+                <form enctype="multipart/form-data" action="./" method="POST">
+                    <table>
+                        <tr valign="top">
+                            <td>詳細位置：</td>
+                            <td><input maxlength="256" size="50" type="text" name="location" value=""></td>
+                        </tr>
+                        <tr valign="top">
+                            <td>檔案名稱：</td>
+                            <td><input maxlength="256" size="50" type="text" name="name" value=""></td>
+                        </tr>
+                        <tr valign="top">
+                            <td>檔案備註：</td>
+                            <td><textarea cols="50" rows="3" name="memo"></textarea></td>
+                        </tr>
+                        <tr>
+                            <td>X座標(經度)：</td>
+                            <td><input type="text" name="lng" value="" size="20">
+                                (非必要，例如臺灣中心點為：120.97818)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Y座標(緯度)：</td>
+                            <td><input type="text" name="lat" value="" size="20">
+                                (非必要，例如臺灣中心點為：23.96474)
+                            </td>
+                        </tr>
+                        <tr valign="top">
+                            <td>選擇檔案：</td>
+                            <td><input type="file" name="file"></td>
+                        </tr>
+                    </table>
+                    <input type="submit" id="submit" name="submit" value="確定上傳" onClick="submiting(this)">
+                </form>
+                </h3>
+            </td>
+        </tr>
+        <tr><td height="50"></td></tr>
+        <tr>
+            <td>
+                <table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+                    <tr><td colspan="11" align="center"><h3>歸檔於 {{ place.name }} 的所有檔案</h3></td></tr>
+                    <tr align="center" bgcolor="#DDFFDD" valign="center" align="left">
+                        <td></td>
+                        <td>類型</td>
+                        <td width="140">詳　　細　　位　　置</td>
+                        <td width="140">檔　　案　　名　　稱</td>
+                        <td width="70">上傳時間</td>
+                        <td width="70">X座標<br>(經度)</td>
+                        <td width="70">Y座標<br>(緯度)</td>
+                        <td width="50">Size</td>
+                        <td width="50">上傳者</td>
+                        <td width="100">說明備註</td>
+                        {% if right %}
+                        <td width="50"></td>
+                        {% endif %}
+                    </tr>
+                    {% for file in lately_files %}
+                    <tr id="File_tr_{{ file.id }}" valign="center" align="left">
+                        <td>{{ forloop.counter }}</td>
+                        <td align="center">{{ file.rExt }}</td>
+
+                        <td>
+                            <span class="showFile_{{ file.id }}" id="showFile_location_{{ file.id }}">{{ file.location }}</span>
+                            {% if right %}
+                                <input class="editCityFile editCityFile_{{ file.id }}" id="id_location_{{ file.id }}" style="display: none;"
+                                       type="text" name="location"
+                                       maxlength="256" size="12" old_value="{% if file.location %}{{ file.location }}{% endif %}"
+                                       value="{% if file.location %}{{ file.location }}{% endif %}"/>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if right %}
+                            <a href="/{{ file.rUrl }}" target="_blank">
+                                <span class="showFile_{{ file.id }}" id="showFile_name_{{ file.id }}">{{ file.name }}</span>
+                            </a>
+                            {% else %}
+                                <span class="showFile_{{ file.id }}" id="showFile_name_{{ file.id }}">{{ file.name }}</span>
+                            {% endif %}
+                            {% if right %}
+                                <input class="editCityFile editCityFile_{{ file.id }}" id="id_name_{{ file.id }}" style="display: none;"
+                                       type="text" name="name"
+                                       maxlength="256" size="12" old_value="{% if file.name %}{{ file.name }}{% endif %}"
+                                       value="{% if file.name %}{{ file.name }}{% endif %}"/>
+                            {% endif %}
+                        </td>
+
+                        <td><span style="font-size:12px;">{{ file.upload_date }}</span></td>
+
+                        <td align="right">
+                            <span class="showFile_{{ file.id }}" id="showFile_lng_{{ file.id }}">{{ file.lng|cutzero }}</span>
+                            {% if right %}
+                            <input class="editCityFile editCityFile_{{ file.id }}" id="id_lng_{{ file.id }}" style="display: none; text-align:right;"
+                                       type="text" name="lng"
+                                       maxlength="256" size="5" old_value="{% if file.lng %}{{ file.lng|cutzero }}{% endif %}"
+                                       value="{% if file.lng %}{{ file.lng|cutzero }}{% endif %}"/>
+                            {% endif %}
+                        </td>
+
+                        <td align="right">
+                            <span class="showFile_{{ file.id }}" id="showFile_lat_{{ file.id }}">{{ file.lat|cutzero }}</span>
+                            {% if right %}
+                            <input class="editCityFile editCityFile_{{ file.id }}" id="id_lat_{{ file.id }}" style="display: none; text-align:right;"
+                                       type="text" name="lat"
+                                       maxlength="256" size="5" old_value="{% if file.lat %}{{ file.lat|cutzero }}{% endif %}"
+                                       value="{% if file.lat %}{{ file.lat|cutzero }}{% endif %}"/>
+                            {% endif %}
+                        </td>
+
+                        <td align="right"><span style="font-size:12px;">{{ file.calSize }}</span></td>
+                        <td align="center"><span style="font-size:12px;">{{ file.upload_user.user_profile.rName }}</span></td>
+                        <td>
+                            <span class="showFile_{{ file.id }}" id="showFile_memo_{{ file.id }}">{{ file.memo|linebreaks }}</span>
+                            {% if right %}
+                            <textarea class="editCityFile editCityFile_{{ file.id }}" id="id_memo_{{ file.id }}" style="display: none;"
+                                   type="" name="memo"
+                                   cols="10" rows="2"
+                                   old_value="{% if file.memo %}{{ file.memo }}{% endif %}"
+                                   >{% if file.memo %}{{ file.memo }}{% endif %}</textarea>
+                            {% endif %}
+                        </td>
+                        {% if right %}
+                        <td>
+                            <span row_id="{{ file.id }}" type="show" class="changeCityFile"><img src="/media/images/edit.png" title="編輯"></span>
+                            <span neme="{{ file.name }}" row_id="{{ file.id }}" class="deleteCityFile"><img src="/media/images/delete.png" title="刪除檔案"></span>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </table>
+            </td>
+        </tr>
+    </table>
+</td>
+</tr>
+</table>
+
+
+{% endblock %}

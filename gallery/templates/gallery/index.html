@@ -1,0 +1,393 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="zh-tw">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>{% block title %}施工相片管理系統{% endblock %}</title>
+        
+        <link rel="stylesheet" type="text/css" href="{% static 'gallery/bootstrap3/css/bootstrap.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'gallery/bootstrap-datetimepicker/bootstrap-datetimepicker.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'gallery/smoothness/jquery-ui-1.9.2.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'gallery/layout/layout-default-latest.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'gallery/jstree3/themes/proton/style.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'gallery/plupload/jquery.ui.plupload/css/jquery.ui.plupload.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'gallery/mcs/jquery.mCustomScrollbar.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'gallery/qtip/jquery.qtip.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'gallery/apprise/apprise.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'gallery/webui-popover/jquery.webui-popover.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'gallery/css/gallery.css' %}">
+
+        
+        <script type="text/javascript" src="{% static 'gallery/js/jquery-1.11.2.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/js/jquery-ui-1.9.2.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/layout/jquery.layout-latest.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/layout/jquery.layout.resizePaneAccordions-latest.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/jstree3/jstree.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/jstree3/jstreegrid.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/plupload/plupload.full.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/plupload/jquery.ui.plupload/jquery.ui.plupload.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/plupload/jquery.plupload.queue/jquery.plupload.queue.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/plupload/i18n/zh_TW.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/bootstrap-datetimepicker/bootstrap-datetimepicker.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/bootstrap-datetimepicker/bootstrap-datetimepicker.zh_tw.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/mcs/jquery.mCustomScrollbar.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/qtip/jquery.qtip.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/apprise/apprise-1.5.full.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/webui-popover/jquery.webui-popover.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/js/jquery.form.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/js/jquery.tmpl.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/js/jquery-mousewheel.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/js/jquery.panzoom.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/js/jquery.rotate.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/js/jquery.lazyload.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/js/sorting-elements-with-jquery.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/js/moment.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/js/purl.js' %}"></script>
+        <script type="text/javascript" src="{% static 'gallery/js/gallery.js' %}"></script>
+        {% if NODETEMPLATE %}
+        <script type="text/javascript" src="{% static 'gallery/js/nodetemp.js' %}"></script>
+        {% endif %}
+
+
+        <!-- <script type="text/javascript" src="{% static 'gallery/helper/helper.js' %}"></script> -->
+
+        <script type="text/javascript">
+            var GUIDE = {{ GUIDE }},
+                COMPRESS = {{ COMPRESS }},
+                COPYNODE = {{ COPYNODE }},
+                NODETEMPLATE = {{ NODETEMPLATE }},
+                IMPROVE = {{ IMPROVE }};
+            var CASE_ID = {{ case.id }},
+                GIT = '{{ insert }}';
+        </script>
+
+        <script type="text/x-jquery-tmpl" id="sub_layout">
+           {% include "gallery/subnode_layout.html" %}
+        </script>
+
+        <script type="text/x-jquery-tmpl" id="img_layout">
+           {% include "gallery/thumbnail_layout.html" %}
+        </script>
+
+        <script type="text/x-jquery-tmpl" id="comment_layout">
+            {% include "gallery/comment_layout.html" %}
+        </script>
+
+        <script type="text/x-jquery-tmpl" id="picked_layout">
+            <div class="picked_thumb"><div class="picked_num"></div></div>
+        </script>
+
+        <script type="text/x-jquery-tmpl" id="divider_layout">
+            <div class="divider">${page}</div>
+        </script>
+
+        {% if NODETEMPLATE %}
+        <script type="text/x-jquery-tmpl" id="templatecard_layout">
+            <li template_id="${id}" class="list-group-item template_unit" is_public="${public}" text="${name}">
+                <input type="checkbox" class="temp_insert_check" value="${id}">${name}
+            </li>
+        </script>
+
+        <script type="text/x-jquery-tmpl" id="pickedtemp_layout">
+            <div class="picked_card">
+                ${name}<input type="button" class="unpick_temp btn btn-default" value="取消選取">
+                <hr style="margin-top: 2px; margin-bottom: 0px;">
+                <div class="picked_samples"></div>
+            </div>
+        </script>
+        {% endif %}
+
+        {% if PHOTODOC %}
+        {% for type in PHOTODOC %}
+            {% if type.sub %}
+            {% for subtype in type.sub %}
+            <script type="text/x-jquery-tmpl" id="{{ subtype.doc }}_format">
+                {% with template_name=subtype.doc|stringformat:"s"|add:"_format.html" %}
+                {% include "gallery/"|add:template_name %}
+                {% endwith %}
+            </script>
+            {% endfor %}
+            {% else %}
+            <script type="text/x-jquery-tmpl" id="{{ type.doc }}_format">
+                {% with template_name=type.doc|stringformat:"s"|add:"_format.html" %}
+               {% include "gallery/"|add:template_name %}
+               {% endwith %}
+            </script>
+            {% endif %}
+        {% endfor %}
+        {% endif %}
+
+    </head>
+    <body>
+        <div style="display:none">
+            <span id="permissions" permissions="{% for p in permissions %} {{ p }} {% endfor %}"></span>
+        </div>
+        <div id="error_dialog" style="display: none"></div>
+        <div id="showbox" style="display: none">
+            <div id="showbox_photo">
+                <div id="view_tools">
+                    <div class="tool_group btn-group">
+                        <button id="image_pn" type="button" class="btn btn-default">
+                            <strong id="current_pn" class="tool_text"></strong><strong class="tool_text">/</strong><strong id="total_pn" class="tool_text"></strong>
+                        </button>
+                        <button id="turn_ccw" type="button" class="btn btn-default" value="-90">
+                            <span class="glyphicon glyphicon-repeat"></span><strong class="tool_text">逆時針旋轉</strong>
+                        </button>
+                        <button id="turn_cw" type="button" class="btn btn-default" value="90">
+                            <span class="glyphicon glyphicon-repeat"></span><strong class="tool_text">順時針旋轉</strong>
+                        </button>
+                        <button id="turn_save" type="button" class="btn btn-default">
+                            <span class="glyphicon glyphicon-floppy-disk"></span><strong class="tool_text">儲存旋轉結果</strong>
+                        </button>
+                        <button id="switch_grid" type="button" class="btn btn-default">
+                            <span class="glyphicon glyphicon-th grid_on"></span><strong class="tool_text grid_on">開啟格線</strong>
+                            <span class="glyphicon glyphicon-picture grid_off"></span><strong class="tool_text grid_off">關閉格線</strong>
+                        </button>
+                    </div>
+                </div>
+                <div id="arrow_left" class="preview_next" value="-1" >
+                    <img src="{% static 'gallery/img/left-arrow.png' %}">
+                </div>
+                <div id="arrow_right" class="preview_next" value="1" >
+                    <img src="{% static 'gallery/img/right-arrow.png' %}">
+                </div>
+                <div id="loading_img">
+                    <img src="{% static 'gallery/img/tumblr.gif' %}">
+                </div>
+                <div id="anchor">
+                    <div id="panlayer">
+                        <div id="dock">
+                            <img id="portrait" class="se_part" src="">
+                            <table id="gird" class="hidden"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="showbox_info">
+                <ul id='info_list' class="list-group">
+                    <li class="list-group-item">
+                        <span id="close_showbox" class="glyphicon glyphicon-remove pull-right"></span>
+                        <span class="photo_attr" for="origin" style="overflow-wrap: break-word;">
+                    </li>
+                    <li class="list-group-item">
+                        <span class="info_title"><strong>查驗點：</strong></span>
+                        <span class="photo_attr" for="node_name"></span>
+                    </li>
+                    <li class="list-group-item">
+                        <span class="info_title"><strong>上傳者：</strong></span>
+                        <span class="photo_attr" for="creator__name"></span>
+                    </li>
+                    <li class="list-group-item">
+                        <span class="info_title"><strong>上傳時間：</strong></span>
+                        <span class="photo_attr" for="create_time"></span>
+                    </li>
+                    <li class="list-group-item">
+                        <div style="display: flex;">
+                            <span class="info_title" style="flex: 1; text-align: center; align-content: center; vertical-align: middle; line-height: 35px"><strong>拍攝日期：</strong></span>
+                            <span class="photo_attr" for="time" style="flex: 2; text-align: center;">
+                                <div id="photo_date" class="input-group date" data-date="" data-date-format="yyyy mm dd" data-link-format="yyyy-mm-dd">
+                                    <input class="form-control" size="15" type="text" value="" readonly>
+                                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                                </div>
+                            </span>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <span class="info_title"><strong>說明：</strong></span>
+                        <textarea id="photo_note" class="photo_attr photo_text form-control" for="note"></textarea>
+                    </li>
+                    {% if 'verify_public' in permissions %}
+                    <li class="list-group-item">
+                        <div style="display: flex;">
+                            <span class="info_title"><strong>確認：</strong></span>
+                            <label for="photo_is_public" style="margin: 0px; margin-left: 15px; padding: 2px; display: flex; text-align: center; align-content: center; cursor: pointer; ">
+                                <input id="photo_is_public" class="photo_attr" type="checkbox" for="is_public" style="flex: 2; width: 20px; height: 20px; padding: 0px; margin: 0px;">
+                                <strong style="margin-left: 5px;">用於公開瀏覽</strong>
+                            </label>
+                        </div>
+                    </li>
+                    {% endif %}
+                    {% if 'upload_photo' in permissions %}
+                    <li id='message' class="list-group-item" >
+                        <span class="info_title" ><strong>留言：</strong></span>
+                        <textarea class="form-control photo_text" name='comment'></textarea>
+                        <a id="submit_comment"><strong>意見送出</strong></a>
+                    </li>
+                    {% endif %}
+                </ul>
+                <ul id="comments_list" class="list-group">
+                    <div id="nocomment">暫無回應</div>
+                </ul>
+            </div>
+        </div>
+
+        {% if NODETEMPLATE %}
+        {% include "gallery/template_edit_dialog.html"%}
+        {% endif %}
+
+        <div id="layout_head"><p>{{ project.name }}</p></div>
+        <div id="layout_side">
+            <div id="accordion" class="basic">
+                {% if IMPROVE %}
+                <h3 id="by_improve">缺失改善</h3>
+                <div class="menu_tab">
+                    <div id="improve_tree"></div>
+                </div>
+                {% endif %}
+                <h3 id="by_time">依拍照時間瀏覽</h3>
+                <div class="menu_tab">
+                    <div id="time_tree"></div>
+                </div>
+                <h3 id="by_node">依查驗點瀏覽</h3>
+                <div class="menu_tab">
+                    <div id="node_tree"></div>
+                </div>
+            </div>
+        </div>
+        <div id="layout_main">
+            <div id="download_oper_guide" class="oper_guide">
+                <h1 style="margin: 90px 0px 30px 10px;"><span class="glyphicon glyphicon-chevron-left" style="margin: 10px;"></span>1. 請勾選要輸出照片文件的查驗點。</h1>
+                <h1 style="margin: 30px 0px 30px 10px;"><span class="glyphicon glyphicon-download-alt" style="margin: 10px;"></span>2. 按 <div id="start_download" class="panel_button"><strong>產生文件</strong></div> 開始下載，或是 <div id="cancel_download" class="panel_button"><strong>取消文件產生</strong></div>。</h1>
+            </div>
+            <div id="export_oper_guide" class="oper_guide">
+                <h1 style="margin: 90px 0px 30px 10px;"><span class="glyphicon glyphicon-chevron-left" style="margin: 10px;"></span>1. 請勾選要建立為樣版的查驗點。</h1>
+                <h1 style="margin: 30px 0px 30px 10px;"><span class="glyphicon glyphicon-file" style="margin: 10px;"></span>2. 命名新的樣版 <input id="temp_name" class="form-control" style="width: 200px!important; display: inline" type="text" placeholder="請輸入欲新增的樣版名稱"></h1>
+                <h1 style="margin: 30px 0px 30px 10px;"><span class="glyphicon glyphicon-ok" style="margin: 10px;"></span>3. <div id="start_export" class="panel_button"><strong>建立樣版</strong></div> 或是 <div id="cancel_export" class="panel_button"><strong>取消建立</strong></div>。</h1>
+            </div>
+
+            <div id="select_panel">
+                <div id="picking_note" class="pick_board"><h1 align="center">請點選文件所需的照片</h1></div>
+                <div id="picked_img" class="pick_board">
+                </div>
+                <div class="picked_ctl">
+                    <div id="display_format" class="preview_ctl"><strong>顯示格式</strong></div>
+                    <div id="cancel_preview" class="preview_ctl"><strong>取消</strong></div>
+                    <div id="start_preview" class="preview_ctl"><strong>預覽</strong></div>
+                </div>
+            </div>
+
+            <div id="layout_tools">
+                <div id="improve_location" class="tracks">
+                    <ol class="breadcrumb"><li></li></ol>
+                </div>
+                <div id="time_location" class="tracks">
+                    <ol class="breadcrumb"><li></li></ol>
+                </div>
+                <div id="node_location" class="tracks">
+                    <ol class="breadcrumb"><li></li></ol>
+                </div>
+                <div id="control">
+                    {% if "upload_photo" in permissions %}
+                    <div id="upload_file" class="node_option"><strong>上傳相片</strong></div>
+                    {% endif %}
+                    {% if "update_node" in permissions and NODETEMPLATE %}
+                    <div id="edit_template" class="node_option"><strong>編輯我的樣版</strong></div>
+                    {% endif %}
+                    <div id="odering_photo" class="node_option"><strong>自訂排序</strong></div>
+                    <div id="sorting_photo" class="time_option"><strong>正排序</strong></div>
+                    {% if "upload_photo" in permissions and PHOTODOC %}
+                    {% for type in PHOTODOC %}
+                    <div class="download_document node_option" doc="{{ type.doc }}"><strong>下載{{ type.name }}</strong></div>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            <div>
+                <div id="upload_dialog" style="display:none">
+                    <form id="plupload" >
+                        <div id="uploader"></div>
+                    </form>
+                </div>
+                <ul id="odering_menu" class="control_option">
+                    <li><a class="order_option pointer" value="priority"><span class="ui-icon ui-icon-image"></span>自訂排序</a></li>
+                    <li><a class="order_option pointer" value="time"><span class="ui-icon ui-icon-video"></span>拍照時間</a></li>
+                    <li><a class="order_option pointer" value="create_time"><span class="ui-icon ui-icon-clock"></span>上傳時間</a></li>
+                </ul>
+                <ul id="sorting_menu" class="control_option">
+                    <li><a class="sort_option pointer" value="time"><span class="ui-icon ui-icon-arrowthick-1-s"></span>正排序</a></li>
+                    <li><a class="sort_option pointer" value="-time"><span class="ui-icon ui-icon-arrowthick-1-n"></span>倒排序</a></li>
+                </ul>
+                {% if PHOTODOC %}
+                {% for type in PHOTODOC %}
+                <ul id="{{ type.doc }}_menu" class="control_option">
+                    {% if type.sub %}
+                    {% for subtype in type.sub %}
+                    <li><a class="pointer"><span class="ui-icon ui-icon-document-b"></span>{{ subtype.name }}</a>
+                        <ul class="control_option">
+                            <li><a class="doc_option pointer" doc="{{ subtype.doc }}" option="single"><span class="ui-icon ui-icon-document"></span>此查驗點</a></li>
+                            <li><a class="doc_option pointer" doc="{{ subtype.doc }}" option="multi"><span class="ui-icon ui-icon-newwin"></span>選擇查驗點</a></li>
+                            <li><a class="doc_option pointer" doc="{{ subtype.doc }}" option="select" page_unit="{{ subtype.page_unit }}"><span class="ui-icon ui-icon-bookmark"></span>選擇照片</a></li>
+                        </ul>
+                    </li>
+                    {% endfor %}
+                    {% else %}
+                    <li><a class="doc_option pointer" doc="{{ type.doc }}" option="single"><span class="ui-icon ui-icon-document"></span>此查驗點</a></li>
+                    <li><a class="doc_option pointer" doc="{{ type.doc }}" option="multi"><span class="ui-icon ui-icon-newwin"></span>選擇查驗點</a></li>
+                    <li><a class="doc_option pointer" doc="{{ type.doc }}" option="select" page_unit="{{ type.page_unit }}"><span class="ui-icon ui-icon-bookmark"></span>選擇照片</a></li>
+                    {% endif %}
+                </ul>
+                {% endfor %}
+                {% endif %}
+            </div>
+            
+            <form id="download_form" method="post" doc="" action="/gallery/api/v1/node/image_docx/">
+                {% csrf_token %}
+                <section class="inputs"></section>
+                <input class="download" name="submit" type="submit" value="下載" style="display: none;" />
+            </form>
+            <div id="layout_images">
+                <div id="loading_page"></div>
+            </div>
+            <div id="edit_tools">
+                <div class="tool_group btn-group">
+                    <button id="photos_delete" type="button" class="btn btn-default">
+                        <span class="glyphicon glyphicon-trash"></span><strong class="tool_text">刪除</strong>
+                    </button>
+                    <button id="photos_edit_note" type="button" class="btn btn-default">
+                        <span class="glyphicon glyphicon-pencil"></span><strong class="tool_text">說明</strong>
+                    </button>
+                    <button id="photos_edit_date" type="button" class="btn btn-default">
+                        <span class="glyphicon glyphicon-calendar"></span><strong class="tool_text">日期</strong>
+                    </button>
+                    {% if 'verify_public' in permissions %}
+                    <button id="photos_edit_public" type="button" class="btn btn-default">
+                        <span class="glyphicon glyphicon-check"></span><strong class="tool_text">用於公開</strong>
+                    </button>
+                    {% endif %}
+                    <button id="photos_edit_cancel" type="button" class="btn btn-default">
+                        <span class="glyphicon glyphicon-check"></span><strong class="tool_text">取消</strong>
+                    </button>
+                </div>
+            </div>
+            <div id="photos_edit_note_dialog" title="批次修改相片說明">
+                <p class="tips"></p>
+                <form role="form">
+                    <div class="form-group">
+                        <textarea id="edit_photos_note" class="form-control" rows="6"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div id="photos_edit_date_dialog" title="批次修改相片拍攝日期">
+                <p class="tips"></p>
+                <form role="form">
+                    <div class="form-group">
+                        <input class="form-control" size="15" type="text" value="" readonly>
+                        <div id="edit_take_date" class="input-group date" data-date="" data-date-format="yyyy mm dd" data-link-format="yyyy-mm-dd"></div>
+                </form>
+            </div>
+            {% if 'verify_public' in permissions %}
+            <div id="photos_edit_public_dialog" title="批次確認相片公開">
+                <p class="tips"></p>
+                <form role="form">
+                    <div style="display: flex;">
+                        <label for="edit_is_public" style="margin: 0px; margin-left: 15px; padding: 2px; display: flex; text-align: center; align-content: center; cursor: pointer; ">
+                            <input id="edit_is_public" class="photo_attr" type="checkbox" for="is_public" style="flex: 2; width: 20px; height: 20px; padding: 0px; margin: 0px;">
+                            <strong style="margin-left: 5px;">確認公開瀏覽</strong>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </body>
+</html>

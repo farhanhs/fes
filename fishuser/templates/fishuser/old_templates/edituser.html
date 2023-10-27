@@ -1,0 +1,97 @@
+{% extends 'fishuser/index.html' %}
+{% block menu %}
+    <ul id="menu" value ="/u/account/edituser/(?P<user_id>[0-9]+)/"></ul>
+{% endblock %}
+{% block content %}
+<br><br><br>
+<ul><h1>修改基本資料</h1></ul><br><br>
+    <span style="font-size: 18px">
+        <div class="hidden" id="id_edituser_id" value="{{ edituser.id }}"></div>
+    <form method="POST">
+        <span class="notice" id="message">{{ message }}</span>
+	    <table border="0">
+		  <tr align="right">
+		    <td>帳　號：</td>
+            <td>{{ edituser.username }}</td>
+		  </tr>
+          <tr align="right">
+		    <td>新密碼：</td>
+            <td><input id="id_password" type="password" name="password" maxlength="32" vlaue=""/>
+            </td>
+		  </tr>
+        </table>
+        <table border="0">
+            <tr>
+                <td>
+                    <ul>
+                        <span class="notice">
+                            <li>(如不修改密碼請留空)</li>
+                        </span>
+                    </ul>
+                </td>
+            </tr>
+        </table>
+        <table border="0">
+          <tr align="right">
+		    <td>姓　(必填)：</td>
+		    <td><input id="id_last_name" type="text" name="last_name" maxlength="32" 
+		    	value="{{ edituser.last_name }}"/></td>
+		  </tr>
+		  <tr align="right">
+		    <td>名　(必填)：</td>
+		    <td><input id="id_first_name" type="text" name="first_name" maxlength="32" 
+		    	value="{{ edituser.first_name }}"/></td>
+		  </tr>
+		  <tr align="right">
+		    <td>E-mail(必填)：</td>
+		    <td><input id="id_email" type="text" name="email" maxlength="32" 
+		    	value="{{ edituser.email }}"/></td>
+		  </tr>
+		  <tr align="right">
+		    <td>職　稱：</td>
+		    <td><input id="id_title" type="text" name="title" maxlength="32" 
+		    	value="{% if edituser.user_profile.title %}{{ edituser.user_profile.title }}{% endif %}"/></td>
+		  </tr>
+		  <tr align="right">
+		    <td>電　話：</td>
+		    <td><input id="id_phone" type="text" name="phone" maxlength="32" 
+		    	value="{% if edituser.user_profile.phone %}{{ edituser.user_profile.phone }}{% endif %}"/></td>
+		  </tr>
+		  <tr align="right">
+		    <td>傳　真：</td>
+		    <td><input id="id_fax" type="text" name="fax" maxlength="32" 
+		    	value="{% if edituser.user_profile.fax %}{{ edituser.user_profile.fax }}{% endif %}"/></td>
+		  </tr>
+          <tr align="right">
+		    <td>單　位：</td>
+		    <td><select name="unit" id="id_unit">
+                    <option value=""></option>
+                {% for id, unit in units %}
+                    <option value="{{ id }}" {% ifequal edituser.user_profile.unit.id id %}selected{% endifequal %}>{{ unit }}</option>
+                {% endfor %}
+                </select></td>
+		  </tr>
+          <tr align="right">
+		    <td>群　組：</td>
+		    <td><select name="group" id="id_group">
+                {% for group in groups %}
+                <option value="{{ group.id }}" {% ifequal edituser.user_profile.group.id group.id %}selected{% endifequal %}>{{ group.name }}</option>
+                {% endfor %}
+                </select></td>
+		  </tr>
+          <tr align="right">
+		    <td>狀　態：</td>
+		    <td><select name="is_active" id="id_is_active">
+                <option value="True" {% if edituser.is_active %}selected{% endif %}>啟用</option>
+                <option value="False" {% if not edituser.is_active %}selected{% endif %}>關閉</option>
+                </select></td>
+		  </tr>
+		</table>
+        <br>
+		<input id="editUser" type="submit" value="確定修改" />
+        <a href="/u/account/">取消-回帳戶列表</a>
+        
+	</form>
+    </span>
+<br><br><br>
+{% endblock %}

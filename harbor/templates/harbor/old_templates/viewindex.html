@@ -1,0 +1,110 @@
+{% extends 'project/index.html' %}
+
+{% block scriptlib %}
+    <script type="text/javascript" src="/media/harbor/js/lib.js"></script>
+{% endblock %}
+{% block menu %}
+    <ul id="menu" value ="/harbor/view"></ul>
+{% endblock %}
+{% block content %}
+
+
+<table width="980">
+<tr valign="top">
+<td width="160">
+    <table>
+        <tr>
+            <td>
+                <H2><a id="lay_port" class="switch">漁港資料</a></H2>
+                <H2><a id="gather_port" class="switch" style="display: none;">漁港資料</a></H2>
+            </td>
+        </tr>
+        <tr id="port_table" style="display: none;">
+            <td><h3>
+                <table>
+                    <tr>
+                        <td>
+                            <a href="/harbor/port/add/">按鈕新增漁港</a><br>
+                        </td>
+                    </tr>
+                    {% for city in city_list %}
+                    <tr>
+                        <td>
+                            <img id="lay_{{ city.place.id }}" dn="{{ city.place.id }}" class="gal lay" title="展開" src="/media/images/arrow_down.png">
+                            <img id="gather_{{ city.place.id }}" dn="{{ city.place.id }}" class="gal gather" title="收合" src="/media/images/arrow_up.png" style="display: none;">
+                            {{ city.place.name }}<br>
+                        </td>
+                    </tr>
+                    <tr id="loca_{{ city.place.id }}" class="shut" style="display: none;">
+                        <td>
+                            {% for port in city.fishingport %}
+                            -----<a id="port_{{ port.id }}" href="/harbor/port/{{ port.id }}/">{{ port.name }}</a> <br>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </h3></td>
+        </tr>
+        <tr>
+            <td>
+                <H2><a id="lay_obva" class="switch">觀測站資料</a></H2>
+                <H2><a id="gather_obva" class="switch" style="display: none;">觀測站資料</a></H2>
+            </td>
+        </tr>
+        <tr id="obva_table" style="display: none;">
+            <td><h3>
+                <table>
+                    <tr>
+                        <td>
+                            <a href="/harbor/observatory/add/">按鈕新增觀測站</a><br>
+                        </td>
+                    </tr>
+                    {% for ob in observatory_list %}
+                    <tr>
+                        <td>
+                            -----<a id="obva_{{ ob.id }}" href="/harbor/observatory/{{ ob.id }}/">{{ ob.name }}</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </h3></td>
+        </tr>
+        <tr>
+            <td>
+                <H2><a id="lay_city" class="switch">縣市資料</a></H2>
+                <H2><a id="gather_city" class="switch" style="display: none;">縣市資料</a></H2>
+
+            </td>
+        </tr>
+        <tr id="city_table" style="display: none;">
+            <td><h3>
+                <table>
+                    {% for city in city_list %}
+                    <tr>
+                        <td>
+                            -----<a id="city_{{ city.place.id }}" href="/harbor/city/{{ city.place.id }}/">{{ city.place.name }}</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </h3></td>
+        </tr>
+    </table>
+</td>
+<td>
+    <table>
+        <tr>
+            <td>
+                {% block sidecontent%}
+                
+                {% endblock %}
+            </td>
+        </tr>
+    </table>
+</td>
+</tr>
+</table>
+
+
+{% endblock %}

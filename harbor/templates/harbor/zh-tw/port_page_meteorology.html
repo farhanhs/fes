@@ -1,0 +1,1030 @@
+<br><br>
+<h3>
+    <span class="label label-success">
+        <span class="glyphicon glyphicon-paperclip"></span>
+        潮汐
+    </span>
+    {% if edit %}　<button class="btn btn-info btn-sm" data-toggle="modal" data-target="#create_tide_dialog">新增</button><br>{% endif %}
+</h3>
+<table class="table table-bordered" id="tide_table">
+    <tr align="center" class="warning">
+        <td rowspan="2" width="12%">
+            平均潮位
+        </td>
+        <td rowspan="2" width="12%">
+            最高潮位
+        </td>
+        <td rowspan="2" width="12%">
+            最低潮位
+        </td>
+        <td colspan="2">
+            大潮
+        </td>
+        <td colspan="2">
+            小潮
+        </td>
+        <td rowspan="2" width="16%">
+            築港高程零點
+        </td>
+        {% if edit %}
+            <td rowspan="2">刪除</td>
+        {% endif %}
+    </tr>
+    <tr align="center" class="warning">
+        <td width="12%">
+            <h5>平均高潮位</h5>
+        </td>
+        <td width="12%">
+            <h5>平均低潮位</h5>
+        </td>
+        <td width="12%">
+            <h5>平均高潮位</h5>
+        </td>
+        <td width="12%">
+            <h5>平均低潮位</h5>
+        </td>
+    </tr>
+    {% for i in port.tide_set.all %}
+        <tr align="center" id="tr_tide_{{ i.id }}">
+            <td>{{ i.tide_avg|default_if_none:"" }}</td>
+            <td>{{ i.max_tide|default_if_none:"" }}</td>
+            <td>{{ i.min_tide|default_if_none:"" }}</td>
+            <td>{{ i.big_tide_hign_avg|default_if_none:"" }}</td>
+            <td>{{ i.big_tide_down_avg|default_if_none:"" }}</td>
+            <td>{{ i.small_tide_hign_avg|default_if_none:"" }}</td>
+            <td>{{ i.small_tide_down_avg|default_if_none:"" }}</td>
+            <td>{{ i.zero_elevation|default_if_none:"" }}</td>
+            {% if edit %}
+                <td>
+                    <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                        row_id="{{ i.id }}"
+                        module_name = "harbor"
+                        table_name = "tide"
+                        remove_target = "tr_tide_{{ i.id }}"
+                        title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+                </td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+</table>
+{% if edit %}
+    <script type="text/x-jquery-tmpl" id="HideTideTr">
+        <tr align="center" id="tr_tide_${id}">
+            <td>${tide_avg}</td>
+            <td>${max_tide}</td>
+            <td>${min_tide}</td>
+            <td>${big_tide_hign_avg}</td>
+            <td>${big_tide_down_avg}</td>
+            <td>${small_tide_hign_avg}</td>
+            <td>${small_tide_down_avg}</td>
+            <td>${zero_elevation}</td>
+            <td>
+                <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                    row_id="${id}"
+                    module_name = "harbor"
+                    table_name = "tide"
+                    remove_target = "tr_tide_${id}"
+                    title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+            </td>
+        </tr>
+    </script>
+
+    <div class="modal fade" id="create_tide_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">新增潮汐</h4>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-border">
+                        <tr>
+                            <td width="25%">平均潮位</td>
+                            <td width="75%">
+                                <input id="tide_tide_avg" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>最高潮位</td>
+                            <td>
+                                <input id="tide_max_tide" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>最低潮位</td>
+                            <td>
+                                <input id="tide_min_tide" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>大潮平均高潮位</td>
+                            <td>
+                                <input id="tide_big_tide_hign_avg" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>大潮平均低潮位</td>
+                            <td>
+                                <input id="tide_big_tide_down_avg" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>小潮平均高潮位</td>
+                            <td>
+                                <input id="tide_small_tide_hign_avg" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>小潮平均低潮位</td>
+                            <td>
+                                <input id="tide_small_tide_down_avg" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>築港高程零點</td>
+                            <td>
+                                <input id="tide_zero_elevation" class="form-control" value="">
+                            </td>
+                        </tr>
+                    </table>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" id="create_tide" class="btn btn-primary">新增</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br>
+<h3>
+    <span class="label label-success">
+        <span class="glyphicon glyphicon-paperclip"></span>
+        波浪
+    </span>
+    {% if edit %}　<button class="btn btn-info btn-sm" data-toggle="modal" data-target="#create_waves_dialog">新增</button><br>{% endif %}
+</h3>
+<table class="table table-bordered" id="waves_table">
+    <tr class="warning" align="center">
+        <td>
+            類別
+        </td>
+        <td>
+            波向
+        </td>
+        <td>
+            波高(M)
+        </td>
+        <td>
+            週期
+        </td>
+        {% if edit %}
+            <td>刪除</td>
+        {% endif %}
+    </tr>
+    {% for i in port.waves_set.all %}
+        <tr align="center" id="tr_waves_{{ i.id }}">
+            <td>{{ i.type }}</td>
+            <td>{{ i.angle }}</td>
+            <td>{{ i.high }}</td>
+            <td>{{ i.cycle }}</td>
+            {% if edit %}
+                <td>
+                    <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                        row_id="{{ i.id }}"
+                        module_name = "harbor"
+                        table_name = "waves"
+                        remove_target = "tr_waves_{{ i.id }}"
+                        title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+                </td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+</table>
+{% if edit %}
+    <script type="text/x-jquery-tmpl" id="HideWavesTr">
+        <tr align="center" id="tr_waves_${id}">
+            <td>${type}</td>
+            <td>${angle}</td>
+            <td>${high}</td>
+            <td>${cycle}</td>
+            <td>
+                <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                    row_id="${id}"
+                    module_name = "harbor"
+                    table_name = "waves"
+                    remove_target = "tr_waves_${id}"
+                    title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+            </td>
+        </tr>
+    </script>
+
+    <div class="modal fade" id="create_waves_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">新增波浪</h4>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-border">
+                        <tr>
+                            <td width="25%">類別</td>
+                            <td width="75%">
+                                <input id="waves_type" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>波向</td>
+                            <td>
+                                <input id="waves_angle" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>波高(M)</td>
+                            <td>
+                                <input id="waves_high" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>週期</td>
+                            <td>
+                                <input id="waves_cycle" class="form-control" value="">
+                            </td>
+                        </tr>
+                    </table>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" id="create_waves" class="btn btn-primary">新增</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table class="table table-bordered">
+    <tr class="warning">
+        <td colspan="3" align="center">
+            觀測站資訊
+        </td>
+    </tr>
+    <tr>
+        <td align="center" width="15%">引用測站</td>
+        <td width="45%">{{ port.observatory.name }}觀測站</td>
+        <td width="40%" rowspan="3" align="center">
+            <a href="{{ port.observatory.rUrl }}" target="_blank">
+                <img src="{{ port.observatory.rUrl }}" title="{{ port.observatory.name }}測站風花圖(點擊觀看大圖)" width="260">
+            </a>
+            <p>{{ port.observatory.name }}測站風花圖
+        </td>
+    </tr>
+    <tr>
+        <td align="center">風花圖說明</td>
+        {% if edit %}
+            <td class="ClickShowInfo" row_id="{{ port.observatory.id }}" field_name="wind_memo">
+                <a id="show_part_wind_memo_{{ port.observatory.id }}">
+                    {{ port.observatory.wind_memo|linebreaks }}
+                </a>
+                <textarea id="edit_part_wind_memo_{{ port.observatory.id }}"
+                    class="BlurUpdateInfo form-control" style="display: none;"
+                    field_type="str"
+                    row_id="{{ port.observatory.id }}"
+                    field_name="wind_memo"
+                    table_name="observatory"
+                    module_name='harbor'
+                    type="textarea"
+                    old_value="{{ port.observatory.wind_memo|default_if_none:"" }}"
+                    cols="100" rows="5">{{ port.observatory.wind_memo|default_if_none:"" }}</textarea>
+            </td>
+        {% else %}
+            <td>
+                {{ port.observatory.wind_memo|linebreaks }}
+            </td>
+        {% endif %}
+    </tr>
+    <tr>
+        <td align="center">月平均降雨<br>日數說明</td>
+        {% if edit %}
+            <td class="ClickShowInfo" row_id="{{ port.observatory.id }}" field_name="rainday_memo">
+                <a id="show_part_rainday_memo_{{ port.observatory.id }}">
+                    {{ port.observatory.rainday_memo|linebreaks }}
+                </a>
+                <textarea id="edit_part_rainday_memo_{{ port.observatory.id }}"
+                    class="BlurUpdateInfo form-control" style="display: none;"
+                    field_type="str"
+                    row_id="{{ port.observatory.id }}"
+                    field_name="rainday_memo"
+                    table_name="observatory"
+                    module_name='harbor'
+                    type="textarea"
+                    old_value="{{ port.observatory.rainday_memo|default_if_none:"" }}"
+                    cols="100" rows="5">{{ port.observatory.rainday_memo|default_if_none:"" }}</textarea>
+            </td>
+        {% else %}
+            <td>
+                {{ port.observatory.rainday_memo|linebreaks }}
+            </td>
+        {% endif %}
+    </tr>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br>
+<h3>
+    <span class="label label-success">
+        <span class="glyphicon glyphicon-paperclip"></span>
+        氣溫
+    </span>
+    {% if edit %}　<button class="btn btn-info btn-sm" data-toggle="modal" data-target="#create_averagetemperature_dialog">新增</button><br>{% endif %}
+</h3>
+<table class="table table-bordered" id="averagetemperature_table">
+    <tr class="warning" align="center">
+        <td width="11%">
+            平均氣溫
+        </td>
+        <td width="11%">
+            最高氣溫
+        </td>
+        <td width="11%">
+            最低氣溫
+        </td>
+        <td width="67%">
+            備註
+        </td>
+        {% if edit %}
+            <td>刪除</td>
+        {% endif %}
+    </tr>
+    {% for i in port.observatory.averagetemperature_set.all %}
+        <tr align="center" id="tr_averagetemperature_{{ i.id }}">
+            <td>{{ i.average }}</td>
+            <td>{{ i.max }}</td>
+            <td>{{ i.min }}</td>
+            <td align="left">{{ i.memo|linebreaks }}</td>
+            {% if edit %}
+                <td>
+                    <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                        row_id="{{ i.id }}"
+                        module_name = "harbor"
+                        table_name = "averagetemperature"
+                        remove_target = "tr_averagetemperature_{{ i.id }}"
+                        title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+                </td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+</table>
+{% if edit %}
+    <script type="text/x-jquery-tmpl" id="HideAverageTemperatureTr">
+        <tr align="center" id="tr_averagetemperature_${id}">
+            <td>${average}</td>
+            <td>${max}</td>
+            <td>${min}</td>
+            <td align="left">${memo}</td>
+            <td>
+                <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                    row_id="${id}"
+                    module_name = "harbor"
+                    table_name = "averagetemperature"
+                    remove_target = "tr_averagetemperature_${id}"
+                    title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+            </td>
+        </tr>
+    </script>
+
+    <div class="modal fade" id="create_averagetemperature_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">新增氣溫</h4>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-border">
+                        <tr>
+                            <td width="25%">平均氣溫</td>
+                            <td width="75%">
+                                <input id="averagetemperature_average" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>最高氣溫</td>
+                            <td>
+                                <input id="averagetemperature_max" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>最低氣溫</td>
+                            <td>
+                                <input id="averagetemperature_min" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>備註</td>
+                            <td>
+                                <textarea id="averagetemperature_memo" class="form-control"></textarea>
+                            </td>
+                        </tr>
+                    </table>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" id="create_averagetemperature" class="btn btn-primary">新增</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br>
+<h3>
+    <span class="label label-success">
+        <span class="glyphicon glyphicon-paperclip"></span>
+        降雨
+    </span>
+    {% if edit %}　<button class="btn btn-info btn-sm" data-toggle="modal" data-target="#create_averagerainfall_dialog">新增</button><br>{% endif %}
+</h3>
+<table class="table table-bordered" id="averagerainfall_table">
+    <tr class="warning" align="center">
+        <td width="11%">
+            平均<br>降雨量
+        </td>
+        <td width="39%">
+            備註
+        </td>
+        <td width="11%">
+            平均<br>降雨日數
+        </td>
+        <td width="39%">
+            備註
+        </td>
+        {% if edit %}
+            <td>刪除</td>
+        {% endif %}
+    </tr>
+    {% for i in port.observatory.averagerainfall_set.all %}
+        <tr align="center" id="tr_averagerainfall_{{ i.id }}">
+            <td>{{ i.rain_average }}</td>
+            <td align="left">{{ i.rain_memo|linebreaks }}</td>
+            <td>{{ i.day_average }}</td>
+            <td align="left">{{ i.day_memo|linebreaks }}</td>
+            {% if edit %}
+                <td>
+                    <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                        row_id="{{ i.id }}"
+                        module_name = "harbor"
+                        table_name = "averagerainfall"
+                        remove_target = "tr_averagerainfall_{{ i.id }}"
+                        title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+                </td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+</table>
+{% if edit %}
+    <script type="text/x-jquery-tmpl" id="HideAverageRainfallTr">
+        <tr align="center" id="tr_averagerainfall_${id}">
+            <td>${rain_average}</td>
+            <td align="left">${rain_memo}</td>
+            <td>${day_average}</td>
+            <td align="left">${day_memo}</td>
+            <td>
+                <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                    row_id="${id}"
+                    module_name = "harbor"
+                    table_name = "averagerainfall"
+                    remove_target = "tr_averagerainfall_${id}"
+                    title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+            </td>
+        </tr>
+    </script>
+
+    <div class="modal fade" id="create_averagerainfall_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">新增降雨</h4>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-border">
+                        <tr>
+                            <td width="25%">平均降雨量</td>
+                            <td width="75%">
+                                <input id="averagerainfall_rain_average" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>降雨量備註</td>
+                            <td>
+                                <textarea id="averagerainfall_rain_memo" class="form-control"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>平均降雨日數</td>
+                            <td>
+                                <input id="averagerainfall_day_average" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>降雨日數備註</td>
+                            <td>
+                                <textarea id="averagerainfall_day_memo" class="form-control"></textarea>
+                            </td>
+                        </tr>
+                    </table>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" id="create_averagerainfall" class="btn btn-primary">新增</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br>
+<h3>
+    <span class="label label-success">
+        <span class="glyphicon glyphicon-paperclip"></span>
+        氣壓
+    </span>
+    {% if edit %}　<button class="btn btn-info btn-sm" data-toggle="modal" data-target="#create_averagepressure_dialog">新增</button><br>{% endif %}
+</h3>
+<table class="table table-bordered" id="averagepressure_table">
+    <tr class="warning" align="center">
+        <td width="11%">
+            平均氣壓
+        </td>
+        <td width="11%">
+            海平面<br>平均氣壓
+        </td>
+        <td width="11%">
+            最高氣壓
+        </td>
+        <td width="11%">
+            最低氣壓
+        </td>
+        <td width="56%">
+            備註
+        </td>
+        {% if edit %}
+            <td>刪除</td>
+        {% endif %}
+    </tr>
+    {% for i in port.observatory.averagepressure_set.all %}
+        <tr align="center">
+            <td>{{ i.average }}</td>
+            <td>{{ i.sea_average }}</td>
+            <td>{{ i.max }}</td>
+            <td>{{ i.min }}</td>
+            <td align="left">{{ i.memo|linebreaks }}</td>
+            {% if edit %}
+                <td>
+                    <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                        row_id="{{ i.id }}"
+                        module_name = "harbor"
+                        table_name = "averagepressure"
+                        remove_target = "tr_averagepressure_{{ i.id }}"
+                        title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+                </td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+</table>
+{% if edit %}
+    <script type="text/x-jquery-tmpl" id="HideAveragePressureTr">
+        <tr align="center" id="tr_averagepressure_${id}">
+            <td>${average}</td>
+            <td>${sea_average}</td>
+            <td>${max}</td>
+            <td>${min}</td>
+            <td align="left">${memo}</td>
+            <td>
+                <button class="deleteRow btn btn-danger btn-sm" title="點我刪除"
+                    row_id="${id}"
+                    module_name = "harbor"
+                    table_name = "averagepressure"
+                    remove_target = "tr_averagepressure_${id}"
+                    title="刪除"><span class="glyphicon glyphicon-remove"></span></button>
+            </td>
+        </tr>
+    </script>
+
+    <div class="modal fade" id="create_averagepressure_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">新增氣壓</h4>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-border">
+                        <tr>
+                            <td width="25%">平均氣壓</td>
+                            <td width="75%">
+                                <input id="averagepressure_average" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>海平面平均氣壓</td>
+                            <td>
+                                <input id="averagepressure_sea_average" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>最高氣壓</td>
+                            <td>
+                                <input id="averagepressure_max" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>最低氣壓</td>
+                            <td>
+                                <input id="averagepressure_min" class="form-control" value="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>備註</td>
+                            <td>
+                                <textarea id="averagepressure_memo" class="form-control"></textarea>
+                            </td>
+                        </tr>
+                    </table>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" id="create_averagepressure" class="btn btn-primary">新增</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+    function create_tide() {
+        var fishingport = $('#fishingport').val();;
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            fishingport: fishingport,
+        }
+        if ($('#tide_max_tide').val()){
+            data['max_tide'] = $('#tide_max_tide').val();
+        }
+        if ($('#tide_big_tide_hign_avg').val()){
+            data['big_tide_hign_avg'] =  $('#tide_big_tide_hign_avg').val();
+        }
+        if ($('#tide_small_tide_hign_avg').val()){
+            data['small_tide_hign_avg'] =  $('#tide_small_tide_hign_avg').val();
+        }
+        if ($('#tide_tide_avg').val()){
+            data['tide_avg'] =  $('#tide_tide_avg').val();
+        }
+        if ($('#tide_big_tide_down_avg').val()){
+            data['big_tide_down_avg'] =  $('#tide_big_tide_down_avg').val();
+        }
+        if ($('#tide_small_tide_down_avg').val()){
+            data['small_tide_down_avg'] =  $('#tide_small_tide_down_avg').val();
+        }
+        if ($('#tide_min_tide').val()){
+            data['min_tide'] =  $('#tide_min_tide').val();
+        }
+        if ($('#tide_zero_elevation').val()){
+            data['zero_elevation'] =  $('#tide_zero_elevation').val();
+        }
+        
+        $.ajax({
+            url: '/harbor/api/v2/tide/',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                var $div = $('#HideTideTr').tmpl(data).appendTo($('#tide_table'));
+                $('#tide_max_tide').val('');
+                $('#tide_big_tide_hign_avg').val('');
+                $('#tide_small_tide_hign_avg').val('');
+                $('#tide_tide_avg').val('');
+                $('#tide_big_tide_down_avg').val('');
+                $('#tide_small_tide_down_avg').val('');
+                $('#tide_min_tide').val('');
+                $('#tide_zero_elevation').val('');
+                $('#create_tide_dialog').modal('hide');
+                $('.deleteRow').unbind('click');
+                $('.deleteRow').click(deleteRow);
+            },
+            error: function (data) {}
+        })
+    }
+
+    function create_waves() {
+        var fishingport = $('#fishingport').val();;
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            fishingport: fishingport,
+        }
+        if ($('#waves_type').val()){
+            data['type'] = $('#waves_type').val();
+        }
+        if ($('#waves_angle').val()){
+            data['angle'] =  $('#waves_angle').val();
+        }
+        if ($('#waves_high').val()){
+            data['high'] =  $('#waves_high').val();
+        }
+        if ($('#waves_cycle').val()){
+            data['cycle'] =  $('#waves_cycle').val();
+        }
+        $.ajax({
+            url: '/harbor/api/v2/waves/',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                var $div = $('#HideWavesTr').tmpl(data).appendTo($('#waves_table'));
+                $('#waves_type').val('');
+                $('#waves_angle').val('');
+                $('#waves_high').val('');
+                $('#waves_cycle').val('');
+                $('#create_waves_dialog').modal('hide');
+                $('.deleteRow').unbind('click');
+                $('.deleteRow').click(deleteRow);
+            },
+            error: function (data) {}
+        })
+    }
+
+    function create_averagetemperature() {
+        var observatory = $('#observatory').val();;
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            observatory: observatory,
+            month: 0,
+        }
+        if ($('#averagetemperature_average').val()){
+            data['average'] = $('#averagetemperature_average').val();
+        }
+        if ($('#averagetemperature_max').val()){
+            data['max'] =  $('#averagetemperature_max').val();
+        }
+        if ($('#averagetemperature_min').val()){
+            data['min'] =  $('#averagetemperature_min').val();
+        }
+        if ($('#averagetemperature_memo').val()){
+            data['memo'] =  $('#averagetemperature_memo').val();
+        }
+        $.ajax({
+            url: '/harbor/api/v2/averagetemperature/',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                var $div = $('#HideAverageTemperatureTr').tmpl(data).appendTo($('#averagetemperature_table'));
+                $('#averagetemperature_average').val('');
+                $('#averagetemperature_max').val('');
+                $('#averagetemperature_min').val('');
+                $('#averagetemperature_memo').val('');
+                $('#create_averagetemperature_dialog').modal('hide');
+                $('.deleteRow').unbind('click');
+                $('.deleteRow').click(deleteRow);
+            },
+            error: function (data) {}
+        })
+    }
+
+    function create_averagerainfall() {
+        var observatory = $('#observatory').val();;
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            observatory: observatory,
+            month: 0,
+        }
+        if ($('#averagerainfall_rain_average').val()){
+            data['rain_average'] = $('#averagerainfall_rain_average').val();
+        }
+        if ($('#averagerainfall_rain_memo').val()){
+            data['rain_memo'] =  $('#averagerainfall_rain_memo').val();
+        }
+        if ($('#averagerainfall_day_average').val()){
+            data['day_average'] =  $('#averagerainfall_day_average').val();
+        }
+        if ($('#averagerainfall_day_memo').val()){
+            data['day_memo'] =  $('#averagerainfall_day_memo').val();
+        }
+        $.ajax({
+            url: '/harbor/api/v2/averagerainfall/',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                var $div = $('#HideAverageRainfallTr').tmpl(data).appendTo($('#averagerainfall_table'));
+                $('#averagerainfall_rain_average').val('');
+                $('#averagerainfall_rain_memo').val('');
+                $('#averagerainfall_day_average').val('');
+                $('#averagerainfall_day_memo').val('');
+                $('#create_averagerainfall_dialog').modal('hide');
+                $('.deleteRow').unbind('click');
+                $('.deleteRow').click(deleteRow);
+            },
+            error: function (data) {}
+        })
+    }
+
+    function create_averagepressure() {
+        var observatory = $('#observatory').val();;
+        var data = {
+            csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+            observatory: observatory,
+            month: 0,
+        }
+        if ($('#averagepressure_average').val()){
+            data['average'] = $('#averagepressure_average').val();
+        }
+        if ($('#averagepressure_sea_average').val()){
+            data['sea_average'] =  $('#averagepressure_sea_average').val();
+        }
+        if ($('#averagepressure_max').val()){
+            data['max'] =  $('#averagepressure_max').val();
+        }
+        if ($('#averagepressure_min').val()){
+            data['min'] =  $('#averagepressure_min').val();
+        }
+        if ($('#averagepressure_memo').val()){
+            data['memo'] =  $('#averagepressure_memo').val();
+        }
+        $.ajax({
+            url: '/harbor/api/v2/averagepressure/',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                var $div = $('#HideAveragePressureTr').tmpl(data).appendTo($('#averagepressure_table'));
+                $('#averagepressure_average').val('');
+                $('#averagepressure_sea_average').val('');
+                $('#averagepressure_max').val('');
+                $('#averagepressure_min').val('');
+                $('#averagepressure_memo').val('');
+                $('#create_averagepressure_dialog').modal('hide');
+                $('.deleteRow').unbind('click');
+                $('.deleteRow').click(deleteRow);
+            },
+            error: function (data) {}
+        })
+    }
+
+    $(document).ready(function(){
+        $('#create_tide').click(create_tide);
+        $('#create_waves').click(create_waves);
+        $('#create_averagetemperature').click(create_averagetemperature);
+        $('#create_averagerainfall').click(create_averagerainfall);
+        $('#create_averagepressure').click(create_averagepressure);
+    });
+
+</script>

@@ -1,0 +1,358 @@
+{% load i18n %}
+{% load staticfiles %}
+<!DOCTYPE html PUBLIC>
+<html lang="zh-tw">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link type="image/x-icon" rel="shortcut icon" href="/media/cim/images/fa.ico" />
+    
+    <link href="/media/fishuser/v2/jquery/smoothness/jquery-ui-1.10.3.custom.css{{ settings.SV_ }}" rel="stylesheet" type="text/css" charset="utf-8"/>
+
+    <script type="text/javascript" src="/media/fishuser/v2/jquery/jquery-1.10.2.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/fishuser/v2/jquery/jquery-ui-1.10.3.custom.js{{ settings.SV_ }}" ></script>
+    <script type="text/javascript" src="{% static 'mobile/js/jquery.cookie.js' %}" ></script>
+    <script type="text/javascript" src="{% static 'mobile/lobibox/lobibox.js' %}" ></script>
+    
+    <script type="text/javascript" src="/media/fishuser/v2/js/system_notice.js{{ settings.SV_ }}" ></script>
+    
+    <script type="text/javascript" src="/media/fishuser/v2/js/fishuser.js{{ settings.SV_ }}"></script>
+    <script type="text/javascript" src="/media/fishuser/v2/jquery-elastic-1.6.10/jquery.elastic.source.js"></script>
+    
+    <script type="text/javascript" src="{% static 'supervise/v2/Chart.js/Chart.bundle.js' %}{{ SV_ }}"></script>
+    <script type="text/javascript" src="{% static 'supervise/v2/Chart.js/utils.js' %}{{ SV_ }}"></script>
+    <script type="text/javascript" src="{% static 'supervise/v2/Chart.js/FileSaver.min.js' %}{{ SV_ }}"></script>
+    <script type="text/javascript" src="{% static 'supervise/v2/Chart.js/chartjs-plugin-labels.js' %}{{ SV_ }}"></script>
+
+    <title>{% block title %}漁業工程管理系統{% endblock %}</title>
+</head>
+<body style="padding-left:8%;padding-right:8%;text-align: center;font-family: 'Helvetica Neue', Helvetica, '微軟正黑體', 'Microsoft Jhenghei', Arial, sans-serif;">
+{% csrf_token %}
+
+<button class="btn btn-primary" id="save-image-btn" style="float: right;">另存圖片</button>
+<div align="center" id="div_canvas" style="text-align: center;"></div>
+<div id="chart_data"></div>
+
+</body>
+
+
+<script type="text/javascript">
+    function show_chart(){
+        var $obj = $(this);
+        var date_from = '{{ date_from }}';
+        var date_to = '{{ date_to }}';
+        var chart_name = '{{ chart_name }}';
+        var sub_type = '{{ sub_type }}';
+        $.ajax({
+            url: '/supervise/get_chart_data/',
+            type: 'POST',
+            data: {
+                date_from: date_from,
+                date_to: date_to,
+                chart_name: chart_name,
+                sub_type: sub_type,
+            },
+            dataType: 'json',
+            beforeSend: function(XHR) {
+                XHR.setRequestHeader('X-CSRFToken', CSRFMIDDLEWARETOKEN);
+            },
+            success: function (json, text, xhr) {
+                if (json['status']){
+                    if (chart_name.indexOf('pie')!=-1){
+                        show_pie_chart(json, chart_name);
+                    } else if (chart_name.indexOf('histogram')!=-1){
+                        show_histogram_chart(json, chart_name);
+                    }
+                } else {
+                    alert(json['msg']);
+                    window.close();
+                }
+            },
+            error: function (json) {
+                Lobibox.notify('error', {
+                    title: '錯誤訊息',
+                    msg: json.responseText,
+                });
+            }
+        });
+    }
+
+    var dynamicColors = function() {
+        var r = Math.floor(100+Math.random() * 150);
+        var g = Math.floor(100+Math.random() * 150);
+        var b = Math.floor(100+Math.random() * 150);
+        return "rgb(" + r + "," + g + "," + b + ")";
+    };
+
+    function show_pie_chart(json, chart_name){
+        $('#div_canvas').html('<canvas class="chart_canvas" id="canvas"></canvas>');
+        var colors = ['#F677FF', '#59C3FF', '#9AFFF0', '#F8FF89', '#FFAB5A', '#FF8888', '#A0E293', '#F187FF'];
+        json['data']['datasets'][0]['backgroundColor'] = colors;
+        var config = {
+            type: 'pie',
+            data: json['data'],
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                title: {
+                    display: true,
+                    text: json['title'],
+                    fontSize: 34,
+                    fontFamily: "微軟正黑體",
+                },
+                legend: {
+                    position: 'top',
+                    labels: {
+                        fontSize: 24
+                    }
+                },
+                plugins: {
+                    labels: [
+                        {
+                            render: 'label',
+                            fontSize: 30,
+                            position: 'outside',
+                            fontFamily: "微軟正黑體",
+                        },
+                        {
+                            render: 'percentage',
+                            fontSize: 30,
+                            fontColor: "black",
+                            position: 'border',
+                            fontFamily: "微軟正黑體",
+                        }
+                    ],
+                }
+            }
+        };
+        var ctx = document.getElementById("canvas");
+        ctx.height = $('body').height()-50;
+        ctx.getContext("2d");
+        Chart.pluginService.register({
+            beforeDraw: function (chart, easing) {
+                var ctx = chart.chart.ctx;
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, 5000, 5000);
+                ctx.restore();
+            }
+        });
+
+        window.myPie = new Chart(ctx, config);
+        if (json['data']['sub_type'] == '2'){
+            window.myPie.getDatasetMeta(0).data[3].hidden = true;
+            window.myPie.getDatasetMeta(0).data[4].hidden = true;
+        };
+        window.myPie.update();
+
+        $("#save-image-btn").unbind('click');
+        $("#save-image-btn").click(function() {
+            $("#canvas").get(0).toBlob(function(blob) {
+                saveAs(blob, json['title'].join('') + '.png');
+            });
+        });
+
+    };
+
+
+    function show_histogram_chart(json, chart_name){
+        $('#div_canvas').html('<canvas class="chart_canvas" id="canvas"></canvas>');
+        var barChartData = json['data'];
+        var config = {
+            type: 'bar',
+            data: barChartData,
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                legend: {
+                    position: 'top',
+                    labels: {
+                        fontSize: 24
+                    }
+                },
+                title: {
+                    display: true,
+                    text: json['title'],
+                    fontSize: 36,
+                    fontFamily: "微軟正黑體",
+                },
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                },
+                plugins: {
+                    labels: {
+                        render: 'value',
+                        fontSize: 24,
+                    }
+                },
+            }
+        };
+        if (['histogram-1'].indexOf(chart_name) != -1){
+            config['options']['scales']['xAxes'] = [{
+                        display: true,
+                        ticks: {
+                            autoSkip: false,
+                            fontSize: 22,
+                            fontFamily: "微軟正黑體",
+                        }
+                    }];
+            config['options']['scales']['yAxes'] = [
+                {
+                    position: 'left',
+                    display: true,
+                    ticks: {
+                        max: json['left_max_num'] + 20,
+                        min: 0,
+                        fontSize: 20,
+                        callback: function(value, index, values) {
+                            return `${value}次`;
+                        }
+                    },
+                    scaleLabel: {
+                        rotate: 0.5,
+                        display: true,
+                        labelString: '缺\n失\n次\n數',
+                        fontSize: 30,
+                        fontFamily: "微軟正黑體",
+                    }
+                }
+            ];
+        } else if (['histogram-2', 'histogram-3', 'histogram-4'].indexOf(chart_name) != -1){
+            config['options']['scales']['xAxes'] = [{
+                        display: true,
+                        ticks: {
+                            autoSkip: false,
+                            fontSize: 20,
+                            fontFamily: "微軟正黑體",
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: '缺失編號',
+                            fontSize: 30,
+                            fontFamily: "微軟正黑體",
+                        }
+                    }];
+            config['options']['scales']['yAxes'] = [
+                {
+                    position: 'left',
+                    display: true,
+                    ticks: {
+                        max: json['left_max_num'],
+                        min: 0,
+                        fontSize: 20,
+                        fontFamily: "微軟正黑體",
+                        callback: function(value, index, values) {
+                            return `${value}件`;
+                        }
+                    },
+                    scaleLabel: {
+                        rotate: 0.5,
+                        display: true,
+                        labelString: '缺\n失\n件\n數',
+                        fontSize: 30,
+                        fontFamily: "微軟正黑體",
+                    }
+                },
+                {
+                    position: 'right',
+                    display: true,
+                    ticks: {
+                        max: json['right_max_num'],
+                        min: 0,
+                        fontSize: 20,
+                        fontFamily: "微軟正黑體",
+                        callback: function(value, index, values) {
+                            return `${value} %`;
+                        }
+                    },
+                    scaleLabel: {
+                        rotate: -0.5,
+                        display: true,
+                        labelString: '缺\n失\n比\n率',
+                        fontSize: 30,
+                        fontFamily: "微軟正黑體",
+                    }
+                }
+            ];
+        } else if (['histogram-5'].indexOf(chart_name) != -1){
+            config['options']['scales']['xAxes'] = [{
+                        display: true,
+                        ticks: {
+                            autoSkip: false,
+                            fontSize: 20,
+                            fontFamily: "微軟正黑體",
+                        }
+                    }];
+            config['options']['scales']['yAxes'] = [{
+                    position: 'left',
+                    display: true,                    
+                    ticks: {
+                        max: json['left_max_num'],
+                        min: 0,
+                        fontSize: 20,
+                        fontFamily: "微軟正黑體",
+                        callback: function(value, index, values) {
+                            return `${value}次`;
+                        }
+                    },
+                    scaleLabel: {
+                        rotate: 0.5,
+                        display: true,
+                        labelString: '缺\n失\n次\n數',
+                        fontSize: 30,
+                        fontFamily: "微軟正黑體",
+                    }},
+                    {
+                    position: 'right',
+                    display: true,
+                    ticks: {
+                        max: json['right_max_num'],
+                        min: 0,
+                        fontSize: 20,
+                        fontFamily: "微軟正黑體",
+                        callback: function(value, index, values) {
+                            return `${value} %`;
+                        }
+                    },
+                    scaleLabel: {
+                        rotate: -0.5,
+                        display: true,
+                        labelString: '缺\n失\n比\n率',
+                        fontSize: 30,
+                        fontFamily: "微軟正黑體",
+                    }}
+                ];
+        };
+        for (i=0;i<config['options']['scales']['yAxes'].length;i++){
+            if (config['options']['scales']['yAxes'][i]['ticks']['max'] <= 10){
+                config['options']['scales']['yAxes'][i]['ticks']['stepSize'] = 1;
+            };
+        };
+        var ctx = document.getElementById("canvas");
+        ctx.height = $('body').height()-50;
+        ctx.getContext("2d");
+        Chart.pluginService.register({
+            beforeDraw: function (chart, easing) {
+                var ctx = chart.chart.ctx;
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, 5000, 5000);
+                ctx.restore();
+            }
+        });
+        window.myBar = new Chart(ctx, config);
+        $("#save-image-btn").unbind('click');
+        $("#save-image-btn").click(function() {
+            $("#canvas").get(0).toBlob(function(blob) {
+                saveAs(blob, json['title'].join('') + '.png');
+            });
+        });
+    }
+
+
+    $(document).ready(function(){
+        // $('#div_canvas').css('max-height', $('body').height());
+        show_chart();
+    });
+</script>

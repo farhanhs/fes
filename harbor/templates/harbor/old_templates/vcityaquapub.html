@@ -1,0 +1,268 @@
+{% extends 'harbor/vcity.html' %}
+
+{% load humanize %}
+{% block menu %}
+    <ul id="menu" value ="/harbor/view"></ul>
+{% endblock %}
+{% block portinfocontent %}
+<table width="800">
+    <tr>
+        <td colspan="2" height="60">
+            <span class="HarborTitle">養殖漁業公共工程</span>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" width="800">
+            <h2>
+            {% if work_list %}
+            {% for year in work_list %}
+            <table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+                <tr bgcolor="#FFFF99" align="center">
+                    <td rowspan="{{ year.1 }}" width="40" bgcolor="#87D2F0">
+                        {{ year.0 }}
+                    </td>
+                    <td width="170">
+                        工程項目
+                    </td>
+                    <td width="130">
+                        生產區
+                    </td>
+                    <td width="60">
+                        單位
+                    </td>
+                    <td width="130">
+                        工程數量
+                    </td>
+                    <td width="130">
+                        工程經費(萬元)
+                    </td>
+                    <td width="130">
+                        備註
+                    </td>
+                </tr>
+                {% for item in year.2 %}
+                <tr class="{% cycle "odd" "even" %}" align="left">
+                    <td>
+                        {% if item.project_item %}{{ item.project_item }}{% else %}<center>暫無資訊</center>{% endif %}
+                    </td>
+                    <td>
+                        {% if item.area %}{{ item.area }}{% else %}<center>暫無資訊</center>{% endif %}
+                    </td>
+                    <td align="center">
+                        {% if item.unit %}{{ item.unit }}{% else %}<center>暫無資訊</center>{% endif %}
+                    </td>
+                    <td align="right">
+                        {% if item.project_num %}{{ item.project_num|intcomma }}{% else %}<center>暫無資訊</center>{% endif %}
+                    </td>
+                    <td align="right">
+                        {% if item.project_cost %}{{ item.project_cost|intcomma }}{% else %}<center>暫無資訊</center>{% endif %}
+                    </td>
+                    <td>
+                        {% if item.memo %}{{ item.memo }}{% else %}<center>暫無資訊</center>{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            <br>
+            {% endfor %}
+            <!--
+            <table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+                <tr align="center" bgcolor="#FFFF99">
+                    <td rowspan="2" width="95">工程名稱</td>
+                    <td rowspan="2" width="60">區域</td>
+                    <td rowspan="2" width="30">單位</td>
+                    <td rowspan="2" width="60">81~88<br>年已完<br>成之公<br>共工程</td>
+                    <td colspan="4">初步建議實施之工程</td>
+                    <td colspan="3">與養殖區溝通後之建議</td>
+                </tr>
+                <tr align="center" bgcolor="#FFFF99">
+                    <td width="60">數量</td>
+                    <td width="90">規格</td>
+                    <td width="90">形式</td>
+                    <td width="90">工程費<br>(萬元)</td>
+                    <td width="60">數量</td>
+                    <td width="100">工程費<br>(萬元)</td>
+                    <td width="50">順序</td>
+                </tr>
+                {% for work in works_list %}
+                <tr>
+                    <td rowspan="{{ work.0 }}">
+                        {{ work.1.project_name }}
+                    </td>
+                    <td rowspan="2" align="center">
+                        {% if work.1.area %}{{ work.1.area }}{% endif %}
+                    </td>
+                    <td rowspan="2" align="center">
+                        {% if work.1.unit %}{{ work.1.unit }}{% endif %}
+                    </td>
+                    <td rowspan="2" align="center">
+                        {% if work.1.already_done_81to88 %}{{ work.1.already_done_81to88 }}{% endif %}
+                    </td>
+                    <td rowspan="{% if work.1.suggest_memo %}1{% else%}2{% endif %}" align="center">
+                        {% if work.1.suggest_num %}{{ work.1.suggest_num }}{% endif %}
+                    </td>
+                    <td rowspan="{% if work.1.suggest_memo %}1{% else%}2{% endif %}" align="left">
+                        {% if work.1.suggest_specification %}{{ work.1.suggest_specification }}{% endif %}
+                    </td>
+                    <td rowspan="{% if work.1.suggest_memo %}1{% else%}2{% endif %}" align="left">
+                        {% if work.1.suggest_type %}{{ work.1.suggest_type }}{% endif %}
+                    </td>
+                    <td rowspan="{% if work.1.suggest_memo %}1{% else%}2{% endif %}" align="right">
+                        {% if work.1.suggest_project_cost %}{{ work.1.suggest_project_cost|intcomma }}{% endif %}
+                    </td>
+                    <td rowspan="{% if work.1.communicate_memo %}1{% else%}2{% endif %}" align="center">
+                        {% if work.1.communicate_num %}{{ work.1.communicate_num }}{% endif %}
+                    </td>
+                    <td rowspan="{% if work.1.communicate_memo %}1{% else%}2{% endif %}" align="right">
+                        {% if work.1.communicate_project_cost %}{{ work.1.communicate_project_cost|intcomma }}{% endif %}
+                    </td>
+                    <td rowspan="{% if work.1.communicate_memo %}1{% else%}2{% endif %}" align="center">
+                        {% if work.1.order %}{{ work.1.order }}{% endif %}
+                    </td>
+                </tr>
+                {% if work.1.suggest_memo or work.1.communicate_memo %}
+                <tr>
+                    {% if work.1.suggest_memo %}
+                    <td bgcolor="#E1F0F0" align="center">
+                        說明
+                    </td>
+                    <td  colspan="3" align="left">
+                        {{ work.1.suggest_memo }}
+                    </td>
+                    {% endif %}
+                    {% if work.1.communicate_memo %}
+                    <td bgcolor="#E1F0F0" align="center">
+                        說明
+                    </td>
+                    <td colspan="2" align="left">
+                        {{ work.1.communicate_memo }}
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endif %}
+
+                {% if work.2 %}
+                    {% for data in work.2 %}
+                <tr>
+                    <td {% if data.suggest_memo or data.communicate_memo %}rowspan="2"{% endif %} align="center">
+                        {% if data.area %}{{ data.area }}{% endif %}
+                    </td>
+                    <td {% if data.suggest_memo or data.communicate_memo %}rowspan="2"{% endif %} align="center">
+                        {% if data.unit %}{{ data.unit }}{% endif %}
+                    </td>
+                    <td {% if data.suggest_memo or data.communicate_memo %}rowspan="2"{% endif %} align="center">
+                        {% if data.already_done_81to88 %}{{ data.already_done_81to88 }}{% endif %}
+                    </td>
+                    <td {% if not data.suggest_memo and data.communicate_memo %}rowspan="2"{% endif %} align="center">
+                        {% if data.suggest_num %}{{ data.suggest_num }}{% endif %}
+                    </td>
+                    <td {% if not data.suggest_memo and data.communicate_memo %}rowspan="2"{% endif %} align="left">
+                        {% if data.suggest_specification %}{{ data.suggest_specification }}{% endif %}
+                    </td>
+                    <td {% if not data.suggest_memo and data.communicate_memo %}rowspan="2"{% endif %} align="left">
+                        {% if data.suggest_type %}{{ data.suggest_type }}{% endif %}
+                    </td>
+                    <td {% if not data.suggest_memo and data.communicate_memo %}rowspan="2"{% endif %} align="right">
+                        {% if data.suggest_project_cost %}{{ data.suggest_project_cost|intcomma }}{% endif %}
+                    </td>
+                    <td {% if data.suggest_memo and not data.communicate_memo %}rowspan="2"{% endif %} align="center">
+                        {% if data.communicate_num %}{{ data.communicate_num }}{% endif %}
+                    </td>
+                    <td {% if data.suggest_memo and not data.communicate_memo %}rowspan="2"{% endif %} align="right">
+                        {% if data.communicate_project_cost %}{{ data.communicate_project_cost|intcomma }}{% endif %}
+                    </td>
+                    <td {% if data.suggest_memo and not data.communicate_memo %}rowspan="2"{% endif %} align="center">
+                        {% if data.order %}{{ data.order }}{% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    {% if data.suggest_memo %}
+                    <td bgcolor="#E1F0F0" align="center">
+                        說明
+                    </td>
+                    <td  colspan="3" align="left">
+                        {{ data.suggest_memo }}
+                    </td>
+                    {% endif %}
+                    {% if data.communicate_memo %}
+                    <td bgcolor="#E1F0F0" align="center">
+                        說明
+                    </td>
+                    <td colspan="2" align="left">
+                        {{ data.communicate_memo }}
+                    </td>
+                    {% endif %}
+                </tr>
+                    {% endfor %}
+                {% endif %}
+                {% endfor %}
+                <tr></tr>
+            </table>
+            -->
+            {% else %}
+            <h2>暫無資料</h2>
+            {% endif %}
+            
+            <br><br>
+            </h2>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" height="60">
+            <span class="HarborTitle">養殖工程歷年公共設施項目</span>
+        </td>
+    </tr>
+    <tr>
+        <td></td>
+        <td>
+            <h2>
+            {% if pub_list %}
+            {% for year in pub_list %}
+            <table style="border-collapse: collapse" border="1" cellpadding="2" cellspacing="2">
+                <tr bgcolor="#FFFF99" align="center">
+                    <td rowspan="{{ year.1 }}" width="40" bgcolor="#87D2F0">
+                        {{ year.0 }}
+                    </td>
+                    <td width="230">
+                        工程名稱
+                    </td>
+                    <td width="160">
+                        工程經費(萬元)
+                    </td>
+                    <td width="200">
+                        工程項目
+                    </td>
+                    <td width="160">
+                        備註
+                    </td>
+                </tr>
+                {% for item in year.2 %}
+                <tr class="{% cycle "odd" "even" %}" align="left">
+                    <td>
+                        {% if item.project_name %}{{ item.project_name }}{% else %}<center>暫無資訊</center>{% endif %}
+                    </td>
+                    <td align="right">
+                        {% if item.value %}{{ item.value|intcomma }}{% else %}<center>暫無資訊</center>{% endif %}
+                    </td>
+                    <td>
+                        {% if item.contents %}{{ item.contents }}{% else %}<center>暫無資訊</center>{% endif %}
+                    </td>
+                    <td>
+                        {% if item.memo %}{{ item.memo }}{% else %}<center>暫無資訊</center>{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            <br>
+            {% endfor %}
+
+            {% else %}
+            <h2>暫無資料</h2>
+            {% endif %}
+            </h2>
+        </td>
+    </tr>
+</table>
+<br>
+
+{% endblock %}

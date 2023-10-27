@@ -1,0 +1,193 @@
+{% extends "fishuser/zh-tw/base.html" %}
+{% load i18n %}
+{% load humanize %}
+{% load utiltags %}
+{% load guardian_tags %}
+
+{% block body %}
+<h2>縣市進度追蹤</h2>
+<br>
+<ul class="nav nav-tabs nav-justified" id="project_page_tab">
+    <li class="change_page_tab {% ifequal chase_page 'chase' %}active{% endifequal %}">
+        <a href="{% url 'project.views.chase' %}">追蹤統計</a>
+    </li>
+    <li class="change_page_tab {% ifequal chase_page 'chase_select_project' %}active{% endifequal %}">
+        <a href="{% url 'project.views.chase_select_project' %}">設定追蹤工程</a>
+    </li>
+    <li class="change_page_tab {% ifequal chase_page 'chase_print' %}active{% endifequal %}">
+        <a href="{% url 'project.views.chase_print' %}">追蹤查詢及報表</a>
+    </li>
+    <!-- <li class="change_page_tab {% ifequal chase_page 'chase_connecter' %}active{% endifequal %}">
+        <a href="{% url 'project.views.chase_connecter' %}">各單位主管設定</a>
+    </li> -->
+</ul>
+<br><br>
+
+    {% block content %}
+        <table id="chase_table" class="table table-bordered" style="font-size: 12px; text-align: center;">
+            {% include 'project/zh-tw/chase_table.html' %}
+        </table>
+        
+        <table id="SearchResultTable" class="sortable table table-bordered" style="text-align: center; display: none; font-size: 14px;">
+            <caption>
+                <h4><span id="table_title" style="color: blue;"></span></h4>
+                以下為您的搜尋結果</caption>
+            <thead>
+                <tr class="success">
+                    <th width="3%" style="text-align: center;">序<br>號</th>
+                    <th width="40%">所屬計畫<br>年度-工程名稱</th>
+                    <th width="8%" style="text-align: center;">縣市</th>
+                    <th width="13%" style="text-align: center;">漁港<br>養殖區</th>
+                    <th width="6%" style="text-align: center;">採購<br>類別</th>
+                    <th width="6%" style="text-align: center;">承辦<br>方式</th>
+                    <th width="12%" style="text-align: center;">署連絡人</th>
+                    <th width="15%" style="text-align: center;">負責主辦</th>
+                    <th>遠端系統</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <script type="text/x-jquery-tmpl" id="HideSearchTr">
+            <tr id="tr_project_${id}" style="text-align: center;" row_id="${id}" class="${class_name}" style="display: none;">
+                <td class="active">${sort}</td>
+                <td align="left" title="標案編號：『${bid_no}』">
+                    ${plan__name__list}<br>
+                    <a id="project_name_${id}" href="/project/project_profile/${id}/">
+                        ${year}年 - ${name}
+                    </a>
+                </td>
+                <td>${place__name}</td>
+                <td>
+                    ${fishing_port_and_aquaculture_list}
+                </td>   
+                <td>
+                    ${purchase_type__value}
+                <td>
+                    ${undertake_type__value}
+                </td>
+                <td>${self_contacter}</td>
+                <td>${importer}</td>
+                <td>
+                    <a href="/frcm/project_profile/${id}/" title="點我到遠端管理系統">
+                        <span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span>
+                    </a>
+                </td>
+            </tr>
+        </script>
+
+
+        <script type="text/javascript">
+            function show_projects(){
+                var $obj = $(this);
+                var table_title = $obj.attr('table_title');
+                var ids = $obj.attr('ids');
+                if (!ids) {return false;}
+                var string = 'ids=' + ids;
+                $.ajax({
+                    url: '/fishuser/api/v2/project/search/?limit=1000000000&' + string,
+                    type: 'GET',
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    success: function (data) {
+                        $('#table_title').html(table_title);
+                        $('.resultTr').remove();
+                        $('#SearchResultTable').show();
+                        for (var i=0; i<data.objects.length; i++){
+                            data.objects[i]['class_name'] = 'resultTr';
+                            data.objects[i]['sort'] = i+1;
+                            if (!data.objects[i]['bid_no']){
+                                data.objects[i]['bid_no'] = '';
+                            }
+                            if (!data.objects[i]['importer']) {data.objects[i]['importer'] = '→';}
+                            var $div = $('#HideSearchTr').tmpl(data.objects[i]).appendTo($('#SearchResultTable > tbody:last'));
+                        }
+                    },
+                    error: REST_ERROR
+                })
+            }
+
+            function get_new_chase_table(){
+                var $obj = $(this);
+                var chase_id = $obj.attr('chase_id');
+                var data = {
+                    csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                    chase_id: chase_id
+                };
+                $.ajax({
+                    url: '/project/chase_table/',
+                    type: 'POST',
+                    data: data,
+                    dataType: 'json',
+                    success: function (data) {
+                        $('#chase_table').html($(data["html"]));
+                        $('.get_new_chase_table').click(get_new_chase_table);
+                        $('.show_projects').click(show_projects);
+                        $('#create_chase').click(create_chase);
+                        $('#delete_chase').click(delete_chase);
+                    },
+                    error: REST_ERROR
+                })
+            }
+
+            function create_chase() {
+                var $obj = $(this);
+                var data = {
+                    csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN
+                };
+                if (confirm('你確定要進行一次新的追蹤嗎？')){
+                    if (confirm('是否要快速套用上一次的追蹤工程案？')){
+                        data['have_project'] = true;
+                    } else {
+                        data['have_project'] = false;
+                    }
+                    $.ajax({
+                        url: '/fishuser/api/v2/countychasetime/',
+                        type: 'POST',
+                        data: JSON.stringify(data),
+                        contentType: 'application/json',
+                        dataType: 'json',
+                        success: function (data) {
+                            window.location = '{% url 'project.views.chase' %}';
+                        },
+                        error: REST_ERROR
+                    })
+                }
+                
+            }
+
+            function delete_chase(){
+                var $obj = $(this);
+                var chase_id = $obj.attr('chase_id');
+                if (confirm('你確定要刪除這次的追蹤紀錄嗎？\n刪除後會一併刪除所有的填寫紀錄喔!!!')){
+                    var input=prompt("為了確保你現在頭腦清醒，請輸入大寫『YES』:");
+                    if (input == 'YES'){
+                        $.ajax({
+                            url: '/fishuser/api/v2/countychasetime/' + chase_id + '/',
+                            type: 'DELETE',
+                            contentType: 'application/json',
+                            dataType: 'json',
+                            success: function (data) {
+                                alert('刪除成功!!!');
+                                window.location = '{% url 'project.views.chase' %}';
+                            },
+                            error: REST_ERROR
+                        })
+                    } else {
+                        alert('似乎你現在有點恍神!!!');
+                    }
+                }
+            }
+
+            $(document).ready(function(){
+                $('.show_projects').click(show_projects);
+                $('.get_new_chase_table').click(get_new_chase_table);
+                $('#create_chase').click(create_chase);
+                $('#delete_chase').click(delete_chase);
+            });
+
+        </script>
+    {% endblock %}
+
+{% endblock %}

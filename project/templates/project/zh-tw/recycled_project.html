@@ -1,0 +1,126 @@
+{% extends "fishuser/zh-tw/base.html" %}
+{% load i18n %}
+{% load humanize %}
+
+{% block body %}
+<h2>工程回收桶</h2>
+{% if not projects %}
+    <h3>
+    目前回收桶無任何工程
+    </h3>
+{% else %}
+
+    <table class="sortable table table-bordered" style="font-size: 12px;">
+        <thead>
+            <tr class="success" style="text-align: center !important;vertical-align: middle !important;">
+                <th style="text-align: center !important;">年度</th>
+                <th style="text-align: center !important; min-width: 300px;">
+                    1.所屬計畫<br>2.標案編號<br>3.工作名稱
+                </th>
+                <th style="text-align: center !important;">執行機關</th>
+                <th style="text-align: center !important;">復原</th>
+                <th style="text-align: center !important;">完全<br>刪除</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in projects %}
+                <tr id="tr_project_{{ p.id }}">
+                    <td align="center">{{ p.year }}</td>
+                    <td>
+                        1.{{ p.plan.name }}<br>
+                        2.{{ p.bid_no }}<br>
+                        3.
+                        <span style="font-size: 13px;">
+                            <a href="/project/project_profile/{{ p.id }}/" id="project_name_{{ p.id }}">{{ p.name }}</a>
+                        </span>
+                    </td>
+                    <td>{% if p.unit %}{{ p.unit.name }}{% endif %}</td>
+                    <td>
+                        <button title="復原為一般工程" class="btn btn-success btn-sm set_project_deleter_to_none" user_id="{{ user.id }}" project_id="{{ p.id }}"><span class="glyphicon glyphicon-share-alt"></span></button>
+                    </td>
+                    <td>
+                        <button title="完全刪除此工程案" class="btn btn-danger btn-sm delete_project" message="注意：您確定要將『{{ p.name }}』工程案『完全刪除』嗎？ 刪除後將一併刪除此工程案一切相關檔案及資料，且無法恢復!!!"
+                        row_id="{{ p.id }}"
+                        remove_target="tr_project_{{ p.id }}"><span class="glyphicon glyphicon-remove"></span></button>
+                    </td>
+                </tr>
+            {% endfor %}
+        <tbody>
+    </table>
+{% endif %}
+
+
+<script type="text/javascript">
+
+
+    function set_project_deleter_to_none() {
+        var $obj = $(this);
+        var project_id = $obj.attr('project_id');
+        var user_id = $obj.attr('user_id');
+        var project_name = $('#project_name_' + project_id).html();
+        if (confirm('是否要將『' + project_name + '』復原為一般工程案？')){
+            var data = {
+                csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN,
+                deleter: null
+            };
+            $.ajax({
+                url: '/fishuser/api/v2/project/' + project_id + '/',
+                type: 'PUT',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function (json, text, xhr) {
+                    alert('復原工程案成功!!');
+                    $('#tr_project_' + project_id).remove();
+                },
+                error: function (data) {
+                    if (data.responseText){
+                        alert(data.responseText);
+                    } else {
+                        alert('操作失敗，可能系統忙碌中，請稍候重試一次。');
+                    }
+                    
+                },
+            })
+        }
+    }
+
+    function delete_project(){
+        var $obj = $(this);
+        var remove_target = $obj.attr('remove_target'); //刪除完畢後要移除的物件
+        var row_id = $obj.attr('row_id');
+        var message = $obj.attr('message');
+        var data = {csrfmiddlewaretoken: CSRFMIDDLEWARETOKEN};
+        if (confirm(message)){
+            if (confirm('再次確認，完全刪除後無法恢復。')){
+                $.ajax({
+                    url: '/fishuser/api/v2/project/' + row_id + '/',
+                    type: 'DELETE',
+                    data: JSON.stringify(data),
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    success: function (json, text, xhr) {
+                        if (remove_target != '' && remove_target != undefined) {
+                            $('#' + remove_target).remove();
+                            $('.' + remove_target).remove();
+                        }
+                        alert('刪除成功!');
+                    },
+                    error: REST_ERROR
+                })
+            }
+        } else {
+            return false;
+        }
+    }
+
+    $(document).ready(function(){
+        $('.delete_project').click(delete_project);
+        $('.set_project_deleter_to_none').click(set_project_deleter_to_none);
+    });
+
+</script>
+
+
+
+{% endblock %}

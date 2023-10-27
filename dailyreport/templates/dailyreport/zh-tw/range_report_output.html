@@ -1,0 +1,222 @@
+{% extends 'dailyreport/zh-tw/base.html' %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load i18n %}
+
+{% block body %}
+
+{% include 'dailyreport/zh-tw/menu.html' %}
+
+
+<h3>
+    列印區間報表
+</h3>
+
+<table class="table table-bordered" align="center" style="table-layout:fixed;width: 300px;background-color:white;">
+    <col width="40%">
+    <col width="60%">
+    <tr bgcolor="#895117">
+        <td colspan="2" style="text-align: center;color: white;"><h4>請選擇欲列印之起迄時間</h4></td>
+    </tr>
+    <tr>
+        <td style="text-align: center" bgcolor="#55A8FF">開始日期：</td>
+        <td><input id="start_date" do_nothing="true" type="text" class="datepicker" value=""></td>
+    </tr>
+    <tr>
+        <td style="text-align: center" bgcolor="#55A8FF">結束日期：</td>
+        <td><input id="end_date" do_nothing="true" type="text" class="datepicker noless_then" target="start_date" value=""></td>
+    </tr>
+</table>
+
+<input id="report_type" value="{{ report_type }}" type="hidden">
+<input id="project_id" value="{{ engprofile.project.id }}" type="hidden">
+
+<table align="center">
+    <tr>
+        <td>
+            <div class="alert alert-block" style="float:left; width:420px;">
+                <strong>2017-07-10日後新版格式</strong><br>
+                <a class="check_print_range" file_type="online" info_type="write" target="print_page">
+                    <button class="btn btn-info" type="button">
+                        線上列印『已填寫工項』報表
+                    </button>
+                </a><!-- 全形空白　 -->
+                <a class="check_print_range" file_type="online" info_type="all" target="print_page">
+                    <button class="btn btn-info" type="button">
+                        線上列印『完整工項』報表
+                    </button>
+                </a>
+                <br><br>
+                <a class="check_print_range" file_type="excel" info_type="write">
+                    <button class="btn btn-success" type="button">
+                        輸出<span style="color: blue;">Excel</span>『已填寫工項』報表
+                    </button>
+                </a><!-- 全形空白　 -->
+                <a class="check_print_range" file_type="excel" info_type="all">
+                    <button class="btn btn-success" type="button">
+                        輸出<span style="color: blue;">Excel</span>『完整工項』報表
+                    </button>
+                </a>
+             </div>
+        </td>
+        <td>
+            <div class="alert alert-block alert-info" style="float:left; width:420px;">
+                <strong>2017-08-01日前舊版格式</strong><br>
+                <a class="check_print_range2" file_type="online" info_type="write" target="print_page">
+                    <button class="btn btn-info" type="button">
+                        線上列印『已填寫工項』報表
+                    </button>
+                </a><!-- 全形空白　 -->
+                <a class="check_print_range2" file_type="online" info_type="all" target="print_page">
+                    <button class="btn btn-info" type="button">
+                        線上列印『完整工項』報表
+                    </button>
+                </a>
+                <br><br>
+                <a class="check_print_range2" file_type="excel" info_type="write">
+                    <button class="btn btn-success" type="button">
+                        輸出<span style="color: blue;">Excel</span>『已填寫工項』報表
+                    </button>
+                </a><!-- 全形空白　 -->
+                <a class="check_print_range2" file_type="excel" info_type="all">
+                    <button class="btn btn-success" type="button">
+                        輸出<span style="color: blue;">Excel</span>『完整工項』報表
+                    </button>
+                </a>
+            </div>
+        </td>
+    </tr>
+</table>
+
+<br><br>
+<table class="table" align="center" style="table-layout:fixed;width: 850px;">
+    <tr>
+        <td>
+            <ol style="font-size: 20px; color: red;">
+                <li>為了避免您等待過久，且減輕伺服器運算負擔，區間報表每次列印以『一個月』為限。</li>
+                <li>為了節省紙張，建議選擇列印『已填寫工項報表』。</li>
+            </ol>
+        </td>
+    </tr>
+</table>
+
+
+<br><br><br>
+
+
+
+<!-- JavaScript -->
+    <script type="text/javascript">
+        function noless_then(){
+            var $obj = $(this);
+            var value = $obj.val();
+            var target = $obj.attr('target');
+            var target_value = $('#' + target).val();
+            if (target_value && value){
+                if (!date_check.test(target_value)){
+                    alert('開始日期需為日期格式!!!');
+                    return false;
+                }
+                if (!date_check.test(value)){
+                    alert('結束日期需為日期格式!!!');
+                    return false;
+                }
+                var startArray = target_value.split("-");
+                var endArray = value.split("-");
+                var start = new Date(startArray[0], startArray[1], startArray[2]);
+                var end = new Date(endArray[0], endArray[1], endArray[2]);
+                if (start > end){
+                    $obj.attr('value', target_value);
+                    alert('結束日期必須晚於或等於開始日期!!!');
+                    return false;
+                }
+            }
+        }
+
+        function check_print_range(){
+            var $obj = $(this);
+            var project_id = $('#project_id').val();
+            var report_type = $('#report_type').val();
+            var info_type = $obj.attr('info_type');
+            var start_date = $('#start_date').val();
+            var end_date = $('#end_date').val();
+            var file_type = $obj.attr('file_type');
+            var date_check = /^(([1-9]\d{0,3}|0)\-\d{2}\-\d{2})|(([1-9]\d{0,3}|0)\.\d{2}\.\d{2})|(([1-9]\d{0,3}|0)\/\d{2}\/\d{2})$/;
+            if (!start_date){
+                alert('請選擇開始日期!!!');
+                return false;
+            }
+            if (!end_date){
+                alert('請選擇結束日期!!!');
+                return false;
+            }
+            if (start_date && !date_check.test(start_date)){
+                alert('開始日期請輸入日期格式!!!');
+                return false;
+            }
+            if (end_date && !date_check.test(end_date)){
+                alert('開始日期請輸入日期格式!!!');
+                return false;
+            }
+            var startArray = start_date.split("-");
+            var endArray = end_date.split("-");
+            var start = new Date(startArray[0], startArray[1], startArray[2]);
+            var end = new Date(endArray[0], endArray[1], endArray[2]);
+            if ((end - start)/86400000 >= 32){
+                alert('系統僅支援每次最多『一個月』之區間列印，您這次選擇了 ' + String((end - start)/86400000) + ' 天');
+                return false;
+            }
+            if (file_type=='online'){
+                window.open('/dailyreport/online_print_range/' + project_id + '/' + report_type + '/' + info_type + '/' + start_date + '/' + end_date + '/');
+            } else if (file_type=='excel'){
+                window.open('/dailyreport/make_excel_range/' + project_id + '/' + report_type + '/' + info_type + '/' + start_date + '/' + end_date + '/');
+            }
+        }
+
+        function check_print_range2(){
+            var $obj = $(this);
+            var project_id = $('#project_id').val();
+            var report_type = $('#report_type').val();
+            var info_type = $obj.attr('info_type');
+            var start_date = $('#start_date').val();
+            var end_date = $('#end_date').val();
+            var file_type = $obj.attr('file_type');
+            var date_check = /^(([1-9]\d{0,3}|0)\-\d{2}\-\d{2})|(([1-9]\d{0,3}|0)\.\d{2}\.\d{2})|(([1-9]\d{0,3}|0)\/\d{2}\/\d{2})$/;
+            if (!start_date){
+                alert('請選擇開始日期!!!');
+                return false;
+            }
+            if (!end_date){
+                alert('請選擇結束日期!!!');
+                return false;
+            }
+            if (start_date && !date_check.test(start_date)){
+                alert('開始日期請輸入日期格式!!!');
+                return false;
+            }
+            if (end_date && !date_check.test(end_date)){
+                alert('開始日期請輸入日期格式!!!');
+                return false;
+            }
+            var startArray = start_date.split("-");
+            var endArray = end_date.split("-");
+            var start = new Date(startArray[0], startArray[1], startArray[2]);
+            var end = new Date(endArray[0], endArray[1], endArray[2]);
+            if ((end - start)/86400000 >= 32){
+                alert('系統僅支援每次最多『一個月』之區間列印，您這次選擇了 ' + String((end - start)/86400000) + ' 天');
+                return false;
+            }
+            if (file_type=='online'){
+                window.open('/dailyreport/online_print_range2/' + project_id + '/' + report_type + '/' + info_type + '/' + start_date + '/' + end_date + '/');
+            } else if (file_type=='excel'){
+                window.open('/dailyreport/make_excel_range2/' + project_id + '/' + report_type + '/' + info_type + '/' + start_date + '/' + end_date + '/');
+            }
+        }
+
+        $(document).ready(function(){
+            $('.check_print_range').click(check_print_range);
+            $('.check_print_range2').click(check_print_range2);
+            $('.noless_then').change(noless_then);
+        });
+    </script>
+{% endblock %}
